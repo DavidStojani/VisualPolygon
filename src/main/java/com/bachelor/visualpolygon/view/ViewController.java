@@ -1,19 +1,25 @@
 package com.bachelor.visualpolygon.view;
 
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
 public class ViewController {
     @FXML
-    private Label welcomeText;
+    private Label statusText;
 
-    @FXML
-    protected void onHelloButtonClick() {
-        welcomeText.setText("Welcome to JavaFX Application!");
-    }
+
 
     public void init(ViewModel viewModel) {
-        System.out.println("HAHAAAHHAH");
+        System.out.println("Works");
+    }
+
+    public void resetApplicationAction(ActionEvent actionEvent) {
+        statusText.setText("RESETTING");
+    }
+
+    public void updateStatus(ActionEvent actionEvent) {
+        statusText.setText("UPDATING");
     }
 }
