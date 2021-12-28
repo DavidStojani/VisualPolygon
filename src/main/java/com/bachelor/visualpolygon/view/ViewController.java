@@ -45,6 +45,8 @@ public class ViewController {
 
                 x.add(mouseEvent.getX());
                 y.add(mouseEvent.getY());
+                xCoordinates.setValue(x);
+                yCoordinates.setValue(y);
                 System.out.println(mouseEvent.getX()+"und"+mouseEvent.getY());
                 root.getChildren().add(new Circle(mouseEvent.getX(),mouseEvent.getY(),4));
 
@@ -53,12 +55,14 @@ public class ViewController {
     };
 
 
-    public void init(ViewModel viewModel) {
+    public void     init(ViewModel viewModel) {
+        this.viewModel = viewModel;
         System.out.println("Works");
-        xCoordinates.setValue(x);
-        yCoordinates.setValue(y);
+        statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         pane.setOnMouseClicked(mouseHandler);
         pane.getChildren().add(root);
+        xCoordinates.bindBidirectional(viewModel.xCoordinateProperty());
+        yCoordinates.bindBidirectional(viewModel.yCoordinateProperty());
     }
 
     public void resetApplication() {
@@ -69,7 +73,7 @@ public class ViewController {
     }
 
     public void updateStatus() {
-
+        viewModel.test();
     }
 
 
