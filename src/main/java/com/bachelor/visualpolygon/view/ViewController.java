@@ -1,6 +1,7 @@
 package com.bachelor.visualpolygon.view;
 
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
@@ -33,29 +34,30 @@ public class ViewController {
 
     ObservableList<Double> x = FXCollections.observableArrayList();
     ObservableList<Double> y = FXCollections.observableArrayList();
+
     private ListProperty<Double> xCoordinates = new SimpleListProperty<>();
     private ListProperty<Double> yCoordinates = new SimpleListProperty<>();
     Group root = new Group();
-
-
+    List<DoubleProperty> xCor = new ArrayList<>();
+    List<DoubleProperty> yCor = new ArrayList<>();
     EventHandler<MouseEvent> mouseHandler = new EventHandler<MouseEvent>() {
         @Override
         public void handle(MouseEvent mouseEvent) {
             if (mouseEvent.getTarget().toString().contains("Anchor") && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
 
-                x.add(mouseEvent.getX());
-                y.add(mouseEvent.getY());
+                //x.add(mouseEvent.getX());
+                //y.add(mouseEvent.getY());
                 xCoordinates.setValue(x);
                 yCoordinates.setValue(y);
                 System.out.println(mouseEvent.getX()+"und"+mouseEvent.getY());
-                root.getChildren().add(new Circle(mouseEvent.getX(),mouseEvent.getY(),4));
+                root.getChildren().add(new Anchor(mouseEvent.getX(),mouseEvent.getY()));
 
             }
         }
     };
 
 
-    public void     init(ViewModel viewModel) {
+    public void init(ViewModel viewModel) {
         this.viewModel = viewModel;
         System.out.println("Works");
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
