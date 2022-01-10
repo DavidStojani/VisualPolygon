@@ -3,6 +3,7 @@ package com.bachelor.visualpolygon.view;
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -38,19 +39,26 @@ public class ViewController {
     private ListProperty<Double> xCoordinates = new SimpleListProperty<>();
     private ListProperty<Double> yCoordinates = new SimpleListProperty<>();
     Group root = new Group();
-    List<DoubleProperty> xCor = new ArrayList<>();
-    List<DoubleProperty> yCor = new ArrayList<>();
+
     EventHandler<MouseEvent> mouseHandler = new EventHandler<MouseEvent>() {
         @Override
         public void handle(MouseEvent mouseEvent) {
             if (mouseEvent.getTarget().toString().contains("Anchor") && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
+                DoubleProperty xcor = new SimpleDoubleProperty();
+                DoubleProperty ycor = new SimpleDoubleProperty();
 
-                //x.add(mouseEvent.getX());
-                //y.add(mouseEvent.getY());
+                xcor.set(mouseEvent.getX());
+                ycor.set(mouseEvent.getY());
+
+                x.add(mouseEvent.getX());
+                y.add(mouseEvent.getY());
+
+
                 xCoordinates.setValue(x);
                 yCoordinates.setValue(y);
+
                 System.out.println(mouseEvent.getX()+"und"+mouseEvent.getY());
-                root.getChildren().add(new Anchor(mouseEvent.getX(),mouseEvent.getY()));
+                root.getChildren().add(new Anchor(xcor,ycor));
 
             }
         }
@@ -63,8 +71,8 @@ public class ViewController {
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         pane.setOnMouseClicked(mouseHandler);
         pane.getChildren().add(root);
-        xCoordinates.bindBidirectional(viewModel.xCoordinateProperty());
-        yCoordinates.bindBidirectional(viewModel.yCoordinateProperty());
+        xCoordinates.bind(viewModel.xCoordinateProperty());
+        yCoordinates.bind(viewModel.yCoordinateProperty());
     }
 
     public void resetApplication() {
@@ -76,6 +84,29 @@ public class ViewController {
 
     public void updateStatus() {
         viewModel.test();
+    }
+
+    private ObservableList<Anchor> createControlAnchorsFor(final ObservableList<Double> points) {
+
+        ObservableList<Anchor> anchors = FXCollections.observableArrayList();
+
+        for (int i = 0; i < points.size(); i += 2) {
+
+            final int idx = i;
+
+            DoubleProperty xProperty = new SimpleDoubleProperty(points.get(i));
+            DoubleProperty yProperty = new SimpleDoubleProperty(points.get(i + 1));
+
+            xProperty.addListener((ov, oldX, x) -> points.set(idx, (double) x));
+
+            yProperty.addListener((ov, oldY, y) -> points.set(idx + 1, (double) y));
+
+            anchors.add(new Anchor(xProperty, yProperty));
+
+        }
+
+        return anchors;
+
     }
 
 
