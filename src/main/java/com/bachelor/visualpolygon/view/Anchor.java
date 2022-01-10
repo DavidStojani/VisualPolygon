@@ -60,8 +60,6 @@ public class Anchor extends Circle {
 
             }
 
-            //calculateAngle();
-
         });
 
         setOnMouseEntered(mouseEvent -> {

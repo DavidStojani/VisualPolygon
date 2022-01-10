@@ -35,7 +35,7 @@ public class ViewModel {
 
 
     public void test() {
-        setLabelText(xCoordinate.toString());
+        setLabelText("X :: "+ xCoordinate.toString()+ "\nY :: "+ yCoordinate.toString());
     }
 
     public ObservableList<Double> getxCoordinate() {
