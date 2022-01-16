@@ -44,14 +44,15 @@ public class ViewController {
 
          if (mouseEvent.getTarget().toString().contains("Anchor") && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
 
-             points.clear();
-
              coordinates.add(mouseEvent.getX());
              coordinates.add(mouseEvent.getY());
 
+
              points = createControlPointsFor(coordinates);
 
+             root.getChildren().clear();
              root.getChildren().addAll(points);
+
              coordinatesProperty.set(coordinates);
 
          }else if (mouseEvent.getTarget().toString().contains("Polygon") && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
@@ -117,6 +118,7 @@ public class ViewController {
     public void updateStatus() {
         polygon.getPoints().clear();
         polygon.getPoints().addAll(coordinates);
+
         polygon.setStroke(Color.FORESTGREEN);
         polygon.setStrokeWidth(3);
         polygon.setStrokeLineCap(StrokeLineCap.ROUND);
