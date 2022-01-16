@@ -5,11 +5,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 
-public class Anchor extends Circle {
-    Anchor(DoubleProperty x, DoubleProperty y) {
+public class Point extends Circle {
+
+    Point(DoubleProperty x, DoubleProperty y) {
 
         super(x.get(), y.get(), 6);
-        setFill(Color.GOLD.deriveColor(1, 1, 1, 0.5));
+        setFill(Color.GOLD.deriveColor(1, 0.7, 1, 0.5));
         setStroke(Color.GOLD);
         setStrokeWidth(2);
         setStrokeType(StrokeType.OUTSIDE);
@@ -22,15 +23,13 @@ public class Anchor extends Circle {
 
     private void enableDrag() {
 
-        final Delta dragDelta = new Delta();
+
 
         setOnMousePressed(mouseEvent -> {
-            // record a delta distance for the drag and drop operation.
-            dragDelta.x = getCenterX() - mouseEvent.getX();
-            System.out.println("X: " +getCenterX()+" - "+mouseEvent.getX());
-            dragDelta.y = getCenterY() - mouseEvent.getY();
+            System.out.println("X: " +this.getCenterX()+" - "+mouseEvent.getX());
+
             System.out.println("Y: " +getCenterY()+" - "+mouseEvent.getY());
-            getScene().setCursor(javafx.scene.Cursor.MOVE);
+            this.getScene().setCursor(javafx.scene.Cursor.MOVE);
 
         });
 
@@ -38,13 +37,11 @@ public class Anchor extends Circle {
 
             getScene().setCursor(javafx.scene.Cursor.HAND);
 
-            //System.out.println("values:" + values);
-
         });
 
         setOnMouseDragged(mouseEvent -> {
 
-            double newX = mouseEvent.getX() + dragDelta.x;
+            double newX = mouseEvent.getX(); //+ dragDelta.x;
 
             if (newX > 0 && newX < getScene().getWidth()) {
 
@@ -52,7 +49,7 @@ public class Anchor extends Circle {
 
             }
 
-            double newY = mouseEvent.getY() + dragDelta.y;
+            double newY = mouseEvent.getY(); //+ dragDelta.y;
 
             if (newY > 0 && newY < getScene().getHeight()) {
 
@@ -84,13 +81,6 @@ public class Anchor extends Circle {
 
     }
 
-    // records relative x and y co-ordinates.
-
-    private class Delta {
-
-        double x, y;
-
-    }
 
 
 }

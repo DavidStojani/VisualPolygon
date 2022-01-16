@@ -1,17 +1,45 @@
 package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
-import javafx.beans.property.ListProperty;
-import javafx.beans.property.SimpleListProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.property.*;
 import javafx.collections.ObservableList;
-
-import java.util.ArrayList;
 
 public class ViewModel {
 
     private DataModel model;
+    private StringProperty labelText = new SimpleStringProperty();
+    private ListProperty<Double> coordinates = new SimpleListProperty<>();
+    private Camera camera;
+
+
+    public ViewModel(DataModel model){
+        this.model =model;
+    }
+
+
+
+    public Camera createCamera(ObservableList<Double> coordinates) { // make class instead of function
+
+        int idx = 0;
+
+        DoubleProperty cameraXProperty = new SimpleDoubleProperty(coordinates.get(idx));
+        DoubleProperty cameraYProperty = new SimpleDoubleProperty(coordinates.get(idx+1));
+
+        camera = new Camera(cameraXProperty,cameraYProperty);
+
+        cameraXProperty.addListener((ov, oldX, x) -> coordinates.set(idx, (double) x));
+
+        cameraYProperty.addListener((ov, oldY, y) -> coordinates.set(idx + 1, (double) y));
+
+        return camera;
+    }
+
+
+    public void test(){
+        setLabelText("Points::"+coordinates.get().toString() +"\n" +
+                "Circle::" );
+    }
+
 
     public String getLabelText() {
         return labelText.get();
@@ -25,40 +53,22 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
-    private StringProperty labelText = new SimpleStringProperty();
-    private ListProperty<Double> xCoordinate = new SimpleListProperty<>();
-    private ListProperty<Double> yCoordinate = new SimpleListProperty<>();
 
-    public ViewModel(DataModel model){
-        this.model =model;
+    public ObservableList<Double> getCoordinates() {
+        return coordinates.get();
+    }
+
+    public ListProperty<Double> coordinatesProperty() {
+        return coordinates;
+    }
+
+    public void setCoordinates(ObservableList<Double> coordinates) {
+        this.coordinates.set(coordinates);
+    }
+
+    public Camera getCamera() {
+        return camera;
     }
 
 
-    public void test() {
-        setLabelText("X :: "+ xCoordinate.toString()+ "\nY :: "+ yCoordinate.toString());
-    }
-
-    public ObservableList<Double> getxCoordinate() {
-        return xCoordinate.get();
-    }
-
-    public ListProperty<Double> xCoordinateProperty() {
-        return xCoordinate;
-    }
-
-    public void setxCoordinate(ObservableList<Double> xCoordinate) {
-        this.xCoordinate.set(xCoordinate);
-    }
-
-    public ObservableList<Double> getyCoordinate() {
-        return yCoordinate.get();
-    }
-
-    public ListProperty<Double> yCoordinateProperty() {
-        return yCoordinate;
-    }
-
-    public void setyCoordinate(ObservableList<Double> yCoordinate) {
-        this.yCoordinate.set(yCoordinate);
-    }
 }
