@@ -25,36 +25,22 @@ public class Point extends Circle {
 
 
 
-        setOnMousePressed(mouseEvent -> {
-            System.out.println("X: " +this.getCenterX()+" - "+mouseEvent.getX());
+        setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
 
-            System.out.println("Y: " +getCenterY()+" - "+mouseEvent.getY());
-            this.getScene().setCursor(javafx.scene.Cursor.MOVE);
-
-        });
-
-        setOnMouseReleased(mouseEvent -> {
-
-            getScene().setCursor(javafx.scene.Cursor.HAND);
-
-        });
+        setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
 
         setOnMouseDragged(mouseEvent -> {
 
-            double newX = mouseEvent.getX(); //+ dragDelta.x;
+            double newX = mouseEvent.getX();
 
             if (newX > 0 && newX < getScene().getWidth()) {
-
                 setCenterX(newX);
-
             }
 
-            double newY = mouseEvent.getY(); //+ dragDelta.y;
+            double newY = mouseEvent.getY();
 
             if (newY > 0 && newY < getScene().getHeight()) {
-
                 setCenterY(newY);
-
             }
 
         });

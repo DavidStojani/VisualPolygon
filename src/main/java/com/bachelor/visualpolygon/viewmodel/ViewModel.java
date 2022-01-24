@@ -3,19 +3,41 @@ package com.bachelor.visualpolygon.viewmodel;
 import com.bachelor.visualpolygon.model.DataModel;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.StrokeLineCap;
 
 public class ViewModel {
 
     private DataModel model;
     private StringProperty labelText = new SimpleStringProperty();
-    private ListProperty<Double> coordinates = new SimpleListProperty<>();
     private Camera camera;
+    private Polygon polygon;
 
 
     public ViewModel(DataModel model){
         this.model =model;
+        polygon = new Polygon();
     }
 
+
+    public void updatePolygon(){
+        setLabelText("COORDINATES" + polygon.getPoints() + "\n" + "No of Points: " + polygon.getPoints().size()/2);
+    }
+
+    public void resetView() {
+        polygon.getPoints().clear();
+        setLabelText("Reset done!");
+    }
+
+    public Polygon drawPolygon() {
+        polygon.setStroke(Color.FORESTGREEN);
+        polygon.setStrokeWidth(3);
+        polygon.setStrokeLineCap(StrokeLineCap.ROUND);
+        polygon.setFill(Color.GOLDENROD.deriveColor(0, 1.2, 1, 0.6));
+
+        return polygon;
+    }
 
 
     public Camera createCamera(ObservableList<Double> coordinates) { // make class instead of function
@@ -34,15 +56,8 @@ public class ViewModel {
         return camera;
     }
 
-
-    public void test(){
-        setLabelText("Points::"+coordinates.get().toString() +"\n" +
-                "Circle::" );
-    }
-
-
-    public String getLabelText() {
-        return labelText.get();
+    public Polygon getPolygon() {
+        return polygon;
     }
 
     public StringProperty labelTextProperty() {
@@ -54,21 +69,11 @@ public class ViewModel {
     }
 
 
-    public ObservableList<Double> getCoordinates() {
-        return coordinates.get();
-    }
-
-    public ListProperty<Double> coordinatesProperty() {
-        return coordinates;
-    }
-
-    public void setCoordinates(ObservableList<Double> coordinates) {
-        this.coordinates.set(coordinates);
-    }
-
     public Camera getCamera() {
         return camera;
     }
+
+
 
 
 }

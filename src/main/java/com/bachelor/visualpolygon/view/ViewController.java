@@ -2,23 +2,15 @@ package com.bachelor.visualpolygon.view;
 
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
 import javafx.beans.property.*;
-import javafx.beans.value.ObservableDoubleValue;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.StrokeLineCap;
-import javafx.scene.shape.StrokeType;
-import javafx.util.FXPermission;
 
 public class ViewController {
 
@@ -29,45 +21,32 @@ public class ViewController {
 
     private ViewModel viewModel;
 
-    ObservableList<Double> coordinates = FXCollections.observableArrayList();
-    ObservableList<Point> points = FXCollections.observableArrayList();
-
     ObservableList<Double> cameraCoordinates = FXCollections.observableArrayList();
-
-    ListProperty<Double> coordinatesProperty = new SimpleListProperty<>();
     Group root = new Group();
-
-    Polygon polygon = new Polygon();
 
 
     EventHandler<MouseEvent> mouseHandler = mouseEvent -> {
 
-         if (mouseEvent.getTarget().toString().contains("Anchor") && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
+         if (mouseEvent.getTarget().toString().contains("Anchor")) {
+             if (mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
 
-             coordinates.add(mouseEvent.getX());
-             coordinates.add(mouseEvent.getY());
+                 viewModel.getPolygon().getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
 
-
-             points = createControlPointsFor(coordinates);
-
-             root.getChildren().clear();
-             root.getChildren().addAll(points);
-
-             coordinatesProperty.set(coordinates);
-
-         }else if (mouseEvent.getTarget().toString().contains("Polygon") && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
-
+                 root.getChildren().clear();
+                 root.getChildren().add(viewModel.drawPolygon());
+                 root.getChildren().addAll(createControlPointsFor(viewModel.getPolygon().getPoints()));
+             }
+         }
+         else if (mouseEvent.getButton() == MouseButton.SECONDARY && mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
 
             if (viewModel.getCamera() == null) {
                 cameraCoordinates.addAll(mouseEvent.getX(),mouseEvent.getY());
                 root.getChildren().add(viewModel.createCamera(cameraCoordinates));
-            }else {
-               // System.out.println("CAMERA IS DA" + cameraCoordinates + ":::RADIUS:::" + camera.radiusProperty().getBean() );
             }
      }
 
     };
-    private ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) {
+    public ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) {
 
         ObservableList<Point> points = FXCollections.observableArrayList();
 
@@ -93,51 +72,33 @@ public class ViewController {
 
 
 
+
     public void init(ViewModel viewModel) {
         this.viewModel = viewModel;
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
 
+        pane.setOnMousePressed(mouseHandler);
+        pane.setOnMouseReleased(mouseHandler);
         pane.setOnMouseClicked(mouseHandler);
         pane.setOnMouseDragged(mouseHandler);
         pane.getChildren().add(root);
-        coordinatesProperty.bindBidirectional(viewModel.coordinatesProperty());
-
     }
 
     public void resetApplication() {
-        statusText.setText("RESETTING");
-        polygon.getPoints().clear();
+
         root.getChildren().clear();
-        coordinates.clear();
-        points.clear();
         cameraCoordinates.clear();
-        System.out.println(points);
+        viewModel.resetView();
 
     }
 
     public void updateStatus() {
-        polygon.getPoints().clear();
-        polygon.getPoints().addAll(coordinates);
 
-        polygon.setStroke(Color.FORESTGREEN);
-        polygon.setStrokeWidth(3);
-        polygon.setStrokeLineCap(StrokeLineCap.ROUND);
-        polygon.setFill(Color.GOLDENROD.deriveColor(0, 1.2, 1, 0.6));
-
-
-        root.getChildren().clear();
-        root.getChildren().add(polygon);
-        root.getChildren().addAll(points);
-
-        if (viewModel.getCamera() != null) {
-            root.getChildren().add(viewModel.getCamera());
-        }
-
-
-      //  root.getChildren().addAll(points);
-        viewModel.test();
+        viewModel.updatePolygon();
 
     }
+
+
 
 }
 

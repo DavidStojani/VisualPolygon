@@ -8,10 +8,6 @@ import javafx.scene.shape.StrokeType;
 
 public class Camera extends Circle {
 
-    Camera() {
-    }
-
-
 
      public Camera(DoubleProperty x, DoubleProperty y) {
 
