@@ -24,7 +24,7 @@ public class ViewHandler {
         ViewController viewController = fxmlLoader.getController();
         viewController.init(viewModelFactory.getViewModel());
 
-        Scene scene = new Scene(root,940 , 500);
+        Scene scene = new Scene(root,1240 , 800);
         stage.setTitle("Polygon Visualisation");
         stage.setScene(scene);
         stage.show();

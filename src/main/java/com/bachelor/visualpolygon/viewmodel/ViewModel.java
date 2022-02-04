@@ -5,6 +5,7 @@ import javafx.beans.property.*;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 
 public class ViewModel {
@@ -14,23 +15,30 @@ public class ViewModel {
     private Camera camera;
     private Polygon polygon;
 
+    private Polyline polyline;
+
 
     public ViewModel(DataModel model){
         this.model =model;
         polygon = new Polygon();
+        polyline = new Polyline();
     }
 
 
     public void updatePolygon(){
-        setLabelText("COORDINATES" + polygon.getPoints() + "\n" + "No of Points: " + polygon.getPoints().size()/2);
+        setLabelText("COORDINATES Polygon" + polygon.getPoints() + "\n" + " CAM: " + camera.toString());
+
     }
 
     public void resetView() {
+        polyline.getPoints().clear();
         polygon.getPoints().clear();
+        setCamera(null);
         setLabelText("Reset done!");
     }
 
     public Polygon drawPolygon() {
+
         polygon.setStroke(Color.FORESTGREEN);
         polygon.setStrokeWidth(3);
         polygon.setStrokeLineCap(StrokeLineCap.ROUND);
@@ -39,6 +47,17 @@ public class ViewModel {
         return polygon;
     }
 
+    public Polyline drawPolyline() {
+        polyline.setStroke(Color.AZURE);
+        polyline.setStrokeWidth(3);
+        polyline.setStrokeLineCap(StrokeLineCap.ROUND);
+
+        return polyline;
+    }
+
+    public Polyline getPolyline() {
+        return polyline;
+    }
 
     public Camera createCamera(ObservableList<Double> coordinates) { // make class instead of function
 
@@ -71,6 +90,10 @@ public class ViewModel {
 
     public Camera getCamera() {
         return camera;
+    }
+
+    public void setCamera(Camera camera) {
+        this.camera = camera;
     }
 
 

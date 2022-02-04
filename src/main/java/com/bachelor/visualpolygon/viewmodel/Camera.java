@@ -24,6 +24,7 @@ public class Camera extends Circle {
     }
 
 
+
     private void enableDrag() {
         this.setOnMousePressed(mouseEvent -> this.getScene().setCursor(Cursor.MOVE));
         this.setOnMouseReleased(mouseEvent -> this.getScene().setCursor(Cursor.HAND));
