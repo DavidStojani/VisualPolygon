@@ -8,6 +8,7 @@
       <VBox prefHeight="465.0" prefWidth="204.0" BorderPane.alignment="CENTER">
          <children>
             <Button mnemonicParsing="false" onAction="#updateStatus" prefHeight="63.0" prefWidth="204.0" text="Update" />
+            <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#testFeature" prefHeight="63.0" prefWidth="204.0" text="Play" />
             <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#resetApplication" prefHeight="63.0" prefWidth="204.0" text="Reset" />
          </children>
       </VBox>

@@ -8,8 +8,8 @@ import javafx.stage.Stage;
 
 public class ViewHandler {
 
-    private Stage stage;
-    private ViewModelFactory viewModelFactory;
+    private final Stage stage;
+    private final ViewModelFactory viewModelFactory;
 
     public ViewHandler(Stage stage, ViewModelFactory factory) {
         this.stage = stage;
@@ -24,7 +24,7 @@ public class ViewHandler {
         ViewController viewController = fxmlLoader.getController();
         viewController.init(viewModelFactory.getViewModel());
 
-        Scene scene = new Scene(root,1240 , 800);
+        Scene scene = new Scene(root, 1240, 800);
         stage.setTitle("Polygon Visualisation");
         stage.setScene(scene);
         stage.show();

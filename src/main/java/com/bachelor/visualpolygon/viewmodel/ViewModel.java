@@ -4,41 +4,53 @@ import com.bachelor.visualpolygon.model.DataModel;
 import javafx.beans.property.*;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.Objects;
+
+@Getter
+@Setter
 public class ViewModel {
 
     private DataModel model;
     private StringProperty labelText = new SimpleStringProperty();
     private Camera camera;
     private Polygon polygon;
-
     private Polyline polyline;
 
 
-    public ViewModel(DataModel model){
-        this.model =model;
+    public ViewModel(DataModel model) {
+        this.model = model;
         polygon = new Polygon();
         polyline = new Polyline();
     }
 
-
-    public void updatePolygon(){
-        setLabelText("COORDINATES Polygon" + polygon.getPoints() + "\n" + " CAM: " + camera.toString());
-
+    /**
+     * Gives the Polygon and the Camera to the Model
+     */
+    public void updatePolygon() {
+        if (Objects.isNull(camera) || Objects.isNull(polygon)) {
+            setLabelText("Camera or Polygon not ready!!");
+            throw new RuntimeException("NO CAMERA OR POLYGON FOUND!!!");
+        }
+        model.updateBuilder(polygon, camera);
+        setLabelText("COORDINATES Polygon");
     }
 
     public void resetView() {
         polyline.getPoints().clear();
         polygon.getPoints().clear();
         setCamera(null);
+
         setLabelText("Reset done!");
     }
 
     public Polygon drawPolygon() {
-
         polygon.setStroke(Color.FORESTGREEN);
         polygon.setStrokeWidth(3);
         polygon.setStrokeLineCap(StrokeLineCap.ROUND);
@@ -55,28 +67,21 @@ public class ViewModel {
         return polyline;
     }
 
-    public Polyline getPolyline() {
-        return polyline;
-    }
 
     public Camera createCamera(ObservableList<Double> coordinates) { // make class instead of function
 
         int idx = 0;
 
         DoubleProperty cameraXProperty = new SimpleDoubleProperty(coordinates.get(idx));
-        DoubleProperty cameraYProperty = new SimpleDoubleProperty(coordinates.get(idx+1));
+        DoubleProperty cameraYProperty = new SimpleDoubleProperty(coordinates.get(idx + 1));
 
-        camera = new Camera(cameraXProperty,cameraYProperty);
+        camera = new Camera(cameraXProperty, cameraYProperty);
 
         cameraXProperty.addListener((ov, oldX, x) -> coordinates.set(idx, (double) x));
 
         cameraYProperty.addListener((ov, oldY, y) -> coordinates.set(idx + 1, (double) y));
 
         return camera;
-    }
-
-    public Polygon getPolygon() {
-        return polygon;
     }
 
     public StringProperty labelTextProperty() {
@@ -87,16 +92,24 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
+    public Line testFeature() {
+        return model.testTangent();
 
-    public Camera getCamera() {
-        return camera;
+    /*    transition.setNode(camera);
+        transition.setDuration(Duration.seconds(4));
+        transition.setPath(polygon);
+        transition.setCycleCount(PathTransition.INDEFINITE);
+        transition.play();*/
+     /*   Line radius = new Line();
+
+
+        radius.startXProperty().bind(camera.centerXProperty());
+        radius.startYProperty().bind(camera.centerYProperty());
+        radius.setEndY(camera.getBaselineOffset());
+        radius.setEndX(camera.getBaselineOffset());
+
+        //radius.setEndX(camera.getLayoutBounds().getMinX());
+        //radius.setEndY(camera.get);*/
+
     }
-
-    public void setCamera(Camera camera) {
-        this.camera = camera;
-    }
-
-
-
-
 }

@@ -12,6 +12,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 
+
 public class ViewController {
 
     @FXML
@@ -21,14 +22,83 @@ public class ViewController {
 
     private ViewModel viewModel;
 
-    ObservableList<Double> cameraCoordinates = FXCollections.observableArrayList();
-    Group root = new Group();
+    private EventHandler<MouseEvent> mouseHandlerForPane;
+    private EventHandler<MouseEvent> mouseHandlerForPolygon;
+    private ObservableList<Double> cameraCoordinates = FXCollections.observableArrayList();
+    private final Group root = new Group();
+    private ObservableList<Double> polygonCoordinates;
 
 
+    public ViewController() {
+        initMouseHandlerForPane();
+        initMouseHandlerForPolygon();
+    }
+
+    private void initMouseHandlerForPane() {
+        mouseHandlerForPane = mouseEvent -> {
+
+            if (mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
+                if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+
+                    if (mouseEvent.getTarget() instanceof AnchorPane) {
+                        if (!polygonCoordinates.isEmpty()) {
+                            polygonCoordinates.addAll(mouseEvent.getX(), mouseEvent.getY());
+                            refreshPolygon();
+                        } else {
+                            viewModel.getPolyline().getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
+                            refreshLine();
+                        }
+                    } else if (mouseEvent.getTarget() instanceof Point) {
+                        /**Potential Bug when trying to close the polyline.*/
+
+                        Point point = (Point) mouseEvent.getTarget();
+                        if (point.getCenterX() == viewModel.getPolyline().getPoints().get(0) && point.getCenterY() == viewModel.getPolyline().getPoints().get(1)) {
+
+                            polygonCoordinates.addAll(viewModel.getPolyline().getPoints());
+                            refreshPolygon();
+                        }
+                    }
+
+                }
+                if (mouseEvent.getButton() == MouseButton.SECONDARY && mouseEvent.getTarget() instanceof Point) {
+
+                    Point point = (Point) mouseEvent.getTarget();
+                    int indexOfX = polygonCoordinates.indexOf(point.getCenterX());
+                    int indexOfY = polygonCoordinates.indexOf(point.getCenterY());
 
 
+                    if (!polygonCoordinates.isEmpty()) {
+                        if (indexOfY == indexOfX + 1) {
+                            polygonCoordinates.remove(point.getCenterX());
+                            polygonCoordinates.remove(point.getCenterY());
+                        }
+                        refreshPolygon();
+                    } else {
+                        viewModel.getPolyline().getPoints().removeAll(point.getCenterX(), point.getCenterY());
+                        refreshLine();
+                    }
+                }
+
+            }
 
 
+        };
+    }
+
+    private void initMouseHandlerForPolygon() {
+        mouseHandlerForPolygon = mouseEvent -> {
+            if (viewModel.getCamera() == null) {
+                cameraCoordinates.addAll(mouseEvent.getX(), mouseEvent.getY());
+                root.getChildren().add(viewModel.createCamera(cameraCoordinates));
+            }
+            if (mouseEvent.getButton() == MouseButton.SECONDARY) {
+                root.getChildren().remove(viewModel.getCamera());
+                cameraCoordinates.clear();
+                viewModel.setCamera(null);
+            }
+        };
+
+    }
 
 
     public void init(ViewModel viewModel) {
@@ -40,95 +110,39 @@ public class ViewController {
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(root);
         viewModel.getPolygon().setOnMouseClicked(mouseHandlerForPolygon);
+        polygonCoordinates = viewModel.getPolygon().getPoints();
     }
 
+    public void testFeature() {
+        root.getChildren().add(viewModel.testFeature());
+    }
 
-    EventHandler<MouseEvent> mouseHandlerForPolygon = mouseEvent -> {
-        if (viewModel.getCamera() == null) {
-            cameraCoordinates.addAll(mouseEvent.getX(), mouseEvent.getY());
-            root.getChildren().add(viewModel.createCamera(cameraCoordinates));
-        }
-        if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-
-            if (mouseEvent.getTarget().getClass().getSimpleName().equals("Camera")) {
-                root.getChildren().remove(viewModel.getCamera());
-                cameraCoordinates.clear();
-                viewModel.setCamera(null);
-            }
-        }
-    };
-
-    EventHandler<MouseEvent> mouseHandlerForPane = mouseEvent -> {
-
-        if (mouseEvent.getEventType() == MouseEvent.MOUSE_CLICKED) {
-            if ((mouseEvent.getButton() == MouseButton.PRIMARY)) {
-
-                if (mouseEvent.getTarget().getClass().getSimpleName().equals("AnchorPane")) {
-
-                    if (viewModel.getPolygon().getPoints().isEmpty()) {
-                        viewModel.getPolyline().getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
-                        refreshLine();
-                    } else {
-                        viewModel.getPolygon().getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
-                        refreshPolygon();
-                    }
-                } else if (mouseEvent.getTarget().getClass().getSimpleName().equals("Point")) {
-
-                    Point point = (Point) mouseEvent.getTarget();
-                    if (point.getCenterX() == viewModel.getPolyline().getPoints().get(0) && point.getCenterY() == viewModel.getPolyline().getPoints().get(1)) {
-
-                        viewModel.getPolygon().getPoints().addAll(viewModel.getPolyline().getPoints());
-                        refreshPolygon();
-                    }
-                }
-            }
-
-            if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-
-                if (mouseEvent.getTarget().getClass().getSimpleName().equals("Point")) {
-
-                    Point point = (Point) mouseEvent.getTarget();
-                    if (!viewModel.getPolygon().getPoints().isEmpty()) {
-                        viewModel.getPolygon().getPoints().removeAll(point.getCenterX(), point.getCenterY());
-                        refreshPolygon();
-                    } else {
-                        viewModel.getPolyline().getPoints().removeAll(point.getCenterX(), point.getCenterY());
-                        refreshLine();
-                    }
-                }
-            }
-        }
-
-    };
     public void resetApplication() {
-
         root.getChildren().clear();
         cameraCoordinates.clear();
         viewModel.resetView();
-
     }
 
     public void updateStatus() {
         viewModel.updatePolygon();
     }
 
-    public void refreshLine() {
+    private void refreshLine() {
         root.getChildren().clear();
         root.getChildren().add(viewModel.drawPolyline());
         root.getChildren().addAll(createControlPointsFor(viewModel.getPolyline().getPoints()));
     }
 
-    public void refreshPolygon() {
+    private void refreshPolygon() {
         root.getChildren().clear();
         cameraCoordinates.clear();
         viewModel.setCamera(null);
         root.getChildren().add(viewModel.drawPolygon());
-        root.getChildren().addAll(createControlPointsFor(viewModel.getPolygon().getPoints()));
+
+        root.getChildren().addAll(createControlPointsFor(polygonCoordinates));
     }
 
-
-    public ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) throws IndexOutOfBoundsException {
-
+    private ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) throws IndexOutOfBoundsException {
         ObservableList<Point> points = FXCollections.observableArrayList();
 
         for (int i = 0; i < coordinates.size(); i += 2) {
@@ -146,7 +160,6 @@ public class ViewController {
                 points.add(new Point(xProperty, yProperty));
 
             } catch (IndexOutOfBoundsException e) {
-                System.out.println("Smth went wrong::size of coordinates " + coordinates.size() + " und i = " + i);
                 e.printStackTrace();
                 statusText.setText("Error, Something went wrong! Reset to try again!");
             }
@@ -154,6 +167,7 @@ public class ViewController {
 
         return points;
     }
+
 
 }
 
