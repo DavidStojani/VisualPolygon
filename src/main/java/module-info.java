@@ -1,6 +1,8 @@
 module com.bachelor.visualpolygon {
     requires javafx.controls;
     requires javafx.fxml;
+    requires org.locationtech.jts;
+    requires lombok;
 
 
     opens com.bachelor.visualpolygon to javafx.fxml;

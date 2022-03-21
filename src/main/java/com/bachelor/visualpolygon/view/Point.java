@@ -1,11 +1,20 @@
 package com.bachelor.visualpolygon.view;
 
 import javafx.beans.property.DoubleProperty;
+import javafx.scene.Group;
+import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
+import javafx.scene.text.Text;
+import javafx.scene.text.TextBoundsType;
 
 public class Point extends Circle {
+
+    private static int id;
+    Text idText;
+    Group group;
+
 
     Point(DoubleProperty x, DoubleProperty y) {
 
@@ -17,14 +26,12 @@ public class Point extends Circle {
         x.bind(centerXProperty());
         y.bind(centerYProperty());
         enableDrag();
+
     }
 
     // make a node movable by dragging it around with the mouse.
 
     private void enableDrag() {
-
-
-
         setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
 
         setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
@@ -64,9 +71,14 @@ public class Point extends Circle {
             }
 
         });
-
     }
 
+    public Group getGroup() {
+        idText = new Text(""+id);
+        idText.setBoundsType(TextBoundsType.VISUAL);
+        id ++;
+        return new Group(this,idText);
+    }
 
 
 }

@@ -11,17 +11,16 @@ public class Camera extends Circle {
 
      public Camera(DoubleProperty x, DoubleProperty y) {
 
-        super(x.get(),y.get(),24);
+        super(x.get(),y.get(),30);
         this.setFill(Color.CADETBLUE.deriveColor(1,0.9,0.9,0.7));
         this.setStrokeType(StrokeType.OUTSIDE);
-        this.setStrokeWidth(3.5);
+        this.setStrokeWidth(3);
         this.setStroke(Color.CADETBLUE);
         x.bind(centerXProperty());
         y.bind(centerYProperty());
-
-
         enableDrag();
     }
+
 
 
 
@@ -31,19 +30,12 @@ public class Camera extends Circle {
         this.setOnMouseDragged(mouseEvent -> {
 
             double newX = mouseEvent.getX();
-
             if (newX > 0 && newX < getScene().getWidth()) {
-
                 setCenterX(newX);
-
             }
-
             double newY = mouseEvent.getY(); //+ dragDelta.y;
-
             if (newY > 0 && newY <getScene().getHeight()) {
-
                 setCenterY(newY);
-
             }});
         this.setOnMouseEntered(mouseEvent -> {
 
@@ -71,14 +63,17 @@ public class Camera extends Circle {
                 setScaleX(getScaleX() * zoomFactor);
                 setScaleY(getScaleY() * zoomFactor);
                 setRadius(getRadius() * zoomFactor);
+
             }else if (deltaY < 0) {
                 zoomFactor = 0.1 + zoomFactor;
                 setScaleX(getScaleX() * zoomFactor);
                 setScaleY(getScaleY() * zoomFactor);
                 setRadius(getRadius() * zoomFactor);
+
             }
         });
-
     }
+
+
 
 }
