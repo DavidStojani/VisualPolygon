@@ -1,8 +1,6 @@
 package com.bachelor.visualpolygon.model.geometry;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
@@ -11,7 +9,7 @@ import java.util.LinkedList;
 
 @Disabled
 class PolarCoordinatesSortTest {
-    PolarCoordinatesSort sort;
+    Initializer sort;
     GeometryFactory factory;
     Polygon polygon;
     GeometryCamera camera;
@@ -33,7 +31,7 @@ class PolarCoordinatesSortTest {
                 new Coordinate(746, 184),
                 new Coordinate(26, 60)});
 
-        sort = new PolarCoordinatesSort();
+        sort = new Initializer();
     }
 
 

@@ -26,6 +26,7 @@ public class ViewHandler {
 
         Scene scene = new Scene(root, 1240, 800);
         stage.setTitle("Polygon Visualisation");
+
         stage.setScene(scene);
         stage.show();
     }

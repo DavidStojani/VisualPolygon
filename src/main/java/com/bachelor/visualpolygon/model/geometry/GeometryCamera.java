@@ -19,14 +19,14 @@ public class GeometryCamera {
     private double radius;
     private double centerX;
     private double centerY;
-    private Point center;
+    private Coordinate center;
     private static final GeometryFactory factory = new GeometryFactory();
 
     public GeometryCamera(Camera camera) {
         radius = camera.getRadius();        //nicht accurate wegen zoom in and out
         centerX = camera.getCenterX();
         centerY = camera.getCenterY();
-        center = factory.createPoint(new Coordinate(centerX, centerY));
+        center = new Coordinate(centerX, centerY);
 
     }
 

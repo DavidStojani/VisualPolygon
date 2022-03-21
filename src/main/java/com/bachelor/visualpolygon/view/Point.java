@@ -31,6 +31,11 @@ public class Point extends Circle {
 
     // make a node movable by dragging it around with the mouse.
 
+    public void changeColor() {
+        setFill(Color.RED.deriveColor(1, 0.7, 1, 0.5));
+        setStroke(Color.RED);
+    }
+
     private void enableDrag() {
         setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
 

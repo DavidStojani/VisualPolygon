@@ -40,6 +40,8 @@ public class ViewModel {
         }
         model.updateBuilder(polygon, camera);
         setLabelText("COORDINATES Polygon");
+
+
     }
 
     public void resetView() {

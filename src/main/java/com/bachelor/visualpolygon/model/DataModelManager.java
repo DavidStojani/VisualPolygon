@@ -21,7 +21,6 @@ public class DataModelManager implements DataModel {
 
     public DataModelManager() {
         factory = new GeometryFactory();
-
         builder = new Builder();
     }
 

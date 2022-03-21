@@ -1,6 +1,7 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 import com.bachelor.visualpolygon.viewmodel.Camera;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
@@ -13,35 +14,33 @@ import java.util.List;
 
 
 @NoArgsConstructor
+@Getter
 public class Builder {
 
     Polygon polygon;
     GeometryCamera camera;
-    List<LineString> segment;
     List<Vertex> vertices;
-    GeometryFactory factory = new GeometryFactory();
+    private static final GeometryFactory factory = new GeometryFactory();
 
 
-    public Builder(Polygon geomPolygon, GeometryCamera geometryCamera) {
-        // camera = new GeometryCamera();
-        polygon = geomPolygon;
-        System.out.println(camera);
-        System.out.println(polygon);
-    }
-
+    /**
+     * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
+     */
     public void updateBuilder(javafx.scene.shape.Polygon shapePolygon, Camera shapeCamera) {
         polygon = convertPolygonToGeometry(shapePolygon);
         camera = new GeometryCamera(shapeCamera);
-
-        System.out.println("BUILDER:: " + polygon);
-
-        System.out.println("BUILDER:: " + camera);
+        init();
     }
 
-
+    /**
+     * After every update from View initializes the vertices
+     */
     public void init() {
-        PolarCoordinatesSort.convertToPolar((LinkedList<Vertex>) convertToListOfVertex(polygon.getCoordinates()), camera);
-        System.out.println("AFTER INI" + vertices);
+        vertices = convertToListOfVertex(polygon.getCoordinates());
+        Initializer.calculatePolarCoordinates((LinkedList<Vertex>) vertices, camera);
+        vertices = Initializer.sortPolarCoordinate(vertices);
+        isVisibleFromCenter(vertices, camera);
+        vertices.forEach(System.out::println);
 
     }
 
@@ -64,5 +63,26 @@ public class Builder {
         return result;
     }
 
+    public static LineString createLineStringFor(Coordinate a, Coordinate b) {
+        return factory.createLineString(new Coordinate[]{a, b});
+    }
 
+    public static LineString createLineStringFor(Vertex a, Vertex b) {
+        return factory.createLineString(new Coordinate[]{a, b});
+    }
+
+    public void isVisibleFromCenter(List<Vertex> vertices, GeometryCamera camera) {
+        for (Vertex vertex : vertices) {
+            LineString segment = createLineStringFor(vertex.getCoordinate(), camera.getCenter());
+            if (polygon.contains(segment)) {
+                System.out.println("YES");
+                vertex.setVisibleFromCenter(true);
+            } else {
+                System.out.println("NO");
+                vertex.setVisibleFromCenter(false);
+            }
+        }
+
+
+    }
 }
