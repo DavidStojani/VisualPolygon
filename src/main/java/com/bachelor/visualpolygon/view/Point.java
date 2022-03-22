@@ -1,8 +1,8 @@
 package com.bachelor.visualpolygon.view;
 
+import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.Group;
-import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
@@ -23,24 +23,23 @@ public class Point extends Circle {
         setStroke(Color.GOLD);
         setStrokeWidth(2);
         setStrokeType(StrokeType.OUTSIDE);
-        x.bind(centerXProperty());
-        y.bind(centerYProperty());
-        enableDrag();
+        x.bindBidirectional(centerXProperty());
+        y.bindBidirectional(centerYProperty());
+        enableDragForGolden();
 
     }
+
+   public void changeColor() {
+       setFill(Color.RED.deriveColor(1, 0.7, 1, 0.5));
+       setStroke(Color.RED);
+   }
 
     // make a node movable by dragging it around with the mouse.
 
-    public void changeColor() {
-        setFill(Color.RED.deriveColor(1, 0.7, 1, 0.5));
-        setStroke(Color.RED);
-    }
 
-    private void enableDrag() {
+    private void enableDragForGolden() {
         setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
-
         setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
-
         setOnMouseDragged(mouseEvent -> {
 
             double newX = mouseEvent.getX();
@@ -79,10 +78,10 @@ public class Point extends Circle {
     }
 
     public Group getGroup() {
-        idText = new Text(""+id);
+        idText = new Text("" + id);
         idText.setBoundsType(TextBoundsType.VISUAL);
-        id ++;
-        return new Group(this,idText);
+        id++;
+        return new Group(this, idText);
     }
 
 

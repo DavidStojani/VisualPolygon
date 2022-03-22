@@ -40,7 +40,6 @@ public class Builder {
         Initializer.calculatePolarCoordinates((LinkedList<Vertex>) vertices, camera);
         vertices = Initializer.sortPolarCoordinate(vertices);
         isVisibleFromCenter(vertices, camera);
-        vertices.forEach(System.out::println);
 
     }
 
@@ -75,10 +74,8 @@ public class Builder {
         for (Vertex vertex : vertices) {
             LineString segment = createLineStringFor(vertex.getCoordinate(), camera.getCenter());
             if (polygon.contains(segment)) {
-                System.out.println("YES");
                 vertex.setVisibleFromCenter(true);
             } else {
-                System.out.println("NO");
                 vertex.setVisibleFromCenter(false);
             }
         }

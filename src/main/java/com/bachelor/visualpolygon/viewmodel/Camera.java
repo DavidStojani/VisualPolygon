@@ -6,6 +6,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 
+import java.util.Objects;
+
 public class Camera extends Circle {
 
 
@@ -18,6 +20,7 @@ public class Camera extends Circle {
         this.setStroke(Color.CADETBLUE);
         x.bind(centerXProperty());
         y.bind(centerYProperty());
+
         enableDrag();
     }
 
@@ -28,7 +31,6 @@ public class Camera extends Circle {
         this.setOnMousePressed(mouseEvent -> this.getScene().setCursor(Cursor.MOVE));
         this.setOnMouseReleased(mouseEvent -> this.getScene().setCursor(Cursor.HAND));
         this.setOnMouseDragged(mouseEvent -> {
-
             double newX = mouseEvent.getX();
             if (newX > 0 && newX < getScene().getWidth()) {
                 setCenterX(newX);

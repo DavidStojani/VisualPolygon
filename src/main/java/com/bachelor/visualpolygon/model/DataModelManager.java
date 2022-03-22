@@ -2,7 +2,10 @@ package com.bachelor.visualpolygon.model;
 
 import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
+import com.bachelor.visualpolygon.model.geometry.Vertex;
 import com.bachelor.visualpolygon.viewmodel.Camera;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import lombok.*;
@@ -43,5 +46,14 @@ public class DataModelManager implements DataModel {
             line.setStroke(Color.RED);*/
         return null;
     }
+
+    @Override
+    public ObservableList<Vertex> getVertices() {
+        ObservableList<Vertex> vertices = FXCollections.observableArrayList();
+        vertices.setAll(builder.getVertices());
+        return vertices;
+    }
+
+
 
 }

@@ -1,11 +1,12 @@
 package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
+import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.*;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 import lombok.Getter;
@@ -18,16 +19,21 @@ import java.util.Objects;
 public class ViewModel {
 
     private DataModel model;
-    private StringProperty labelText = new SimpleStringProperty();
+    private StringProperty labelText = new SimpleStringProperty("DAvid");
+    private ObservableList<Vertex> vertices;
     private Camera camera;
-    private Polygon polygon;
+    private PolygonModified polygon;
     private Polyline polyline;
+
+    ObservableList<Vertex> jepi;
+;
 
 
     public ViewModel(DataModel model) {
         this.model = model;
-        polygon = new Polygon();
+        polygon = new PolygonModified();
         polyline = new Polyline();
+        jepi = FXCollections.observableArrayList();
     }
 
     /**
@@ -40,7 +46,8 @@ public class ViewModel {
         }
         model.updateBuilder(polygon, camera);
         setLabelText("COORDINATES Polygon");
-
+        setVertices(model.getVertices());
+       // System.out.println("Test:STANDALONEVertices::::" + vertices);
 
     }
 
@@ -48,11 +55,10 @@ public class ViewModel {
         polyline.getPoints().clear();
         polygon.getPoints().clear();
         setCamera(null);
-
-        setLabelText("Reset done!");
+        setLabelText("JEPi" + jepi);
     }
 
-    public Polygon drawPolygon() {
+    public javafx.scene.shape.Polygon drawPolygon() {
         polygon.setStroke(Color.FORESTGREEN);
         polygon.setStrokeWidth(3);
         polygon.setStrokeLineCap(StrokeLineCap.ROUND);
