@@ -2,7 +2,9 @@
 /shelf/
 /workspace.xml
 *.xml
-/target/
+*.class
+*.lst
+/target/classes/
 
 <<<<<<< HEAD
 # Datasource local storage ignored files
