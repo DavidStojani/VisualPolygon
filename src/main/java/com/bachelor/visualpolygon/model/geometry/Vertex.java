@@ -32,6 +32,7 @@ public class Vertex extends Coordinate {
     public Vertex(Coordinate c) {
         x = c.getX();
         y = c.getY();
+        setVisibleFromCenter(true);
         xProperty = new SimpleDoubleProperty(x);
         yProperty = new SimpleDoubleProperty(y);
 
@@ -42,6 +43,7 @@ public class Vertex extends Coordinate {
         this.y = y;
         xProperty = new SimpleDoubleProperty(this.x);
         yProperty = new SimpleDoubleProperty(this.y);
+        setVisibleFromCenter(true);
     }
 
     public Coordinate getCoordinate() {

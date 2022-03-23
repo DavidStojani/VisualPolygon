@@ -1,6 +1,6 @@
 package com.bachelor.visualpolygon.view;
 
-import com.bachelor.visualpolygon.model.geometry.Vertex;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
@@ -13,10 +13,10 @@ public class Point extends Circle {
 
     private static int id;
     Text idText;
-    Group group;
 
 
-    Point(DoubleProperty x, DoubleProperty y) {
+
+    public Point(DoubleProperty x, DoubleProperty y) {
 
         super(x.get(), y.get(), 6);
         setFill(Color.GOLD.deriveColor(1, 0.7, 1, 0.5));
@@ -38,10 +38,13 @@ public class Point extends Circle {
 
 
     private void enableDragForGolden() {
-        setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
-        setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
+        setOnMousePressed(mouseEvent -> {
+                    this.getScene().setCursor(javafx.scene.Cursor.MOVE);
+        });
+        setOnMouseReleased(mouseEvent -> {
+            getScene().setCursor(javafx.scene.Cursor.HAND);
+        });
         setOnMouseDragged(mouseEvent -> {
-
             double newX = mouseEvent.getX();
 
             if (newX > 0 && newX < getScene().getWidth()) {
@@ -53,36 +56,21 @@ public class Point extends Circle {
             if (newY > 0 && newY < getScene().getHeight()) {
                 setCenterY(newY);
             }
-
         });
 
         setOnMouseEntered(mouseEvent -> {
-
             if (!mouseEvent.isPrimaryButtonDown()) {
-
                 getScene().setCursor(javafx.scene.Cursor.HAND);
-
             }
-
         });
 
         setOnMouseExited(mouseEvent -> {
-
             if (!mouseEvent.isPrimaryButtonDown()) {
-
                 getScene().setCursor(javafx.scene.Cursor.DEFAULT);
-
             }
-
         });
     }
 
-    public Group getGroup() {
-        idText = new Text("" + id);
-        idText.setBoundsType(TextBoundsType.VISUAL);
-        id++;
-        return new Group(this, idText);
-    }
 
 
 }

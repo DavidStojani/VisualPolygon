@@ -79,7 +79,5 @@ public class Builder {
                 vertex.setVisibleFromCenter(false);
             }
         }
-
-
     }
 }
