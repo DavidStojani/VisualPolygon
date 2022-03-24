@@ -11,4 +11,6 @@ module com.bachelor.visualpolygon {
     opens com.bachelor.visualpolygon.view to javafx.fxml;
     exports com.bachelor.visualpolygon.viewmodel;
     opens com.bachelor.visualpolygon.viewmodel to javafx.fxml;
+    exports com.bachelor.visualpolygon.view.shapes;
+    opens com.bachelor.visualpolygon.view.shapes to javafx.fxml;
 }

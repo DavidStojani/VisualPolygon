@@ -1,18 +1,13 @@
-package com.bachelor.visualpolygon.view;
+package com.bachelor.visualpolygon.view.shapes;
 
 
 import javafx.beans.property.DoubleProperty;
-import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextBoundsType;
+
 
 public class Point extends Circle {
-
-    private static int id;
-    Text idText;
 
 
 
@@ -38,12 +33,8 @@ public class Point extends Circle {
 
 
     private void enableDragForGolden() {
-        setOnMousePressed(mouseEvent -> {
-                    this.getScene().setCursor(javafx.scene.Cursor.MOVE);
-        });
-        setOnMouseReleased(mouseEvent -> {
-            getScene().setCursor(javafx.scene.Cursor.HAND);
-        });
+        setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
+        setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
         setOnMouseDragged(mouseEvent -> {
             double newX = mouseEvent.getX();
 
@@ -70,7 +61,5 @@ public class Point extends Circle {
             }
         });
     }
-
-
 
 }

@@ -1,33 +1,34 @@
 package com.bachelor.visualpolygon.model.geometry;
 
-import com.bachelor.visualpolygon.viewmodel.Camera;
-import javafx.geometry.Point2D;
-import lombok.AllArgsConstructor;
+import com.bachelor.visualpolygon.view.shapes.Camera;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import org.locationtech.jts.algorithm.Centroid;
+import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
+
+import java.net.DatagramPacket;
+import java.util.List;
 
 import static java.lang.Math.*;
 
 @Data
+@NoArgsConstructor
 public class GeometryCamera {
 
     static final double EPS = 0.0000001;
     private double radius;
     private double centerX;
     private double centerY;
-    private Coordinate center;
+    private Coordinate center = new Coordinate();
     private static final GeometryFactory factory = new GeometryFactory();
 
-    public GeometryCamera(Camera camera) {
-        radius = camera.getRadius();        //nicht accurate wegen zoom in and out
-        centerX = camera.getCenterX();
-        centerY = camera.getCenterY();
-        center = new Coordinate(centerX, centerY);
 
+    public void setDetails (List<Double> cameraDetails) {
+        centerX = cameraDetails.get(0);
+        centerY = cameraDetails.get(1);
+        radius = cameraDetails.get(2);
+        center.setX(centerX);
+        center.setY(centerY);
     }
 
     // Due to double rounding precision the value passed into the asin

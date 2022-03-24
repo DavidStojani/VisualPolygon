@@ -1,8 +1,9 @@
 package com.bachelor.visualpolygon.view;
 
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import com.bachelor.visualpolygon.viewmodel.Camera;
-import com.bachelor.visualpolygon.viewmodel.PolygonModified;
+import com.bachelor.visualpolygon.view.shapes.Camera;
+import com.bachelor.visualpolygon.view.shapes.Point;
+import com.bachelor.visualpolygon.view.shapes.PolygonModified;
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -73,8 +74,7 @@ public class ViewController {
                     if (Objects.isNull(camera)) {
                         drawPolygon();
                     } else {
-                        //add update from model
-                        refreshPolygon();
+                        updateStatus();
                     }
                 }
             }
@@ -89,17 +89,17 @@ public class ViewController {
 
                 if (Objects.nonNull(polygon)) {
                     polygon.removeVertexAndPoint(point);
-                    refreshPolygon();
+                    updateStatus();
                 } else {
                     polyline.getPoints().removeAll(point.getCenterX(), point.getCenterY());
                     refreshLine();
                 }
             }
-            if (mouseEvent.getTarget() instanceof Polygon && camera == null) {
+            if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
 
                 cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
                 camera = Camera.createCamera(cameraRequirements);
-                root.getChildren().add(camera);
+                updateStatus();
 
             }
         }
@@ -108,7 +108,6 @@ public class ViewController {
     public void init(ViewModel viewModel) {
         this.viewModel = viewModel;
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
-
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(root);
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
@@ -117,11 +116,6 @@ public class ViewController {
 
     public void testFeature() {
 
-       /* root.getChildren().clear();
-        root.getChildren().add(polygon.draw());
-
-        root.getChildren().addAll(polygon.createModeratePoints());
-        //refreshViewAfterUpdate();*/
     }
 
     public void resetApplication() {
@@ -138,26 +132,17 @@ public class ViewController {
 
     public void updateStatus() {
         viewModel.updatePolygon();
-    }
-
-    private void refreshViewAfterUpdate() {
-        root.getChildren().clear();
-        root.getChildren().addAll(polygon.createModeratePoints());
-        root.getChildren().add(polygon.draw());
-        if (!Objects.isNull(camera)) {
-            root.getChildren().add(camera);
-        }
+        refreshView();
     }
 
 
     private void refreshLine() {
-
         root.getChildren().clear();
         root.getChildren().add(drawPolyline());
         root.getChildren().addAll(createControlPointsFor(polyline.getPoints()));
     }
 
-    private void refreshPolygon() {
+    private void refreshView() {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
         if (Objects.nonNull(camera)) {

@@ -1,11 +1,12 @@
-package com.bachelor.visualpolygon.viewmodel;
+package com.bachelor.visualpolygon.view.shapes;
 
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import com.bachelor.visualpolygon.view.Point;
+import com.bachelor.visualpolygon.view.shapes.Point;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 import javafx.scene.shape.StrokeLineCap;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,9 +15,9 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PolygonModified extends javafx.scene.shape.Polygon {
+public class PolygonModified extends Polygon {
 
-    private ObservableList<Vertex> vertices;
+    private static ObservableList<Vertex> vertices;
 
     public PolygonModified(List<Vertex> vertices) {
         super();
@@ -45,7 +46,7 @@ public class PolygonModified extends javafx.scene.shape.Polygon {
                 vertices.get(idx).setY((double) t1);
                 updatePoints();
             });
-
+            //Here can be added smth like "isVisible" at all not only from center
             if (!vertices.get(idx).isVisibleFromCenter()) {
                 Point p = new Point(xProperty, yProperty);
                 p.changeColor();
@@ -64,6 +65,7 @@ public class PolygonModified extends javafx.scene.shape.Polygon {
         getPoints().add(vertex.getY());
     }
 
+    /**MALFUNCTION AT SOME CASES*/
     public void removeVertexAndPoint(Point point) {
         int indexOfX = getPoints().indexOf(point.getCenterX());
         int indexOfY = getPoints().indexOf(point.getCenterY());
@@ -75,7 +77,7 @@ public class PolygonModified extends javafx.scene.shape.Polygon {
         }
     }
 
-    public javafx.scene.shape.Polygon draw() {
+    public Polygon draw() {
         this.setStroke(Color.FORESTGREEN);
         this.setStrokeWidth(3);
         this.setStrokeLineCap(StrokeLineCap.ROUND);
@@ -90,5 +92,9 @@ public class PolygonModified extends javafx.scene.shape.Polygon {
             getPoints().add(vertices.get(i).getX());
             getPoints().add(vertices.get(i).getY());
         }
+    }
+
+    public ObservableList<Vertex> getVertices() {
+        return vertices;
     }
 }

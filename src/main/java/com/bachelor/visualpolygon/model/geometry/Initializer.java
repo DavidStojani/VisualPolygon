@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 
 public class Initializer {
 
-    public static void calculatePolarCoordinates(LinkedList<Vertex> vertexList, GeometryCamera camera) {
+    public static void calculatePolarCoordinates(List<Vertex> vertexList, GeometryCamera camera) {
         double x;
         double radius;
         for (Vertex vertex : vertexList) {

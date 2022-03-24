@@ -1,6 +1,5 @@
-package com.bachelor.visualpolygon.viewmodel;
+package com.bachelor.visualpolygon.view.shapes;
 
-import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.collections.FXCollections;
@@ -11,8 +10,6 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.StrokeType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.Objects;
 
 @Getter
 @NoArgsConstructor

@@ -28,22 +28,15 @@ public class ViewModel {
      */
     public void updatePolygon() {
 
-        //model.updateBuilder(polygon, camera);
-        setLabelText("COORDINATES Polygon");
-        //setVertices(model.getVertices());
-       // System.out.println("Test:STANDALONEVertices::::" + vertices);
+        model.updateBuilder(vertices, cameraDetails);
+        setLabelText("Model Updated");
 
-        System.out.println("============THE VERTICES IN VIEWMODEL=============");
-        vertices.forEach(System.out::println);
-        System.out.println("============CAMERA DETAILS IN VIEWMODEL=========");
-        /*cameraDetails.forEach(System.out::println);*/
-        System.out.println(cameraDetails);
 
 
     }
 
     public void resetView() {
-        setLabelText("JEPi");
+        setLabelText("All Cleared Out");
     }
 
     public StringProperty labelTextProperty() {

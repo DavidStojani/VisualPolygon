@@ -3,7 +3,7 @@ package com.bachelor.visualpolygon.model;
 import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import com.bachelor.visualpolygon.viewmodel.Camera;
+import com.bachelor.visualpolygon.view.shapes.Camera;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.Line;
@@ -11,7 +11,8 @@ import javafx.scene.shape.Polygon;
 import lombok.*;
 import org.locationtech.jts.geom.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Getter
@@ -29,8 +30,8 @@ public class DataModelManager implements DataModel {
 
 
     @Override
-    public void updateBuilder(Polygon polygon, Camera camera) {
-        builder.updateBuilder(polygon, camera);
+    public void updateBuilder(List<Vertex> vertices, List<Double> camera) {
+        builder.updateBuilder(vertices, camera);
     }
 
     @Override
