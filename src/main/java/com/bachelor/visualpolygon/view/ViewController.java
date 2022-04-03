@@ -5,8 +5,6 @@ import com.bachelor.visualpolygon.view.shapes.Camera;
 import com.bachelor.visualpolygon.view.shapes.Point;
 import com.bachelor.visualpolygon.view.shapes.PolygonModified;
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
-import javafx.beans.InvalidationListener;
-import javafx.beans.Observable;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,13 +16,10 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
-import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Objects;
 
 
@@ -40,7 +35,6 @@ public class ViewController {
     private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
 
-    //private ObservableList<Vertex> polCord = FXCollections.observableArrayList();
     private ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
     private PolygonModified polygon;
     private Polyline polyline;
@@ -58,30 +52,19 @@ public class ViewController {
 
     private void initMouseHandlerForPane() {
         mouseHandlerForPane = mouseEvent -> {
-            if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+            if (isPrimaryOnPaneAndEmptyPolygon(mouseEvent)) {
+                polyline.getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
+                PolygonModified.vertices.add(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
+                refreshLine();
+            } else if (isPrimaryOnPaneAndFullPolygon(mouseEvent)) {
+                polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
+                updateStatus();
+            }
 
-                if (Objects.isNull(polygon)) {      /**Polygon not created yet*/
-                    if (mouseEvent.getTarget() instanceof AnchorPane) {
-                        polyline.getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
-                        Vertex vertex = new Vertex(polyline.getPoints().get(polyline.getPoints().size() - 2), polyline.getPoints().get(polyline.getPoints().size() - 1));
-
-                        PolygonModified.vertices.add(vertex);
-                        refreshLine();
-                    }
-                    if (mouseEvent.getTarget() instanceof Point) {  /**When the polyLine closes to create a Polygon*/
-                        Point point = (Point) mouseEvent.getTarget();
-                        if (point.getCenterX() == polyline.getPoints().get(0) && point.getCenterY() == polyline.getPoints().get(1)) {
-
-                            polygon = new PolygonModified();
-                            drawPolygon();
-                            updateStatus();
-                        }
-                    }
-                } else if (mouseEvent.getTarget() instanceof AnchorPane) {      /**Adding Points to existing polygon*/
-                    polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
-                    if (Objects.isNull(camera)) {
-                        drawPolygon();
-                    }
+            if (isPrimaryOnPointAndEmptyPolygon(mouseEvent)) {
+                Point point = (Point) mouseEvent.getTarget();
+                if (point.getCenterX() == polyline.getPoints().get(0) && point.getCenterY() == polyline.getPoints().get(1)) {
+                    polygon = new PolygonModified();
                     updateStatus();
                 }
             }
@@ -89,34 +72,29 @@ public class ViewController {
         };
     }
 
+
+
     private void onSecondaryButton(MouseEvent mouseEvent) {
-        if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-            System.out.println("HERE  0" + mouseEvent.getTarget());
-            if (mouseEvent.getTarget() instanceof Point) {
 
-                System.out.println("HERE  1");
-
-                Point point = (Point) mouseEvent.getTarget();
-
-                if (Objects.nonNull(polygon)) {
-                    System.out.println("HERE  2");
-                    polygon.removeVertexAndPoint(point);
-                    refreshView();
-                } else {
-                    polyline.getPoints().removeAll(point.getCenterX(), point.getCenterY());
-                    //polCord.removeIf(v -> v.getX() == point.getCenterX() & v.getY() == point.getCenterY());
-                    refreshLine();
-                }
-            }
-            if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
-
-                cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
-                camera = Camera.createCamera(cameraRequirements);
-                camera.setOnMouseReleased(mouseEvent1 -> updateStatus());
-                refreshView();
-            }
+        if (isSecondaryOnPointAndEmptyPolygon(mouseEvent)) {
+            Point point = (Point) mouseEvent.getTarget();
+            polyline.getPoints().removeAll(point.getCenterX(), point.getCenterY());
+            PolygonModified.vertices.removeIf(vertex -> vertex.getXCoordinate() == point.getCenterX() && vertex.getYCoordinate() == point.getCenterY());
+            refreshLine();
         }
 
+        if (isSecondaryOnPointAndFullPolygon(mouseEvent)) {
+            Point point = (Point) mouseEvent.getTarget();
+            polygon.removeVertexAndPoint(point);
+            updateStatus();
+        }
+
+        if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
+            cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
+            camera = Camera.createCamera(cameraRequirements);
+            camera.setOnMouseReleased(mouseEvent1 -> updateStatus());
+            updateStatus();
+        }
     }
 
     public void init(ViewModel viewModel) {
@@ -129,14 +107,13 @@ public class ViewController {
     }
 
     public void testFeature() {
-
+        System.out.println("==========INSIEDE POLYGON/VIEW=========");
+        System.out.println("---VERTEX:::" + '\n' + PolygonModified.vertices);
         if (polygon != null) {
-            System.out.println("==========INSIEDE POLYGON/VIEW=========");
-            System.out.println("---VERTEX:::" + '\n' + polygon.getVertices());
             System.out.println("--POINTS:::");
             for (int i = 0; i < polygon.getPoints().size(); i += 2) {
                 System.out.println("Position: " + i + "und " + (i + 1) + " Double: " + polygon.getPoints().get(i) + "---" + polygon.getPoints().get(i + 1));
-                if (!polygon.getPoints().get(i).equals(polygon.getVertices().get(i / 2).getX())) {
+                if (!polygon.getPoints().get(i).equals(polygon.getVertices().get(i / 2).getXCoordinate())) {
                     System.out.println("X Point at position : " + i + "not the same as the X of Vertex " + polygon.getVertices().get(i / 2));
                 }
             }
@@ -155,7 +132,6 @@ public class ViewController {
 
         polygon.getPoints().clear();
         polygon.getVertices().clear();
-
 
         cameraRequirements.clear();
         polygon = null;
@@ -184,8 +160,7 @@ public class ViewController {
     private void drawPolygon() {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
-        root.getChildren().addAll(createModeratePoints(PolygonModified.vertices));
-
+        root.getChildren().addAll(polygon.createModeratePoints());
     }
 
 
@@ -197,62 +172,49 @@ public class ViewController {
         return polyline;
     }
 
-    public ObservableList<Point> createModeratePoints(List<Vertex> vertices) {
+
+    private ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) {
         ObservableList<Point> points = FXCollections.observableArrayList();
-
-        for (int i = 0; i < vertices.size(); i++) {
+        for (int i = 0; i < coordinates.size(); i += 2) {
             final int idx = i;
+            DoubleProperty xProperty = new SimpleDoubleProperty(coordinates.get(i));
+            DoubleProperty yProperty = new SimpleDoubleProperty(coordinates.get(i + 1));
 
-            DoubleProperty xProperty = vertices.get(idx).getXProperty();
-            DoubleProperty yProperty = vertices.get(idx).getYProperty();
-
-            xProperty.addListener((observableValue, number, t1) -> {
-                vertices.get(idx).setX((double) t1);
-                polygon.updatePoints();
+            xProperty.addListener((ov, oldX, x) -> {
+                coordinates.set(idx, (double) x);
+                PolygonModified.vertices.get(idx / 2).getXProperty().set(x.doubleValue());
             });
-            yProperty.addListener((observableValue, number, t1) -> {
-                vertices.get(idx).setY((double) t1);
-                polygon.updatePoints();
+            yProperty.addListener((ov, oldY, y) -> {
+                coordinates.set(idx + 1, (double) y);
+                PolygonModified.vertices.get(idx / 2).getYProperty().set(y.doubleValue());
             });
-
-            Point p = new Point(xProperty, yProperty);
-            p.setOnMouseReleased(mouseEvent -> updateStatus());
-            //Here can be added smth like "isVisible" at all not only from center
-            if (!vertices.get(idx).isVisibleFromCenter()) {
-                p.changeColor();
-            }
-            points.add(p);
+            points.add(new Point(xProperty, yProperty));
         }
         return points;
     }
 
-    private ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) throws IndexOutOfBoundsException {
-        ObservableList<Point> points = FXCollections.observableArrayList();
-        for (int i = 0; i < coordinates.size(); i += 2) {
-            final int idx = i;
+    private boolean isPrimaryAndEmptyPolygon(MouseEvent mouseEvent) {
+        return mouseEvent.getButton().equals(MouseButton.PRIMARY) && Objects.isNull(polygon);
+    }
 
-            try {
-                DoubleProperty xProperty = new SimpleDoubleProperty(coordinates.get(i));
-                DoubleProperty yProperty = new SimpleDoubleProperty(coordinates.get(i + 1));
+    private boolean isPrimaryOnPaneAndEmptyPolygon(MouseEvent mouseEvent) {
+        return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof AnchorPane);
+    }
 
-                xProperty.addListener((ov, oldX, x) -> {
-                    coordinates.set(idx, (double) x);
-                    PolygonModified.vertices.get(idx / 2).setX(x.doubleValue());
-                });
-                yProperty.addListener((ov, oldY, y) -> {
-                    coordinates.set(idx + 1, (double) y);
-                    PolygonModified.vertices.get(idx / 2).setY(y.doubleValue());
-                });
+    private boolean isPrimaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {
+        return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof Point);
+    }
 
+    private boolean isPrimaryOnPaneAndFullPolygon(MouseEvent mouseEvent) {
+        return (mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof AnchorPane);
+    }
 
-                points.add(new Point(xProperty, yProperty));
+    private boolean isSecondaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {
+        return mouseEvent.getButton().equals(MouseButton.SECONDARY) && Objects.isNull(polygon) && mouseEvent.getTarget() instanceof Point;
+    }
 
-            } catch (IndexOutOfBoundsException e) {
-                e.printStackTrace();
-                statusText.setText("Error, Something went wrong! Reset to try again!");
-            }
-        }
-        return points;
+    private boolean isSecondaryOnPointAndFullPolygon(MouseEvent mouseEvent) {
+        return mouseEvent.getButton().equals(MouseButton.SECONDARY) && Objects.nonNull(polygon) && mouseEvent.getTarget() instanceof Point;
     }
 }
 

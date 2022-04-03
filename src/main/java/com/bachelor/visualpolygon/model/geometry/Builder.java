@@ -7,6 +7,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Polygon;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,18 +20,17 @@ public class Builder {
     GeometryCamera camera = new GeometryCamera();
     List<Vertex> vertices;
     List<Vertex> polarSortedVertices;
-
-
     private static final GeometryFactory factory = new GeometryFactory();
-
 
     /**
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
         this.vertices = vertices;
-        camera.setDetails(cameraDetails);
-        init();
+        if (!cameraDetails.isEmpty()) {
+            camera.setDetails(cameraDetails);
+            init();
+        }
     }
 
     /**
@@ -45,10 +45,10 @@ public class Builder {
 
     private Polygon createGeometryPolygon(List<Vertex> vertices) {
         ArrayList<Coordinate> tempVertices = new ArrayList<>();
-        for (int i = 0; i < vertices.size(); i++){
+        for (int i = 0; i < vertices.size(); i++) {
             tempVertices.add(vertices.get(i).getCoordinate());
         }
-        tempVertices.add(vertices.get(0).getCoordinate()) ;
+        tempVertices.add(vertices.get(0).getCoordinate());
         return factory.createPolygon(tempVertices.toArray(Coordinate[]::new));
     }
 
@@ -63,7 +63,7 @@ public class Builder {
     public void isVisibleFromCenter(List<Vertex> vertices, GeometryCamera camera) {
         for (Vertex vertex : vertices) {
 
-            LineString segment = createLineStringFor(new Coordinate(vertex.getX(),vertex.getY()), camera.getCenter());
+            LineString segment = createLineStringFor(new Coordinate(vertex.getXCoordinate(), vertex.getYCoordinate()), camera.getCenter());
             if (polygon.contains(segment)) {
                 vertex.setVisibleFromCenter(true);
             } else {

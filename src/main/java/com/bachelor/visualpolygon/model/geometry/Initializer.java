@@ -1,7 +1,6 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,7 +13,7 @@ public class Initializer {
             if (camera.getCenter() == null) {
                 throw new RuntimeException("Camera Center is empty");
             }
-            x = vertex.getX() - camera.getCenterX();
+            x = vertex.getXCoordinate() - camera.getCenterX();
             radius = vertex.distance(camera.getCenter());
 
             vertex.setR(radius);

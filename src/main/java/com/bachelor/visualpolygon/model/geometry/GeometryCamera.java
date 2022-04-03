@@ -1,12 +1,10 @@
 package com.bachelor.visualpolygon.model.geometry;
 
-import com.bachelor.visualpolygon.view.shapes.Camera;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
-import java.net.DatagramPacket;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -43,7 +41,7 @@ public class GeometryCamera {
 
     public Coordinate[] findTangentPointsOnCameraFor(Vertex pt) {
 
-        double px = pt.getX(), py = pt.getY();
+        double px = pt.getXCoordinate(), py = pt.getYCoordinate();
         double cx = centerX, cy = centerY;
         // Compute the distance to the circle center
         double dx = cx - px;
