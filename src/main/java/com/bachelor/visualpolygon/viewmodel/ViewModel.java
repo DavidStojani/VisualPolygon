@@ -27,12 +27,8 @@ public class ViewModel {
      * Gives the Polygon and the Camera to the Model
      */
     public void updatePolygon() {
-
         model.updateBuilder(vertices, cameraDetails);
         setLabelText("Model Updated");
-
-
-
     }
 
     public void resetView() {
@@ -48,7 +44,7 @@ public class ViewModel {
     }
 
     public Line testFeature() {
-        return model.testTangent();
+        return model.printStuff();
 
     /*    transition.setNode(camera);
         transition.setDuration(Duration.seconds(4));

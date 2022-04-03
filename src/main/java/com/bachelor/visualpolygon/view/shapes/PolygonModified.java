@@ -2,12 +2,15 @@ package com.bachelor.visualpolygon.view.shapes;
 
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import com.bachelor.visualpolygon.view.shapes.Point;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.StrokeLineCap;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,13 +18,14 @@ import java.util.List;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class PolygonModified extends Polygon {
 
-    private static ObservableList<Vertex> vertices;
+    public static final ObservableList<Vertex> vertices = FXCollections.observableArrayList();
 
-    public PolygonModified(List<Vertex> vertices) {
+    public PolygonModified() {
         super();
-        this.vertices = FXCollections.observableArrayList(vertices);
+        System.out.println("POINTS ARE EMPTY: " + getPoints().isEmpty());
         for (int i = 0; i < vertices.size(); i++) {
             getPoints().add(vertices.get(i).getX());
             getPoints().add(vertices.get(i).getY());
@@ -29,23 +33,24 @@ public class PolygonModified extends Polygon {
     }
 
 
-    public ObservableList<Point> createModeratePoints() {
+    /*public ObservableList<Point> createModeratePoints() {
         ObservableList<Point> points = FXCollections.observableArrayList();
 
-        for (int i = 0; i < vertices.size(); i++) {
+        for (int i = 0; i < this.vertices.size(); i++) {
             final int idx = i;
 
-            DoubleProperty xProperty = vertices.get(idx).getXProperty();
-            DoubleProperty yProperty = vertices.get(idx).getYProperty();
+            DoubleProperty xProperty = this.vertices.get(idx).getXProperty();
+            DoubleProperty yProperty = this.vertices.get(idx).getYProperty();
 
             xProperty.addListener((observableValue, number, t1) -> {
-                vertices.get(idx).setX((double) t1);
+                this.vertices.get(idx).setX((double) t1);
                 updatePoints();
             });
             yProperty.addListener((observableValue, number, t1) -> {
-                vertices.get(idx).setY((double) t1);
+                this.vertices.get(idx).setY((double) t1);
                 updatePoints();
             });
+
             //Here can be added smth like "isVisible" at all not only from center
             if (!vertices.get(idx).isVisibleFromCenter()) {
                 Point p = new Point(xProperty, yProperty);
@@ -58,22 +63,20 @@ public class PolygonModified extends Polygon {
         }
         return points;
     }
-
+*/
     public void addVertexAndPoint(Vertex vertex) {
-        this.vertices.add(vertex);
+        vertices.add(vertex);
         getPoints().add(vertex.getX());
         getPoints().add(vertex.getY());
     }
 
-    /**MALFUNCTION AT SOME CASES*/
+    /**
+     * MALFUNCTION AT SOME CASES
+     */
     public void removeVertexAndPoint(Point point) {
-        int indexOfX = getPoints().indexOf(point.getCenterX());
-        int indexOfY = getPoints().indexOf(point.getCenterY());
-
-        if (indexOfY == indexOfX + 1) {
-            vertices.removeIf(v -> v.getX() == point.getCenterX() & v.getY() == point.getCenterY());
-            getPoints().remove(indexOfX);
-            getPoints().remove(indexOfX);
+        System.out.println("Removing "+point);
+        if (vertices.removeIf(v -> v.getX() == point.getCenterX() & v.getY() == point.getCenterY())) {
+            updatePoints();
         }
     }
 
@@ -86,12 +89,14 @@ public class PolygonModified extends Polygon {
         return this;
     }
 
-    private void updatePoints() {
+    public void updatePoints() {
+
         getPoints().clear();
         for (int i = 0; i < vertices.size(); i++) {
             getPoints().add(vertices.get(i).getX());
             getPoints().add(vertices.get(i).getY());
         }
+
     }
 
     public ObservableList<Vertex> getVertices() {

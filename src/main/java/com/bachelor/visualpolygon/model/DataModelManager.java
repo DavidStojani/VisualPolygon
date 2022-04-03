@@ -35,7 +35,7 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
-    public Line testTangent() {
+    public Line printStuff() {
        /* if (Objects.isNull(geometryCamera)) {
             System.out.println("Camera null");
             return null;
@@ -45,6 +45,9 @@ public class DataModelManager implements DataModel {
             Line line = new Line(vertex.getX(),vertex.getY(), onCircle[0].getX(),onCircle[0].getY());
             line.setStrokeWidth(3);
             line.setStroke(Color.RED);*/
+        System.out.println("=======IN BUILDER/MODEL======");
+        System.out.println("--VERTEX:: "+builder.getVertices());
+        System.out.println("--CAMERA::" + builder.getCamera());
         return null;
     }
 

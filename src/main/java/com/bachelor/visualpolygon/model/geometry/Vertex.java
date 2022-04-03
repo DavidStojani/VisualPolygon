@@ -14,18 +14,27 @@ import org.locationtech.jts.geom.Coordinate;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode
-public class Vertex extends Coordinate {
 
+public class Vertex extends Coordinate {
+    @ToString.Exclude
     private boolean isVisibleFromCenter;
+    @ToString.Exclude
     private boolean isPrime;
+    @ToString.Exclude
     private Vertex previousVertex;
+    @ToString.Exclude
     private Vertex nextVertex;
+    @ToString.Exclude
     private double r;
+    @ToString.Exclude
     private double theta;
+    @EqualsAndHashCode.Include
     private double x;
+    @EqualsAndHashCode.Include
     private double y;
+    @ToString.Exclude
     private DoubleProperty xProperty;
+    @ToString.Exclude
     private DoubleProperty yProperty;
 
 
@@ -41,13 +50,15 @@ public class Vertex extends Coordinate {
     public Vertex(double x, double y) {
         this.x = x;
         this.y = y;
-        xProperty = new SimpleDoubleProperty(this.x);
-        yProperty = new SimpleDoubleProperty(this.y);
+        xProperty = new SimpleDoubleProperty(x);
+        yProperty = new SimpleDoubleProperty(y);
+        xProperty.addListener((observableValue, number, t1) -> this.x = t1.doubleValue());
+        yProperty.addListener((observableValue, number, t1) -> this.y = t1.doubleValue());
         setVisibleFromCenter(true);
     }
 
     public Coordinate getCoordinate() {
-        return new Coordinate(x,y);
+        return new Coordinate(x, y);
     }
 
 
