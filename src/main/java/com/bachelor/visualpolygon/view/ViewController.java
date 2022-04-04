@@ -16,11 +16,14 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 
+import java.util.List;
 import java.util.Objects;
+import java.util.Stack;
 
 
 public class ViewController {
@@ -41,6 +44,7 @@ public class ViewController {
     private Camera camera;
     private ListProperty<Vertex> listPropertyForVertex;
     private ListProperty<Double> listPropertyForCamera;
+    private Stack<Line> lineList;
 
 
     public ViewController() {
@@ -71,7 +75,6 @@ public class ViewController {
             onSecondaryButton(mouseEvent);
         };
     }
-
 
 
     private void onSecondaryButton(MouseEvent mouseEvent) {
@@ -109,20 +112,16 @@ public class ViewController {
     public void testFeature() {
         System.out.println("==========INSIEDE POLYGON/VIEW=========");
         System.out.println("---VERTEX:::" + '\n' + PolygonModified.vertices);
-        if (polygon != null) {
-            System.out.println("--POINTS:::");
-            for (int i = 0; i < polygon.getPoints().size(); i += 2) {
-                System.out.println("Position: " + i + "und " + (i + 1) + " Double: " + polygon.getPoints().get(i) + "---" + polygon.getPoints().get(i + 1));
-                if (!polygon.getPoints().get(i).equals(polygon.getVertices().get(i / 2).getXCoordinate())) {
-                    System.out.println("X Point at position : " + i + "not the same as the X of Vertex " + polygon.getVertices().get(i / 2));
-                }
-            }
-        }
+
 
         if (camera != null) {
             System.out.println("--CAMERA:::" + camera);
         }
-        viewModel.testFeature();
+        if (!lineList.isEmpty()) {
+
+            root.getChildren().add(lineList.pop());
+        }
+
     }
 
     public void resetApplication() {
@@ -141,6 +140,9 @@ public class ViewController {
     public void updateStatus() {
         viewModel.updatePolygon();
         refreshView();
+        if (viewModel.testFeature() != null) {
+            lineList = viewModel.testFeature();
+        }
     }
 
 

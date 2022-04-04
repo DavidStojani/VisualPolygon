@@ -11,6 +11,7 @@ import org.locationtech.jts.geom.Coordinate;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 public class Vertex extends Coordinate {
     private boolean isVisibleFromCenter;
     private boolean isPrime;
@@ -18,13 +19,9 @@ public class Vertex extends Coordinate {
     private Vertex nextVertex;
     private double r;
     private double theta;
-    @ToString.Include
     private double xCoordinate;
-    @ToString.Include
     private double yCoordinate;
-    @ToString.Include
     private DoubleProperty xProperty;
-    @ToString.Include
     private DoubleProperty yProperty;
 
 

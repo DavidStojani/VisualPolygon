@@ -7,17 +7,18 @@ import java.util.stream.Collectors;
 public class Initializer {
 
     public static void calculatePolarCoordinates(List<Vertex> vertexList, GeometryCamera camera) {
+        double theta;
+        double r;
         double x;
-        double radius;
+        double y;
         for (Vertex vertex : vertexList) {
-            if (camera.getCenter() == null) {
-                throw new RuntimeException("Camera Center is empty");
-            }
-            x = vertex.getXCoordinate() - camera.getCenterX();
-            radius = vertex.distance(camera.getCenter());
 
-            vertex.setR(radius);
-            vertex.setTheta(Math.toDegrees(Math.acos(x / vertex.getR())));
+            r = vertex.getCoordinate().distance(camera.getCenter());
+            vertex.setR(r);
+            x = vertex.getXCoordinate() - camera.getCenterX();
+            y = camera.getCenterY() - vertex.getYCoordinate();
+            theta = Math.atan2(y , x);
+            vertex.setTheta(Math.toRadians(theta));
         }
     }
 
@@ -30,7 +31,6 @@ public class Initializer {
                 .sorted(Comparator.comparing(Vertex::getTheta))
                 .collect(Collectors.toList());
     }
-
 
 
 }

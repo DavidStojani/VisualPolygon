@@ -21,7 +21,7 @@ public class GeometryCamera {
     private static final GeometryFactory factory = new GeometryFactory();
 
 
-    public void setDetails (List<Double> cameraDetails) {
+    public void setDetails(List<Double> cameraDetails) {
         centerX = cameraDetails.get(0);
         centerY = cameraDetails.get(1);
         radius = cameraDetails.get(2);
@@ -39,9 +39,9 @@ public class GeometryCamera {
     }
 
 
-    public Coordinate[] findTangentPointsOnCameraFor(Vertex pt) {
-
-        double px = pt.getXCoordinate(), py = pt.getYCoordinate();
+    public Coordinate[] findTangentPointsOnCameraFor(Coordinate pt) {
+       // System.out.println("CREATING TANGENT WITH : " + pt);
+        double px = pt.getX(), py = pt.getY();
         double cx = centerX, cy = centerY;
         // Compute the distance to the circle center
         double dx = cx - px;

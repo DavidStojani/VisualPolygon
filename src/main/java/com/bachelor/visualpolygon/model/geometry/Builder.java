@@ -40,6 +40,7 @@ public class Builder {
         polygon = createGeometryPolygon(vertices);
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
+        polarSortedVertices.forEach(System.out::println);
         isVisibleFromCenter(vertices, camera);
     }
 
@@ -56,14 +57,11 @@ public class Builder {
         return factory.createLineString(new Coordinate[]{a, b});
     }
 
-    public static LineString createLineStringFor(Vertex a, Vertex b) {
-        return factory.createLineString(new Coordinate[]{a, b});
-    }
 
     public void isVisibleFromCenter(List<Vertex> vertices, GeometryCamera camera) {
         for (Vertex vertex : vertices) {
 
-            LineString segment = createLineStringFor(new Coordinate(vertex.getXCoordinate(), vertex.getYCoordinate()), camera.getCenter());
+            LineString segment = createLineStringFor(vertex.getCoordinate(),camera.getCenter());
             if (polygon.contains(segment)) {
                 vertex.setVisibleFromCenter(true);
             } else {
@@ -71,4 +69,8 @@ public class Builder {
             }
         }
     }
+
+
+
+
 }

@@ -9,6 +9,9 @@ import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.List;
+import java.util.Stack;
+
 @Getter
 @Setter
 public class ViewModel {
@@ -43,7 +46,7 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
-    public Line testFeature() {
+    public Stack<Line> testFeature() {
         return model.printStuff();
 
     /*    transition.setNode(camera);

@@ -3,16 +3,15 @@ package com.bachelor.visualpolygon.model;
 import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import com.bachelor.visualpolygon.view.shapes.Camera;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
 import lombok.*;
 import org.locationtech.jts.geom.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Stack;
 
 
 @Getter
@@ -35,29 +34,32 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
-    public Line printStuff() {
-       /* if (Objects.isNull(geometryCamera)) {
-            System.out.println("Camera null");
-            return null;
-        } else {
-            Point vertex = factory.createPoint(geomPolygon.getCoordinates()[0]);
-            Coordinate[] onCircle = geometryCamera.findTangentPointsOnCameraFor(geomPolygon.getCoordinates()[0]);
-            Line line = new Line(vertex.getX(),vertex.getY(), onCircle[0].getX(),onCircle[0].getY());
-            line.setStrokeWidth(3);
-            line.setStroke(Color.RED);*/
-        System.out.println("=======IN BUILDER/MODEL======");
-        System.out.println("--VERTEX:: "+builder.getVertices());
-        System.out.println("--CAMERA::" + builder.getCamera());
-        return null;
-    }
+    public Stack<Line> printStuff() {
 
-    @Override
+        Stack<Line> lines= new Stack<>();
+        for (Vertex vertex : builder.getPolarSortedVertices()) {
+            Line line = new Line(vertex.getXCoordinate(),vertex.getYCoordinate(),builder.getCamera().getCenterX(),builder.getCamera().getCenterY());
+            line.setStrokeWidth(2.6);
+            line.setStroke(Color.INDIANRED);
+
+            lines.push(line);
+
+        }
+
+            System.out.println("=======IN BUILDER/MODEL======");
+            System.out.println("--VERTEX:: " + builder.getVertices());
+            System.out.println("--CAMERA::" + builder.getCamera());
+            return lines;
+
+
+ /*
     public ObservableList<Vertex> getVertices() {
         ObservableList<Vertex> vertices = FXCollections.observableArrayList();
         vertices.setAll(builder.getVertices());
         return vertices;
     }
+*/
 
 
-
+    }
 }
