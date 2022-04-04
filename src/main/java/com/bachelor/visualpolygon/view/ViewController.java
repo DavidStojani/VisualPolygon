@@ -26,6 +26,8 @@ import java.util.Objects;
 import java.util.Stack;
 
 
+
+
 public class ViewController {
 
     @FXML
@@ -117,8 +119,9 @@ public class ViewController {
         if (camera != null) {
             System.out.println("--CAMERA:::" + camera);
         }
+        root.getChildren().removeIf(line -> line instanceof Line);
         if (!lineList.isEmpty()) {
-
+            root.getChildren().add(lineList.pop());
             root.getChildren().add(lineList.pop());
         }
 

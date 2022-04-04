@@ -5,6 +5,7 @@ import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Math.*;
@@ -39,9 +40,8 @@ public class GeometryCamera {
     }
 
 
-    public Coordinate[] findTangentPointsOnCameraFor(Coordinate pt) {
-       // System.out.println("CREATING TANGENT WITH : " + pt);
-        double px = pt.getX(), py = pt.getY();
+    public List<Coordinate> findTangentPointsOnCameraFor(Vertex pt) {
+        double px = pt.getXCoordinate(), py = pt.getYCoordinate();
         double cx = centerX, cy = centerY;
         // Compute the distance to the circle center
         double dx = cx - px;
@@ -65,7 +65,10 @@ public class GeometryCamera {
         // Points are sufficiently close to be considered the same point
         // (i.e the original point is on the circle circumference)
         //if (p1.distance(p2) < EPS) return new Point2D[] {pt};
-        return new Coordinate[]{p1, p2};
+        List<Coordinate> coordinates = new ArrayList<>();
+        coordinates.add(p1);
+        coordinates.add(p2);
+        return coordinates;
     }
 
 }

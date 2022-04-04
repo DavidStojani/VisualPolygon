@@ -1,12 +1,12 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.scene.shape.StrokeLineCap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
 public class Builder {
 
     Polygon polygon;
-    GeometryCamera camera = new GeometryCamera();
+    public final static GeometryCamera camera = new GeometryCamera();
     List<Vertex> vertices;
     List<Vertex> polarSortedVertices;
     private static final GeometryFactory factory = new GeometryFactory();
@@ -40,7 +40,6 @@ public class Builder {
         polygon = createGeometryPolygon(vertices);
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
-        polarSortedVertices.forEach(System.out::println);
         isVisibleFromCenter(vertices, camera);
     }
 
@@ -71,6 +70,17 @@ public class Builder {
     }
 
 
+    public Line createStreife(Vertex vertex) {
+        Coordinate rightPointOnCircle = camera.findTangentPointsOnCameraFor(vertex).get(0);
+        LineSegment leftTangent = new LineSegment(rightPointOnCircle,vertex.getCoordinate());
+        Coordinate leftPointOnCircle = leftTangent.pointAlongOffset(0,-camera.getRadius()*2);
+        Coordinate endRight = leftTangent.pointAlongOffset(1,-camera.getRadius()*2);
 
+        Line line = new Line(leftPointOnCircle.getX(),leftPointOnCircle.getY(),endRight.getX(),endRight.getY());
+        line.setStroke(Color.CADETBLUE);
+        line.setStrokeLineCap(StrokeLineCap.ROUND);
+        line.setStrokeWidth(2.5);
+        return line;
+    }
 
 }

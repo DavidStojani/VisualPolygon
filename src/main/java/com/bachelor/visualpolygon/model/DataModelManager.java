@@ -36,30 +36,17 @@ public class DataModelManager implements DataModel {
     @Override
     public Stack<Line> printStuff() {
 
-        Stack<Line> lines= new Stack<>();
+        Stack<Line> lines = new Stack<>();
         for (Vertex vertex : builder.getPolarSortedVertices()) {
-            Line line = new Line(vertex.getXCoordinate(),vertex.getYCoordinate(),builder.getCamera().getCenterX(),builder.getCamera().getCenterY());
+            Coordinate leftTangentOnCircle = new Coordinate(builder.camera.findTangentPointsOnCameraFor(vertex).get(0));
+            // Line line = new Line(vertex.getXCoordinate(),vertex.getYCoordinate(),builder.getCamera().getCenterX(),builder.getCamera().getCenterY());
+            Line line = new Line(vertex.getXCoordinate(), vertex.getYCoordinate(), leftTangentOnCircle.getX(), leftTangentOnCircle.getY());
             line.setStrokeWidth(2.6);
-            line.setStroke(Color.INDIANRED);
+            line.setStroke(Color.CADETBLUE);
 
+            lines.push(builder.createStreife(vertex));
             lines.push(line);
-
         }
-
-            System.out.println("=======IN BUILDER/MODEL======");
-            System.out.println("--VERTEX:: " + builder.getVertices());
-            System.out.println("--CAMERA::" + builder.getCamera());
-            return lines;
-
-
- /*
-    public ObservableList<Vertex> getVertices() {
-        ObservableList<Vertex> vertices = FXCollections.observableArrayList();
-        vertices.setAll(builder.getVertices());
-        return vertices;
-    }
-*/
-
-
+        return lines;
     }
 }
