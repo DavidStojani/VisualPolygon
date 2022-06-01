@@ -35,7 +35,7 @@ public class GeometryCamera {
     // the value Double.NaN which we do not want.
     private static double arcsinSafe(double x) {
         if (x <= -1.0) return -PI / 2.0;
-        if (x >= +1.0) return +PI / 2.0;
+        if (x >= 1.0) return PI / 2.0;
         return asin(x);
     }
 

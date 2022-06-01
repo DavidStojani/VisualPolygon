@@ -20,9 +20,9 @@ public class PolygonModified extends Polygon {
 
     public PolygonModified() {
         super();
-        for (int i = 0; i < vertices.size(); i++) {
-            getPoints().add(vertices.get(i).getXCoordinate());
-            getPoints().add(vertices.get(i).getYCoordinate());
+        for (Vertex vertex : vertices) {
+            getPoints().add(vertex.getXCoordinate());
+            getPoints().add(vertex.getYCoordinate());
         }
     }
 
@@ -52,14 +52,13 @@ public class PolygonModified extends Polygon {
     }
 
     public void updatePoints() {
-
         getPoints().clear();
-        for (int i = 0; i < vertices.size(); i++) {
-            getPoints().add(vertices.get(i).getXCoordinate());
-            getPoints().add(vertices.get(i).getYCoordinate());
+        for (Vertex vertex : vertices) {
+            getPoints().add(vertex.getXCoordinate());
+            getPoints().add(vertex.getYCoordinate());
         }
-
     }
+
     public ObservableList<Point> createModeratePoints() {
         ObservableList<Point> points = FXCollections.observableArrayList();
         for (int i = 0; i < vertices.size(); i++) {

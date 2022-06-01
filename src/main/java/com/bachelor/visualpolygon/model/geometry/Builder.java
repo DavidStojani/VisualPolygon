@@ -47,8 +47,8 @@ public class Builder {
 
     private Polygon createGeometryPolygon(List<Vertex> vertices) {
         ArrayList<Coordinate> tempVertices = new ArrayList<>();
-        for (int i = 0; i < vertices.size(); i++) {
-            tempVertices.add(vertices.get(i).getCoordinate());
+        for (Vertex vertex : vertices) {
+            tempVertices.add(vertex.getCoordinate());
         }
         tempVertices.add(vertices.get(0).getCoordinate());
         return factory.createPolygon(tempVertices.toArray(Coordinate[]::new));
@@ -63,11 +63,7 @@ public class Builder {
         for (Vertex vertex : vertices) {
 
             LineString segment = createLineStringFor(vertex.getCoordinate(),camera.getCenter());
-            if (polygon.contains(segment)) {
-                vertex.setVisibleFromCenter(true);
-            } else {
-                vertex.setVisibleFromCenter(false);
-            }
+            vertex.setVisibleFromCenter(polygon.contains(segment));
         }
     }
 

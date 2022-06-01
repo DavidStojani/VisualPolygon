@@ -3,14 +3,11 @@ package com.bachelor.visualpolygon.model;
 import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import lombok.*;
-import org.locationtech.jts.geom.*;
+import lombok.Getter;
+import org.locationtech.jts.geom.GeometryFactory;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Stack;
 
 

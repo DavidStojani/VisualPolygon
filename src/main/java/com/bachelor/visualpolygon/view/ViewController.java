@@ -5,7 +5,10 @@ import com.bachelor.visualpolygon.view.shapes.Camera;
 import com.bachelor.visualpolygon.view.shapes.Point;
 import com.bachelor.visualpolygon.view.shapes.PolygonModified;
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
-import javafx.beans.property.*;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.ListProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
@@ -21,7 +24,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 
@@ -112,7 +114,7 @@ public class ViewController {
     }
 
     public void testFeature() {
-        System.out.println("==========INSIEDE POLYGON/VIEW=========");
+        System.out.println("==========INSIDE POLYGON/VIEW=========");
         System.out.println("---VERTEX:::" + '\n' + PolygonModified.vertices);
 
 

@@ -2,14 +2,14 @@ package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import javafx.beans.property.*;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.Stack;
 
 @Getter
