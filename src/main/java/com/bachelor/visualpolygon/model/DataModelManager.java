@@ -38,14 +38,8 @@ public class DataModelManager implements DataModel {
 
         Stack<Line> lines = new Stack<>();
         for (Vertex vertex : builder.getPolarSortedVertices()) {
-            Coordinate leftTangentOnCircle = new Coordinate(builder.camera.findTangentPointsOnCameraFor(vertex).get(0));
-            // Line line = new Line(vertex.getXCoordinate(),vertex.getYCoordinate(),builder.getCamera().getCenterX(),builder.getCamera().getCenterY());
-            Line line = new Line(vertex.getXCoordinate(), vertex.getYCoordinate(), leftTangentOnCircle.getX(), leftTangentOnCircle.getY());
-            line.setStrokeWidth(2.6);
-            line.setStroke(Color.CADETBLUE);
-
-            lines.push(builder.createStreife(vertex));
-            lines.push(line);
+            lines.push(builder.createStreife(vertex).get(0));
+            lines.push(builder.createStreife(vertex).get(1));
         }
         return lines;
     }

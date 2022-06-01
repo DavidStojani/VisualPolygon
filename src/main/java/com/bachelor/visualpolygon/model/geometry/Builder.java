@@ -7,9 +7,11 @@ import javafx.scene.shape.StrokeLineCap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.*;
+import org.locationtech.jts.math.Vector2D;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 
 @NoArgsConstructor
@@ -70,17 +72,51 @@ public class Builder {
     }
 
 
-    public Line createStreife(Vertex vertex) {
-        Coordinate rightPointOnCircle = camera.findTangentPointsOnCameraFor(vertex).get(0);
-        LineSegment leftTangent = new LineSegment(rightPointOnCircle,vertex.getCoordinate());
-        Coordinate leftPointOnCircle = leftTangent.pointAlongOffset(0,-camera.getRadius()*2);
-        Coordinate endRight = leftTangent.pointAlongOffset(1,-camera.getRadius()*2);
+    //Should give back the 4 coordinates. Those should be given to form the polygon and
+    //to the viewController to render the view. In the view they should not cross the borders of pane
+    public List<Line> createStreife(Vertex vertex) {
+        Stack<Line> streife = new Stack<>();
+        Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
+        LineSegment rightTangent = new LineSegment(rightPointOnCircle,getExtentCoordinate(vertex));
+        Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0,-camera.getRadius()*2);
+        Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1,-camera.getRadius()*2);
 
-        Line line = new Line(leftPointOnCircle.getX(),leftPointOnCircle.getY(),endRight.getX(),endRight.getY());
-        line.setStroke(Color.CADETBLUE);
-        line.setStrokeLineCap(StrokeLineCap.ROUND);
-        line.setStrokeWidth(2.5);
-        return line;
+        Line leftLine = new Line(leftPointOnCircle.getX(),leftPointOnCircle.getY(),mirrorOfExtent.getX(),mirrorOfExtent.getY());
+        leftLine.setStroke(Color.RED);
+        leftLine.setStrokeLineCap(StrokeLineCap.ROUND);
+        leftLine.setStrokeWidth(2.5);
+
+
+        Line rightLine = new Line(getExtentCoordinate(vertex).getX(), getExtentCoordinate(vertex).getY(), rightPointOnCircle.getX(), rightPointOnCircle.getY());
+        rightLine.setStrokeWidth(2.6);
+        rightLine.setStroke(Color.CADETBLUE);
+        streife.add(leftLine);
+        streife.add(rightLine);
+        return streife;
     }
 
+    private double getMax() {
+        double max = 0;
+        for (Vertex vertex : polarSortedVertices) {
+            if (max < vertex.getCoordinate().distance(camera.getRightTangentPoint(vertex))) {
+                max = vertex.getCoordinate().distance(camera.getRightTangentPoint(vertex));
+            }
+        }
+        return max;
+    }
+
+    public Coordinate getExtentCoordinate(Vertex vertex) {
+        Vector2D vector = new Vector2D(camera.getRightTangentPoint(vertex), vertex.getCoordinate());
+        System.out.println("FIRST" + vector.toCoordinate());
+        System.out.println("FACTOR K " + getMax());
+
+        double k = getMax() / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
+
+        System.out.println("FACTOR K " + k);
+        Vector2D extentVector = vector.multiply(k);
+        System.out.println(extentVector.toCoordinate());
+        double x = extentVector.getX() + camera.getRightTangentPoint(vertex).getX();
+        double y = extentVector.getY() + camera.getRightTangentPoint(vertex).getY();
+        return new Coordinate(x,y);
+    }
 }

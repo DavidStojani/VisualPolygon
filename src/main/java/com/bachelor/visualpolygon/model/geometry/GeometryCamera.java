@@ -40,7 +40,15 @@ public class GeometryCamera {
     }
 
 
-    public List<Coordinate> findTangentPointsOnCameraFor(Vertex pt) {
+    public Coordinate getRightTangentPoint(Vertex vertex) {
+        return findTangentPointsOnCameraFor(vertex).get(0);
+    }
+
+    public Coordinate getLeftTangentPoint(Vertex vertex) {
+        return findTangentPointsOnCameraFor(vertex).get(1);
+    }
+
+    private List<Coordinate> findTangentPointsOnCameraFor(Vertex pt) {
         double px = pt.getXCoordinate(), py = pt.getYCoordinate();
         double cx = centerX, cy = centerY;
         // Compute the distance to the circle center
