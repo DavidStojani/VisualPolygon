@@ -21,7 +21,6 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
 
@@ -46,7 +45,8 @@ public class ViewController {
     private Camera camera;
     private ListProperty<Vertex> listPropertyForVertex;
     private ListProperty<Double> listPropertyForCamera;
-    private Stack<Line> lineList;
+    private Polygon stepPolygon;
+    private int index;
 
 
     public ViewController() {
@@ -109,21 +109,27 @@ public class ViewController {
         pane.getChildren().add(root);
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
+        index =0;
     }
 
     public void testFeature() {
         System.out.println("==========INSIEDE POLYGON/VIEW=========");
         System.out.println("---VERTEX:::" + '\n' + PolygonModified.vertices);
-
-
         if (camera != null) {
             System.out.println("--CAMERA:::" + camera);
         }
-        root.getChildren().removeIf(line -> line instanceof Line);
-        if (!lineList.isEmpty()) {
-            root.getChildren().add(lineList.pop());
-            root.getChildren().add(lineList.pop());
-        }
+
+        stepPolygon = new Polygon();
+        viewModel.testFeature(index);
+        stepPolygon.getPoints().addAll(viewModel.testFeature(index));
+        stepPolygon.getPoints().remove(stepPolygon.getPoints().size()-1);
+
+        stepPolygon.setStroke(Color.RED);
+        stepPolygon.setStrokeWidth(3);
+        stepPolygon.setStrokeLineCap(StrokeLineCap.ROUND);
+        stepPolygon.setFill(Color.INDIANRED.deriveColor(0, 1.2, 1, 0.6));
+
+        root.getChildren().add(stepPolygon);
 
     }
 
@@ -143,9 +149,6 @@ public class ViewController {
     public void updateStatus() {
         viewModel.updatePolygon();
         refreshView();
-        if (viewModel.testFeature() != null) {
-            lineList = viewModel.testFeature();
-        }
     }
 
 

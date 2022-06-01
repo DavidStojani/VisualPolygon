@@ -39,8 +39,14 @@ public class GeometryCamera {
         return asin(x);
     }
 
+    public Coordinate getLeftTangentPointFor(Vertex vertex) {
+        return findTangentPointsOnCameraFor(vertex).get(0);
+    }
 
-    public List<Coordinate> findTangentPointsOnCameraFor(Vertex pt) {
+    public Coordinate getRightTangentPointFor(Vertex vertex) {
+        return findTangentPointsOnCameraFor(vertex).get(1);
+    }
+    private List<Coordinate> findTangentPointsOnCameraFor(Vertex pt) {
         double px = pt.getXCoordinate(), py = pt.getYCoordinate();
         double cx = centerX, cy = centerY;
         // Compute the distance to the circle center

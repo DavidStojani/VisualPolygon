@@ -5,12 +5,10 @@ import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.List;
-import java.util.Stack;
 
 @Getter
 @Setter
@@ -46,8 +44,8 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
-    public Stack<Line> testFeature() {
-        return model.printStuff();
+    public List<Double> testFeature(int index) {
+        return model.getStepPolygonPoints(index);
 
     /*    transition.setNode(camera);
         transition.setDuration(Duration.seconds(4));

@@ -34,19 +34,12 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
-    public Stack<Line> printStuff() {
-
-        Stack<Line> lines = new Stack<>();
-        for (Vertex vertex : builder.getPolarSortedVertices()) {
-            Coordinate leftTangentOnCircle = new Coordinate(builder.camera.findTangentPointsOnCameraFor(vertex).get(0));
-            // Line line = new Line(vertex.getXCoordinate(),vertex.getYCoordinate(),builder.getCamera().getCenterX(),builder.getCamera().getCenterY());
-            Line line = new Line(vertex.getXCoordinate(), vertex.getYCoordinate(), leftTangentOnCircle.getX(), leftTangentOnCircle.getY());
-            line.setStrokeWidth(2.6);
-            line.setStroke(Color.CADETBLUE);
-
-            lines.push(builder.createStreife(vertex));
-            lines.push(line);
+    public List<Double> getStepPolygonPoints(int index) {
+        List<Double> stepPolygonPoints = new ArrayList<>();
+        for (Coordinate coordinate : builder.buildStep(builder.getPolarSortedVertices().get(index)).getCoordinates()) {
+            stepPolygonPoints.add(coordinate.getX());
+            stepPolygonPoints.add(coordinate.getY());
         }
-        return lines;
+        return stepPolygonPoints;
     }
 }

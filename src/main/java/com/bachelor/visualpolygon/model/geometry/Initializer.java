@@ -1,5 +1,7 @@
 package com.bachelor.visualpolygon.model.geometry;
 
+import org.locationtech.jts.math.Vector2D;
+
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,7 +12,7 @@ public class Initializer {
         double theta;
         double r;
         double x;
-        double y;
+        double y;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
         for (Vertex vertex : vertexList) {
 
             r = vertex.getCoordinate().distance(camera.getCenter());
