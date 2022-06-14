@@ -28,8 +28,6 @@ import java.util.Objects;
 import java.util.Stack;
 
 
-
-
 public class ViewController {
 
     @FXML
@@ -48,7 +46,7 @@ public class ViewController {
     private Camera camera;
     private ListProperty<Vertex> listPropertyForVertex;
     private ListProperty<Double> listPropertyForCamera;
-    private Stack<Line> lineList;
+    private int index = 0;
 
 
     public ViewController() {
@@ -114,19 +112,18 @@ public class ViewController {
     }
 
     public void testFeature() {
-        System.out.println("==========INSIDE POLYGON/VIEW=========");
-        System.out.println("---VERTEX:::" + '\n' + PolygonModified.vertices);
-
-
-        if (camera != null) {
-            System.out.println("--CAMERA:::" + camera);
-        }
-        root.getChildren().removeIf(line -> line instanceof Line);
-        if (!lineList.isEmpty()) {
-            root.getChildren().add(lineList.pop());
-            root.getChildren().add(lineList.pop());
+        if (viewModel.testFeature(index) != null) {
+            refreshView();
+            root.getChildren().add(viewModel.testFeature(index));
+            System.out.println("NUMBER OF VERTICES" + viewModel.getVertices().size() + "und NUMBER OF INDEX " + index);
         }
 
+        if (index == viewModel.getVertices().size() - 1) {
+            //DRAW FINAL POLYGON
+            index = 0;
+        } else {
+            index++;
+        }
     }
 
     public void resetApplication() {
@@ -140,14 +137,12 @@ public class ViewController {
         cameraRequirements.clear();
         polygon = null;
         viewModel.resetView();
+        index = 0;
     }
 
     public void updateStatus() {
         viewModel.updatePolygon();
         refreshView();
-        if (viewModel.testFeature() != null) {
-            lineList = viewModel.testFeature();
-        }
     }
 
 

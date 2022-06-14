@@ -6,10 +6,15 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.StrokeLineCap;
 import lombok.Getter;
 import lombok.Setter;
+import org.locationtech.jts.geom.Coordinate;
 
+import java.util.List;
 import java.util.Stack;
 
 @Getter
@@ -46,8 +51,20 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
-    public Stack<Line> testFeature() {
-        return model.printStuff();
+    public Polygon testFeature(int index) {
+        Polygon polygon = new Polygon();
+        for (Coordinate coordinate : model.getStreifenCoordinates(index)) {
+            polygon.getPoints().add(coordinate.getX());
+            polygon.getPoints().add(coordinate.getY());
+        }
+
+        polygon.setStroke(Color.DARKRED);
+        polygon.setStrokeWidth(3);
+        polygon.setStrokeLineCap(StrokeLineCap.ROUND);
+        polygon.setFill(Color.RED.deriveColor(0, 1.2, 1, 0.6));
+
+        return polygon;
+    }
 
     /*    transition.setNode(camera);
         transition.setDuration(Duration.seconds(4));
@@ -65,5 +82,5 @@ public class ViewModel {
         //radius.setEndX(camera.getLayoutBounds().getMinX());
         //radius.setEndY(camera.get);*/
 
-    }
+
 }

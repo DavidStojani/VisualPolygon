@@ -19,6 +19,7 @@ import java.util.Stack;
 public class Builder {
 
     Polygon polygon;
+    Polygon stepPolygon;
     public final static GeometryCamera camera = new GeometryCamera();
     List<Vertex> vertices;
     List<Vertex> polarSortedVertices;
@@ -54,6 +55,15 @@ public class Builder {
         return factory.createPolygon(tempVertices.toArray(Coordinate[]::new));
     }
 
+    private Polygon createStepPolygon(List<Coordinate> vertices) {
+        ArrayList<Coordinate> tempVertices = new ArrayList<>();
+        for (Coordinate vertex : vertices) {
+            tempVertices.add(vertex);
+        }
+        tempVertices.add(vertices.get(0));
+        return factory.createPolygon(tempVertices.toArray(Coordinate[]::new));
+    }
+
     public static LineString createLineStringFor(Coordinate a, Coordinate b) {
         return factory.createLineString(new Coordinate[]{a, b});
     }
@@ -62,7 +72,7 @@ public class Builder {
     public void isVisibleFromCenter(List<Vertex> vertices, GeometryCamera camera) {
         for (Vertex vertex : vertices) {
 
-            LineString segment = createLineStringFor(vertex.getCoordinate(),camera.getCenter());
+            LineString segment = createLineStringFor(vertex.getCoordinate(), camera.getCenter());
             vertex.setVisibleFromCenter(polygon.contains(segment));
         }
     }
@@ -70,25 +80,20 @@ public class Builder {
 
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
-    public List<Line> createStreife(Vertex vertex) {
-        Stack<Line> streife = new Stack<>();
+    public List<Coordinate> createStreife(Vertex vertex) {
+        List<Coordinate> coordinateList = new ArrayList<>();
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
-        LineSegment rightTangent = new LineSegment(rightPointOnCircle,getExtentCoordinate(vertex));
-        Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0,-camera.getRadius()*2);
-        Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1,-camera.getRadius()*2);
+        coordinateList.add(rightPointOnCircle);
+        coordinateList.add(getExtentCoordinate(vertex));
+        LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinate(vertex));
+        Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0, -camera.getRadius() * 2);
+        Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1, -camera.getRadius() * 2);
+        coordinateList.add(mirrorOfExtent);
+        coordinateList.add(leftPointOnCircle);
 
-        Line leftLine = new Line(leftPointOnCircle.getX(),leftPointOnCircle.getY(),mirrorOfExtent.getX(),mirrorOfExtent.getY());
-        leftLine.setStroke(Color.RED);
-        leftLine.setStrokeLineCap(StrokeLineCap.ROUND);
-        leftLine.setStrokeWidth(2.5);
+        stepPolygon = createStepPolygon(coordinateList);
 
-
-        Line rightLine = new Line(getExtentCoordinate(vertex).getX(), getExtentCoordinate(vertex).getY(), rightPointOnCircle.getX(), rightPointOnCircle.getY());
-        rightLine.setStrokeWidth(2.6);
-        rightLine.setStroke(Color.CADETBLUE);
-        streife.add(leftLine);
-        streife.add(rightLine);
-        return streife;
+        return coordinateList;
     }
 
     private double getMax() {
@@ -103,16 +108,12 @@ public class Builder {
 
     public Coordinate getExtentCoordinate(Vertex vertex) {
         Vector2D vector = new Vector2D(camera.getRightTangentPoint(vertex), vertex.getCoordinate());
-        System.out.println("FIRST" + vector.toCoordinate());
-        System.out.println("FACTOR K " + getMax());
-
         double k = getMax() / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
-
-        System.out.println("FACTOR K " + k);
         Vector2D extentVector = vector.multiply(k);
         System.out.println(extentVector.toCoordinate());
         double x = extentVector.getX() + camera.getRightTangentPoint(vertex).getX();
         double y = extentVector.getY() + camera.getRightTangentPoint(vertex).getY();
-        return new Coordinate(x,y);
+        return new Coordinate(x, y);
     }
+
 }

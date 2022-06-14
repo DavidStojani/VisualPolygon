@@ -5,6 +5,7 @@ import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import lombok.Getter;
+import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.List;
@@ -31,13 +32,12 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
-    public Stack<Line> printStuff() {
+    public List<Coordinate> getStreifenCoordinates(int index) {
 
-        Stack<Line> lines = new Stack<>();
-        for (Vertex vertex : builder.getPolarSortedVertices()) {
-            lines.push(builder.createStreife(vertex).get(0));
-            lines.push(builder.createStreife(vertex).get(1));
+        if (builder.getPolarSortedVertices().isEmpty()) {
+            System.out.println("PolarCoordinatesFromBuilder IS EMPTY");
+            return null;
         }
-        return lines;
+        return builder.createStreife(builder.getPolarSortedVertices().get(index));
     }
 }
