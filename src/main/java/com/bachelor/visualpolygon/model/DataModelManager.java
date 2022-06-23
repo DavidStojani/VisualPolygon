@@ -46,4 +46,9 @@ public class DataModelManager implements DataModel {
 
         return coordinateList;
     }
+
+    @Override
+    public Stack<Line> getTheParallels(){
+        return builder.getLineStack();
+    }
 }

@@ -1,7 +1,6 @@
 package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
-import com.bachelor.visualpolygon.model.geometry.Step;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -15,7 +14,6 @@ import lombok.Getter;
 import lombok.Setter;
 import org.locationtech.jts.geom.Coordinate;
 
-import java.util.List;
 import java.util.Stack;
 
 @Getter
@@ -41,8 +39,7 @@ public class ViewModel {
         setLabelText("Model Updated");
     }
 
-    public void resetView() {
-        setLabelText("All Cleared Out");
+        setLabelText("Reset Pressed! All Cleared Out!");
     }
 
     public StringProperty labelTextProperty() {
@@ -63,9 +60,13 @@ public class ViewModel {
         polygon.setStroke(Color.DARKRED);
         polygon.setStrokeWidth(3);
         polygon.setStrokeLineCap(StrokeLineCap.ROUND);
-        polygon.setFill(Color.RED.deriveColor(0, 1.2, 1, 0.6));
+        polygon.setFill(Color.RED.deriveColor(9, 1, 1, 0.3));
 
         return polygon;
+    }
+
+    public Stack<Line> getParallels() {
+        return model.getTheParallels();
     }
 
 

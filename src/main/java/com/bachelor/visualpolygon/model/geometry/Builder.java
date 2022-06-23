@@ -1,6 +1,8 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.*;
@@ -8,6 +10,7 @@ import org.locationtech.jts.math.Vector2D;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Stack;
 
 
 @NoArgsConstructor
@@ -20,7 +23,9 @@ public class Builder {
     List<Vertex> vertices;
     List<Vertex> polarSortedVertices;
     private static final GeometryFactory factory = new GeometryFactory();
-    List<Coordinate> streifenCoordinates = new ArrayList<>();
+
+    Stack<Line> lineStack = new Stack<>();
+
 
     /**
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
@@ -79,7 +84,7 @@ public class Builder {
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
     public List<Coordinate> createStreife(Vertex vertex) {
-
+        List<Coordinate> streifenCoordinates = new ArrayList<>();
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
         streifenCoordinates.add(rightPointOnCircle);
@@ -97,21 +102,20 @@ public class Builder {
     }
 
     public LineSegment getParallelLineForCoordinate(Coordinate point) {
-        LineSegment lineSegment = new LineSegment(streifenCoordinates.get(0),streifenCoordinates.get(1));
-        Coordinate baseMirror = lineSegment.pointAlongOffset(0,-lineSegment.distance(point));
-        Coordinate endMirror = lineSegment.pointAlongOffset(1,-lineSegment.distance(point));
+        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
+        Coordinate baseMirror = lineSegment.pointAlongOffset(0, -lineSegment.distance(point));
+        Coordinate endMirror = lineSegment.pointAlongOffset(1, -lineSegment.distance(point));
+        LineSegment parallelToStep = new LineSegment(baseMirror, point);
 
-        return new LineSegment(baseMirror, point);
+
+        Line parallelLine = new Line(baseMirror.getX(),baseMirror.getY(),point.getX(),point.getY());
+        parallelLine.setFill(Color.BLACK);
+        parallelLine.setStrokeWidth(1.5);
+        lineStack.push(parallelLine);
+
+        return parallelToStep;
     }
 
-
-    public List<Point> getVerticesAsPoints() {
-        List<Point> points = new ArrayList<>();
-        for (Coordinate coordinate : polarSortedVertices) {
-            points.add(factory.createPoint(coordinate));
-        }
-        return points;
-    }
 
     private double getMax() {
         double max = 0;

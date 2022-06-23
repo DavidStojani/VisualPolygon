@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
@@ -19,13 +20,11 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
 
 import java.util.Objects;
-import java.util.Stack;
 
 
 public class ViewController {
@@ -65,12 +64,11 @@ public class ViewController {
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
     }
 
-    public void testFeature() {
+    public void nextStep() {
         Polygon stepPoly = viewModel.testFeature(index);
-        if (stepPoly!= null) {
+        if (stepPoly != null) {
             refreshView();
             root.getChildren().add(stepPoly);
-            System.out.println("NUMBER OF VERTICES" + viewModel.getVertices().size() + "und NUMBER OF INDEX " + index);
         }
 
         if (index == viewModel.getVertices().size() - 1) {
@@ -79,7 +77,23 @@ public class ViewController {
         } else {
             index++;
         }
+    }
 
+    public void playStep(ActionEvent actionEvent) {
+        if (viewModel.getParallels().empty()){
+            nextStep();
+        }
+
+        root.getChildren().add(viewModel.getParallels().pop());
+
+    }
+
+    public void savePolygon(ActionEvent actionEvent) {
+        viewModel.setLabelText("Saved was pressed");
+    }
+
+    public void uploadPolygon(ActionEvent actionEvent) {
+        viewModel.setLabelText("Update was pressed");
     }
 
     public void resetApplication() {

@@ -13,4 +13,6 @@ public interface DataModel {
 
 
     void updateBuilder(List<Vertex> vertices, List<Double> camera);
+
+    Stack<Line> getTheParallels();
 }
