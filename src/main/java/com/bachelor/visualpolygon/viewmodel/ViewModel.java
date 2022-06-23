@@ -1,6 +1,7 @@
 package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
+import com.bachelor.visualpolygon.model.geometry.Step;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -25,6 +26,7 @@ public class ViewModel {
     private StringProperty labelText = new SimpleStringProperty("DAvid");
     private ObservableList<Vertex> vertices = FXCollections.observableArrayList();
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
+
 
 
     public ViewModel(DataModel model) {
@@ -65,6 +67,8 @@ public class ViewModel {
 
         return polygon;
     }
+
+
 
     /*    transition.setNode(camera);
         transition.setDuration(Duration.seconds(4));

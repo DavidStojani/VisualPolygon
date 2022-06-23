@@ -56,6 +56,52 @@ public class ViewController {
         listPropertyForCamera = new SimpleListProperty<>(cameraRequirements);
     }
 
+    public void init(ViewModel viewModel) {
+        this.viewModel = viewModel;
+        statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
+        pane.setOnMouseClicked(mouseHandlerForPane);
+        pane.getChildren().add(root);
+        listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
+        listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
+    }
+
+    public void testFeature() {
+        Polygon stepPoly = viewModel.testFeature(index);
+        if (stepPoly!= null) {
+            refreshView();
+            root.getChildren().add(stepPoly);
+            System.out.println("NUMBER OF VERTICES" + viewModel.getVertices().size() + "und NUMBER OF INDEX " + index);
+        }
+
+        if (index == viewModel.getVertices().size() - 1) {
+            //DRAW FINAL POLYGON
+            index = 0;
+        } else {
+            index++;
+        }
+
+    }
+
+    public void resetApplication() {
+        root.getChildren().clear();
+        camera = null;
+        polyline.getPoints().clear();
+
+        polygon.getPoints().clear();
+        polygon.getVertices().clear();
+
+        cameraRequirements.clear();
+        polygon = null;
+        viewModel.resetView();
+        index = 0;
+    }
+
+    public void updateStatus() {
+        viewModel.updatePolygon();
+        refreshView();
+    }
+
+
     private void initMouseHandlerForPane() {
         mouseHandlerForPane = mouseEvent -> {
             if (isPrimaryOnPaneAndEmptyPolygon(mouseEvent)) {
@@ -101,50 +147,6 @@ public class ViewController {
             updateStatus();
         }
     }
-
-    public void init(ViewModel viewModel) {
-        this.viewModel = viewModel;
-        statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
-        pane.setOnMouseClicked(mouseHandlerForPane);
-        pane.getChildren().add(root);
-        listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
-        listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
-    }
-
-    public void testFeature() {
-        if (viewModel.testFeature(index) != null) {
-            refreshView();
-            root.getChildren().add(viewModel.testFeature(index));
-            System.out.println("NUMBER OF VERTICES" + viewModel.getVertices().size() + "und NUMBER OF INDEX " + index);
-        }
-
-        if (index == viewModel.getVertices().size() - 1) {
-            //DRAW FINAL POLYGON
-            index = 0;
-        } else {
-            index++;
-        }
-    }
-
-    public void resetApplication() {
-        root.getChildren().clear();
-        camera = null;
-        polyline.getPoints().clear();
-
-        polygon.getPoints().clear();
-        polygon.getVertices().clear();
-
-        cameraRequirements.clear();
-        polygon = null;
-        viewModel.resetView();
-        index = 0;
-    }
-
-    public void updateStatus() {
-        viewModel.updatePolygon();
-        refreshView();
-    }
-
 
     private void refreshLine() {
         root.getChildren().clear();

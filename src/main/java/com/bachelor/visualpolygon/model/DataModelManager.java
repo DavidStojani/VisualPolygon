@@ -2,6 +2,7 @@ package com.bachelor.visualpolygon.model;
 
 import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
+import com.bachelor.visualpolygon.model.geometry.Step;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import lombok.Getter;
@@ -19,6 +20,8 @@ public class DataModelManager implements DataModel {
     GeometryFactory factory;
     GeometryCamera geometryCamera;
     Builder builder;
+    Step step;
+
 
     public DataModelManager() {
         factory = new GeometryFactory();
@@ -33,11 +36,14 @@ public class DataModelManager implements DataModel {
 
     @Override
     public List<Coordinate> getStreifenCoordinates(int index) {
-
         if (builder.getPolarSortedVertices().isEmpty()) {
             System.out.println("PolarCoordinatesFromBuilder IS EMPTY");
             return null;
         }
-        return builder.createStreife(builder.getPolarSortedVertices().get(index));
+        List<Coordinate> coordinateList = builder.createStreife(builder.getPolarSortedVertices().get(index));
+        step = new Step(builder);
+        step.initStep();
+
+        return coordinateList;
     }
 }
