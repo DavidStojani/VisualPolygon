@@ -1,6 +1,5 @@
 package com.bachelor.visualpolygon.model;
 
-import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import org.locationtech.jts.geom.Coordinate;

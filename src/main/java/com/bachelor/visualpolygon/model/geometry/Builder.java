@@ -23,8 +23,9 @@ public class Builder {
     List<Vertex> vertices;
     List<Vertex> polarSortedVertices;
     private static final GeometryFactory factory = new GeometryFactory();
-
+    List<Coordinate> stepCoordinates = new ArrayList<>();
     Stack<Line> lineStack = new Stack<>();
+
 
 
     /**
@@ -58,7 +59,7 @@ public class Builder {
         return factory.createPolygon(tempVertices.toArray(Coordinate[]::new));
     }
 
-    private Polygon createStepPolygon(List<Coordinate> vertices) {
+    public Polygon createStepPolygon(List<Coordinate> vertices) {
         ArrayList<Coordinate> tempVertices = new ArrayList<>();
         for (Coordinate vertex : vertices) {
             tempVertices.add(vertex);
@@ -84,6 +85,7 @@ public class Builder {
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
     public List<Coordinate> createStreife(Vertex vertex) {
+
         List<Coordinate> streifenCoordinates = new ArrayList<>();
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
@@ -98,23 +100,11 @@ public class Builder {
 
         stepPolygon = createStepPolygon(streifenCoordinates);
 
+
         return streifenCoordinates;
     }
 
-    public LineSegment getParallelLineForCoordinate(Coordinate point) {
-        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
-        Coordinate baseMirror = lineSegment.pointAlongOffset(0, -lineSegment.distance(point));
-        Coordinate endMirror = lineSegment.pointAlongOffset(1, -lineSegment.distance(point));
-        LineSegment parallelToStep = new LineSegment(baseMirror, point);
 
-
-        Line parallelLine = new Line(baseMirror.getX(),baseMirror.getY(),point.getX(),point.getY());
-        parallelLine.setFill(Color.BLACK);
-        parallelLine.setStrokeWidth(1.5);
-        lineStack.push(parallelLine);
-
-        return parallelToStep;
-    }
 
 
     private double getMax() {
