@@ -28,7 +28,7 @@ public class Vertex extends Coordinate {
     public Vertex(Coordinate c) {
         xCoordinate = c.getX();
         yCoordinate = c.getY();
-        setVisibleFromCenter(true);
+            setVisibleFromCenter(true);
         xProperty = new SimpleDoubleProperty(xCoordinate);
         yProperty = new SimpleDoubleProperty(yCoordinate);
     }

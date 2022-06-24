@@ -65,14 +65,16 @@ public class ViewController {
     }
 
     public void nextStep() {
-        Polygon stepPoly = viewModel.testFeature(index);
+        Polygon stepPoly = viewModel.getStepPolygon(index);
         if (stepPoly != null) {
             refreshView();
+            drawStepPolygon(stepPoly);
             root.getChildren().add(stepPoly);
         }
 
         if (index == viewModel.getVertices().size() - 1) {
             //DRAW FINAL POLYGON
+            viewModel.setLabelText("Scan Completed!");
             index = 0;
         } else {
             index++;
@@ -80,7 +82,7 @@ public class ViewController {
     }
 
     public void playStep(ActionEvent actionEvent) {
-        if (viewModel.getParallels().empty()){
+        if (viewModel.getParallels().empty()) {
             nextStep();
         }
 
@@ -113,6 +115,14 @@ public class ViewController {
     public void updateStatus() {
         viewModel.updatePolygon();
         refreshView();
+    }
+
+    public void drawStepPolygon(Polygon stepPolygon) {
+
+        stepPolygon.setStroke(Color.DARKRED);
+        stepPolygon.setStrokeWidth(3);
+        stepPolygon.setStrokeLineCap(StrokeLineCap.ROUND);
+        stepPolygon.setFill(Color.RED.deriveColor(9, 1, 1, 0.3));
     }
 
 

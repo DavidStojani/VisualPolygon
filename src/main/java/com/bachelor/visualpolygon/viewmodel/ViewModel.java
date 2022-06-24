@@ -51,17 +51,12 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
-    public Polygon testFeature(int index) {
+    public Polygon getStepPolygon(int index) {
         Polygon polygon = new Polygon();
         for (Coordinate coordinate : model.getStreifenCoordinates(index)) {
             polygon.getPoints().add(coordinate.getX());
             polygon.getPoints().add(coordinate.getY());
         }
-
-        polygon.setStroke(Color.DARKRED);
-        polygon.setStrokeWidth(3);
-        polygon.setStrokeLineCap(StrokeLineCap.ROUND);
-        polygon.setFill(Color.RED.deriveColor(9, 1, 1, 0.3));
 
         return polygon;
     }
