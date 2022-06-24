@@ -35,17 +35,21 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
+    public void createStep() {
+        step = new Step(builder);
+        step.initStep();
+    }
+
+    @Override
     public List<Coordinate> getStreifenCoordinates(int index) {
         if (builder.getPolarSortedVertices().isEmpty()) {
             System.out.println("PolarCoordinatesFromBuilder IS EMPTY");
             return null;
         }
-        List<Coordinate> coordinateList = builder.createStreife(builder.getPolarSortedVertices().get(index));
-        step = new Step(builder);
-        step.initStep();
-
-        return coordinateList;
+        List<Coordinate> stepPolyCoordinates = builder.createStreife(builder.getPolarSortedVertices().get(index));
+        return stepPolyCoordinates;
     }
+
 
     @Override
     public Stack<Line> getTheParallels(){

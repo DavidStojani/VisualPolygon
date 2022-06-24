@@ -1,5 +1,6 @@
 package com.bachelor.visualpolygon.model;
 
+import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import org.locationtech.jts.geom.Coordinate;
@@ -13,6 +14,8 @@ public interface DataModel {
 
 
     void updateBuilder(List<Vertex> vertices, List<Double> camera);
+
+    void createStep();
 
     Stack<Line> getTheParallels();
 }

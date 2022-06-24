@@ -9,7 +9,6 @@
       <VBox prefHeight="465.0" prefWidth="204.0" BorderPane.alignment="CENTER">
          <children>
             <Button mnemonicParsing="false" onAction="#updateStatus" prefHeight="63.0" prefWidth="204.0" text="Update" />
-            <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#nextStep" prefHeight="63.0" prefWidth="204.0" text="Next Step" />
             <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0" prefWidth="204.0" text="Play Step" />
             <Button layoutX="10.0" layoutY="136.0" mnemonicParsing="false" onAction="#savePolygon" prefHeight="63.0" prefWidth="204.0" text="Save" />
             <Button layoutX="10.0" layoutY="262.0" mnemonicParsing="false" onAction="#uploadPolygon" prefHeight="63.0" prefWidth="204.0" text="Upload" />

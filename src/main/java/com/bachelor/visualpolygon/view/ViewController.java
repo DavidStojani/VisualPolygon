@@ -66,6 +66,8 @@ public class ViewController {
 
     public void nextStep() {
         Polygon stepPoly = viewModel.getStepPolygon(index);
+        viewModel.createStep();
+        viewModel.setLabelText("Step Created");
         if (stepPoly != null) {
             refreshView();
             drawStepPolygon(stepPoly);
@@ -84,9 +86,9 @@ public class ViewController {
     public void playStep(ActionEvent actionEvent) {
         if (viewModel.getParallels().empty()) {
             nextStep();
+        } else {
+            root.getChildren().add(viewModel.getParallels().pop());
         }
-
-        root.getChildren().add(viewModel.getParallels().pop());
 
     }
 
@@ -120,9 +122,9 @@ public class ViewController {
     public void drawStepPolygon(Polygon stepPolygon) {
 
         stepPolygon.setStroke(Color.DARKRED);
-        stepPolygon.setStrokeWidth(3);
+        stepPolygon.setStrokeWidth(0.1);
         stepPolygon.setStrokeLineCap(StrokeLineCap.ROUND);
-        stepPolygon.setFill(Color.RED.deriveColor(9, 1, 1, 0.3));
+        stepPolygon.setFill(Color.RED.deriveColor(0, 1, 1, 0.3));
     }
 
 

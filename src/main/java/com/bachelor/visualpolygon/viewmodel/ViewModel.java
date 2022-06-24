@@ -52,13 +52,17 @@ public class ViewModel {
     }
 
     public Polygon getStepPolygon(int index) {
-        Polygon polygon = new Polygon();
+        Polygon stepPolygon = new Polygon();
         for (Coordinate coordinate : model.getStreifenCoordinates(index)) {
-            polygon.getPoints().add(coordinate.getX());
-            polygon.getPoints().add(coordinate.getY());
+            stepPolygon.getPoints().add(coordinate.getX());
+            stepPolygon.getPoints().add(coordinate.getY());
         }
 
-        return polygon;
+        return stepPolygon;
+    }
+
+    public void createStep() {
+        model.createStep();
     }
 
     public Stack<Line> getParallels() {
