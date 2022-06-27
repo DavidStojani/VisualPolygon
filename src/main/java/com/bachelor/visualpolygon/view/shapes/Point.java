@@ -21,12 +21,16 @@ public class Point extends Circle {
         x.bindBidirectional(centerXProperty());
         y.bindBidirectional(centerYProperty());
         enableDragForGolden();
-
     }
 
-   public void changeColor() {
+   public void changeColorToRed() {
        setFill(Color.RED.deriveColor(1, 0.7, 1, 0.5));
        setStroke(Color.RED);
+   }
+
+   public void changeColorToGreen() {
+       setFill(Color.GREEN.deriveColor(1, 0.7, 1, 0.5));
+       setStroke(Color.GREEN);
    }
 
     // make a node movable by dragging it around with the mouse.
@@ -48,13 +52,11 @@ public class Point extends Circle {
                 setCenterY(newY);
             }
         });
-
         setOnMouseEntered(mouseEvent -> {
             if (!mouseEvent.isPrimaryButtonDown()) {
                 getScene().setCursor(javafx.scene.Cursor.HAND);
             }
         });
-
         setOnMouseExited(mouseEvent -> {
             if (!mouseEvent.isPrimaryButtonDown()) {
                 getScene().setCursor(javafx.scene.Cursor.DEFAULT);

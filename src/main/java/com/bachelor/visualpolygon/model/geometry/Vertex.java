@@ -7,8 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.Point;
 
 @Getter
 @Setter
@@ -16,7 +14,7 @@ import org.locationtech.jts.geom.Point;
 @ToString
 public class Vertex extends Coordinate {
     @ToString.Exclude
-    private boolean isVisibleFromCenter;
+    private int isVisible = 0;
     @ToString.Exclude
     private boolean isPrime;
     @ToString.Exclude
@@ -27,36 +25,34 @@ public class Vertex extends Coordinate {
     private double r;
     @ToString.Exclude
     private double theta;
-    @ToString.Exclude
-    private double xCoordinate;
-    @ToString.Exclude
-    private double yCoordinate;
 
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
 
 
     public Vertex(Coordinate c) {
-        xCoordinate = c.getX();
-        yCoordinate = c.getY();
-            setVisibleFromCenter(true);
-        xProperty = new SimpleDoubleProperty(xCoordinate);
-        yProperty = new SimpleDoubleProperty(yCoordinate);
+
+        xProperty = new SimpleDoubleProperty(c.getX());
+        yProperty = new SimpleDoubleProperty(c.getY());
     }
 
     public Vertex(double xCoordinate, double yCoordinate) {
-        this.xCoordinate = xCoordinate;
-        this.yCoordinate = yCoordinate;
         xProperty = new SimpleDoubleProperty(xCoordinate);
         yProperty = new SimpleDoubleProperty(yCoordinate);
-        xProperty.addListener((observableValue, number, t1) -> this.xCoordinate = t1.doubleValue());
-        yProperty.addListener((observableValue, number, t1) -> this.yCoordinate = t1.doubleValue());
-        setVisibleFromCenter(true);
+        xProperty.addListener((observableValue, number, t1) -> xProperty.set(t1.doubleValue()));
+        yProperty.addListener((observableValue, number, t1) -> yProperty.set(t1.doubleValue()));
+
     }
 
     public Coordinate getCoordinate() {
-        return new Coordinate(xCoordinate, yCoordinate);
+        return new Coordinate(xProperty.doubleValue(), yProperty.doubleValue());
     }
 
+    public double getXCoordinate() {
+        return xProperty.doubleValue();
+    }
 
+    public double getYCoordinate() {
+        return yProperty.doubleValue();
+    }
 }

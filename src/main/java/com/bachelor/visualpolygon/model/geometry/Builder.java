@@ -1,7 +1,6 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,7 +46,7 @@ public class Builder {
         System.out.println("Polygon created");
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
-        isVisibleFromCenter(vertices, camera);
+        //isVisibleFromCenter(vertices, camera);
     }
 
     private Polygon createGeometryPolygon(List<Vertex> vertices) {
@@ -77,7 +76,9 @@ public class Builder {
         for (Vertex vertex : vertices) {
 
             LineString segment = createLineStringFor(vertex.getCoordinate(), camera.getCenter());
-            vertex.setVisibleFromCenter(polygon.contains(segment));
+            if (polygon.contains(segment)){
+                vertex.setIsVisible(1);
+            }
         }
     }
 

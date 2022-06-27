@@ -44,10 +44,10 @@ public class Step {
 
     private void setActive() {
         FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 2);
-        for (Vertex coordinate : builder.getPolarSortedVertices()) {
-            if (pointLocator.getLocation(coordinate.getCoordinate()) != 2) {
-                System.out.println("Coordinate ADDED in ACTIVE :: " + coordinate);
-                active.add(coordinate);
+        for (Vertex vertex : builder.getPolarSortedVertices()) {
+            if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
+                System.out.println("Coordinate ADDED in ACTIVE :: " + vertex);
+                active.add(vertex);
             }
         }
     }
@@ -58,9 +58,13 @@ public class Step {
             LineSegment parallelToBeChecked = getParallelLineForCoordinate(vertex.getCoordinate());
             if (parallelToBeChecked.toGeometry(new GeometryFactory()).within(initialPolygon)) {
                 tempVisible.add(vertex);
+                vertex.setIsVisible(1);
                 addToGreenLines(parallelToBeChecked);
             } else {
                 tempInvisible.add(vertex);
+                if (vertex.getIsVisible() != 1) {
+                    vertex.setIsVisible(-1);
+                }
                 addToRedLines(parallelToBeChecked);
             }
         }
@@ -77,7 +81,7 @@ public class Step {
     }
 
     public void addToGreenLines(LineSegment greenLine) {
-        Line parallelLine = new Line(greenLine.getCoordinate(0).getX(),greenLine.getCoordinate(0).getY(),greenLine.getCoordinate(1).getX(),greenLine.getCoordinate(1).getY());
+        Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
         parallelLine.setStroke(Color.GREEN);
         parallelLine.setStrokeWidth(1.9);
         builder.getLineStack().push(parallelLine);
@@ -86,7 +90,7 @@ public class Step {
 
 
     public void addToRedLines(LineSegment redLine) {
-        Line parallelLine = new Line(redLine.getCoordinate(0).getX(),redLine.getCoordinate(0).getY(),redLine.getCoordinate(1).getX(),redLine.getCoordinate(1).getY());
+        Line parallelLine = new Line(redLine.getCoordinate(0).getX(), redLine.getCoordinate(0).getY(), redLine.getCoordinate(1).getX(), redLine.getCoordinate(1).getY());
         parallelLine.setStroke(Color.RED);
         parallelLine.setStrokeWidth(1.9);
         builder.getLineStack().push(parallelLine);

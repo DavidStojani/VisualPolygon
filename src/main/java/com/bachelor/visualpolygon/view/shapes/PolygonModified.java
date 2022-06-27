@@ -36,7 +36,7 @@ public class PolygonModified extends Polygon {
      * MALFUNCTION AT SOME CASES
      */
     public void removeVertexAndPoint(Point point) {
-        System.out.println("Removing "+point);
+        System.out.println("Removing " + point);
         if (vertices.removeIf(v -> v.getXCoordinate() == point.getCenterX() && v.getYCoordinate() == point.getCenterY())) {
             updatePoints();
         }
@@ -80,8 +80,10 @@ public class PolygonModified extends Polygon {
 
             //p.setOnMouseReleased(mouseEvent -> updateStatus());
             //Here can be added smth like "isVisible" at all not only from center
-            if (!vertices.get(idx).isVisibleFromCenter()) {
-                p.changeColor();
+            if (vertices.get(idx).getIsVisible() == -1) {
+                p.changeColorToRed();
+            } else if (vertices.get(idx).getIsVisible() == 1) {
+                p.changeColorToGreen();
             }
             points.add(p);
         }
