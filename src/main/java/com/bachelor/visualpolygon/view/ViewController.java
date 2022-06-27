@@ -67,7 +67,7 @@ public class ViewController {
     public void nextStep() {
         Polygon stepPoly = viewModel.getStepPolygon(index);
         viewModel.createStep();
-        viewModel.setLabelText("Step Created");
+        viewModel.setStepInfo();
         if (stepPoly != null) {
             refreshView();
             drawStepPolygon(stepPoly);
@@ -76,7 +76,7 @@ public class ViewController {
 
         if (index == viewModel.getVertices().size() - 1) {
             //DRAW FINAL POLYGON
-            viewModel.setLabelText("Scan Completed!");
+            viewModel.setLabelText("Last Step!");
             index = 0;
         } else {
             index++;

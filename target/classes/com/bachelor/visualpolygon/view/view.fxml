@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane style="-fx-background-color: #604758" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="950.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="950.0" style="-fx-background-color: #604758" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
    <left>
       <VBox prefHeight="465.0" prefWidth="204.0" BorderPane.alignment="CENTER">
          <children>
             <Button mnemonicParsing="false" onAction="#updateStatus" prefHeight="63.0" prefWidth="204.0" text="Update" />
-            <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#testFeature" prefHeight="63.0" prefWidth="204.0" text="Play" />
+            <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0" prefWidth="204.0" text="Play Step" />
+            <Button layoutX="10.0" layoutY="136.0" mnemonicParsing="false" onAction="#savePolygon" prefHeight="63.0" prefWidth="204.0" text="Save" />
+            <Button layoutX="10.0" layoutY="262.0" mnemonicParsing="false" onAction="#uploadPolygon" prefHeight="63.0" prefWidth="204.0" text="Upload" />
             <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#resetApplication" prefHeight="63.0" prefWidth="204.0" text="Reset" />
          </children>
       </VBox>
@@ -17,6 +20,9 @@
       <AnchorPane fx:id="pane" prefHeight="465.0" prefWidth="761.0" style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
-      <Label fx:id="statusText" style="-fx-font-size: 18"  prefHeight="58.0" prefWidth="909.0" text="Status" BorderPane.alignment="CENTER" />
+      <Label fx:id="statusText" alignment="CENTER" prefHeight="58.0" prefWidth="950.0" style="-fx-font-size: 18; -fx-background-color: grey;" text="Status" BorderPane.alignment="BOTTOM_LEFT">
+         <BorderPane.margin>
+            <Insets />
+         </BorderPane.margin></Label>
    </bottom>
 </BorderPane>

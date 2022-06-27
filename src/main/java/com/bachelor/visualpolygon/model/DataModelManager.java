@@ -41,6 +41,11 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
+    public String getStepInfo() {
+        return String.valueOf(step.getActive().size());
+    }
+
+    @Override
     public List<Coordinate> getStreifenCoordinates(int index) {
         if (builder.getPolarSortedVertices().isEmpty()) {
             System.out.println("PolarCoordinatesFromBuilder IS EMPTY");

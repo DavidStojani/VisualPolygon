@@ -21,7 +21,7 @@ import java.util.Stack;
 public class ViewModel {
 
     private DataModel model;
-    private StringProperty labelText = new SimpleStringProperty("DAvid");
+    private StringProperty labelText = new SimpleStringProperty("Welcome");
     private ObservableList<Vertex> vertices = FXCollections.observableArrayList();
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
 
@@ -57,12 +57,15 @@ public class ViewModel {
             stepPolygon.getPoints().add(coordinate.getX());
             stepPolygon.getPoints().add(coordinate.getY());
         }
-
         return stepPolygon;
     }
 
     public void createStep() {
         model.createStep();
+    }
+
+    public void setStepInfo() {
+        setLabelText("Step Created! " +"ACTIVE size: " + model.getStepInfo());
     }
 
     public Stack<Line> getParallels() {
