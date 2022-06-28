@@ -7,6 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
+import org.locationtech.jts.geom.util.PointExtracter;
 
 @Getter
 @Setter
@@ -23,7 +26,7 @@ public class Vertex extends Coordinate {
     private Vertex nextVertex;
     @ToString.Exclude
     private double r;
-    @ToString.Exclude
+
     private double theta;
 
     private DoubleProperty xProperty;
@@ -55,4 +58,5 @@ public class Vertex extends Coordinate {
     public double getYCoordinate() {
         return yProperty.doubleValue();
     }
+
 }

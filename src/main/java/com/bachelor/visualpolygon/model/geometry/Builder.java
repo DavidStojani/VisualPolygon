@@ -4,6 +4,7 @@ package com.bachelor.visualpolygon.model.geometry;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
 
@@ -24,7 +25,8 @@ public class Builder {
     private static final GeometryFactory factory = new GeometryFactory();
     List<Coordinate> stepCoordinates = new ArrayList<>();
     Stack<Line> lineStack = new Stack<>();
-
+    @Setter
+    Vertex nextVertex;
 
 
     /**
@@ -76,7 +78,7 @@ public class Builder {
         for (Vertex vertex : vertices) {
 
             LineString segment = createLineStringFor(vertex.getCoordinate(), camera.getCenter());
-            if (polygon.contains(segment)){
+            if (polygon.contains(segment)) {
                 vertex.setIsVisible(1);
             }
         }
@@ -85,8 +87,7 @@ public class Builder {
 
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
-    public List<Coordinate> createStreife(Vertex vertex) {
-
+    public List<Coordinate> createStreifeForBETA(Vertex vertex) {
         List<Coordinate> streifenCoordinates = new ArrayList<>();
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
@@ -100,12 +101,29 @@ public class Builder {
         streifenCoordinates.add(leftPointOnCircle);
 
         stepPolygon = createStepPolygon(streifenCoordinates);
-
+        stepCoordinates = streifenCoordinates;
 
         return streifenCoordinates;
     }
 
+    public List<Coordinate> createStreifeForALPHA(Vertex vertex) {
+        List<Coordinate> streifenCoordinates = new ArrayList<>();
 
+        Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
+        streifenCoordinates.add(leftPointOnCircle);
+        streifenCoordinates.add(getExtentCoordinate(vertex));
+        LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinate(vertex));
+
+        Coordinate rightPointOnCircle = leftTangent.pointAlongOffset(0, camera.getRadius() * 2);
+        Coordinate mirrorOfExtent = leftTangent.pointAlongOffset(1, camera.getRadius() * 2);
+        streifenCoordinates.add(mirrorOfExtent);
+        streifenCoordinates.add(rightPointOnCircle);
+
+        stepPolygon = createStepPolygon(streifenCoordinates);
+        stepCoordinates = streifenCoordinates;
+
+        return streifenCoordinates;
+    }
 
 
     private double getMax() {

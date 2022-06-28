@@ -10,6 +10,7 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 
 
@@ -26,6 +27,7 @@ public class DataModelManager implements DataModel {
     public DataModelManager() {
         factory = new GeometryFactory();
         builder = new Builder();
+
     }
 
 
@@ -51,13 +53,19 @@ public class DataModelManager implements DataModel {
             System.out.println("PolarCoordinatesFromBuilder IS EMPTY");
             return null;
         }
-        List<Coordinate> stepPolyCoordinates = builder.createStreife(builder.getPolarSortedVertices().get(index));
-        return stepPolyCoordinates;
+
+        if (Objects.isNull(builder.getNextVertex())) {
+            System.out.println("WHZ");
+        }
+
+        return builder.createStreifeForBETA(builder.getPolarSortedVertices().get(index));
+
+        //return builder.createStreifeForALPHA(builder.getNextVertex());
     }
 
 
     @Override
-    public Stack<Line> getTheParallels(){
+    public Stack<Line> getTheParallels() {
         return builder.getLineStack();
     }
 }
