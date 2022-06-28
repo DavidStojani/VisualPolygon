@@ -46,10 +46,9 @@ public class Builder {
      */
     public void init() {
         polygon = createGeometryPolygon(vertices);
-        System.out.println("Polygon created");
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
-        //isVisibleFromCenter(vertices, camera);
+        nextVertex = polarSortedVertices.get(0);
     }
 
     private Polygon createGeometryPolygon(List<Vertex> vertices) {
@@ -93,8 +92,8 @@ public class Builder {
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
         streifenCoordinates.add(rightPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinate(vertex));
-        LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinate(vertex));
+        streifenCoordinates.add(getExtentCoordinateForBETA(vertex));
+        LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinateForBETA(vertex));
 
         Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0, -camera.getRadius() * 2);
         Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1, -camera.getRadius() * 2);
@@ -107,13 +106,29 @@ public class Builder {
         return streifenCoordinates;
     }
 
+    /**TODO Here sometimes ends in a loop and sometimes calls wrong function for points inside active*/
+    public List<Coordinate> createStreife(Vertex vertex) {
+        if (stepCoordinates.isEmpty()) {
+            return createStreifeForBETA(vertex);
+        }
+
+        if (nextVertex.isInsideActive()) {
+            nextVertex.setInsideActive(false);
+            return createStreifeForBETA(vertex);
+        }
+
+        nextVertex.setInsideActive(false);
+        return createStreifeForALPHA(vertex);
+
+    }
+
     public List<Coordinate> createStreifeForALPHA(Vertex vertex) {
         List<Coordinate> streifenCoordinates = new ArrayList<>();
 
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
         streifenCoordinates.add(leftPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinate(vertex));
-        LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinate(vertex));
+        streifenCoordinates.add(getExtentCoordinateForALPHA(vertex));
+        LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinateForALPHA(vertex));
 
         Coordinate rightPointOnCircle = leftTangent.pointAlongOffset(0, camera.getRadius() * 2);
         Coordinate mirrorOfExtent = leftTangent.pointAlongOffset(1, camera.getRadius() * 2);
@@ -145,13 +160,21 @@ public class Builder {
         return max;
     }
 
-    public Coordinate getExtentCoordinate(Vertex vertex) {
+    public Coordinate getExtentCoordinateForBETA(Vertex vertex) {
         Vector2D vector = new Vector2D(camera.getRightTangentPoint(vertex), vertex.getCoordinate());
         double k = getMax() / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
         Vector2D extentVector = vector.multiply(k);
-        System.out.println(extentVector.toCoordinate());
         double x = extentVector.getX() + camera.getRightTangentPoint(vertex).getX();
         double y = extentVector.getY() + camera.getRightTangentPoint(vertex).getY();
+        return new Coordinate(x, y);
+    }
+
+    public Coordinate getExtentCoordinateForALPHA(Vertex vertex) {
+        Vector2D vector = new Vector2D(camera.getLeftTangentPoint(vertex), vertex.getCoordinate());
+        double k = getMax() / (camera.getLeftTangentPoint(vertex).distance(vertex.getCoordinate()));
+        Vector2D extentVector = vector.multiply(k);
+        double x = extentVector.getX() + camera.getLeftTangentPoint(vertex).getX();
+        double y = extentVector.getY() + camera.getLeftTangentPoint(vertex).getY();
         return new Coordinate(x, y);
     }
 

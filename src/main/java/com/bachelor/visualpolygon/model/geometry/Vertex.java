@@ -26,6 +26,7 @@ public class Vertex extends Coordinate {
     private Vertex nextVertex;
     @ToString.Exclude
     private double r;
+    private boolean insideActive;
 
     private double theta;
 

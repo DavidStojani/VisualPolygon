@@ -50,11 +50,10 @@ public class DataModelManager implements DataModel {
     @Override
     public List<Coordinate> getStreifenCoordinates(int index) {
         if (builder.getPolarSortedVertices().isEmpty()) {
-            System.out.println("PolarCoordinatesFromBuilder IS EMPTY");
             return null;
         }
 
-        return builder.createStreifeForALPHA(builder.getPolarSortedVertices().get(index));
+        return builder.createStreife(builder.getNextVertex());
 
         //return builder.createStreifeForALPHA(builder.getNextVertex());
     }

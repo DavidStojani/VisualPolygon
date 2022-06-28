@@ -66,6 +66,22 @@ public class ViewController {
 
     public void nextStep() {
         Polygon stepPoly = viewModel.getStepPolygon(index);
+        /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*?
+     /*   System.out.println("STEPPOLY COORD-----" + stepPoly.getPoints() );
+        System.out.println("LAYOUT X-----" + stepPoly.getBoundsInParent());
+        System.out.println("LAYOUT Y-----" + pane.getBoundsInLocal());
+
+        if (stepPoly.getBoundsInParent().getMaxX() > pane.getBoundsInLocal().getMaxX()) {
+            //stepPoly.getBoundsInLocal().getMaxX() = pane.getBoundsInLocal().getMaxX();
+            System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
+        }
+
+        if (stepPoly.getBoundsInParent().getMaxY() > pane.getBoundsInLocal().getMaxY()) {
+
+            stepPoly.getPoints().replaceAll(aDouble -> aDouble == stepPoly.getBoundsInLocal().getMaxY() ? 0 : pane.getBoundsInLocal().getMaxY());
+            System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
+        }*/
+
         viewModel.createStep();
         viewModel.setStepInfo();
         if (stepPoly != null) {

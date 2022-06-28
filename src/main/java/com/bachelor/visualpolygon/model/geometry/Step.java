@@ -10,6 +10,7 @@ import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @NoArgsConstructor
 @Getter
@@ -29,41 +30,42 @@ public class Step {
         active = new ArrayList<>();
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
-
     }
 
     public void initStep() {
         stepPolygon = builder.getStepPolygon();
         setActive();
         setTemps();
-       // findNextVertexToBuildStep();
+        findNextVertexToBuildStep();
     }
 
     private void setActive() {
-        System.out.println("SIZE OF STEPPOLYGON COORDINATES LIST:::" + stepPolygon.getCoordinates().length);
+        /**TODO Warum ist Tolerance 2 ?*/
         FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 2);
         for (Vertex vertex : builder.getPolarSortedVertices()) {
             if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
-                System.out.println("Coordinate ADDED in ACTIVE :: " + vertex);
                 active.add(vertex);
             }
         }
-        System.out.println("AKTIVE ::::::" + active);
-
     }
 
     public void findNextVertexToBuildStep() {
-
         if (active.isEmpty()) {
             System.out.println("ACTIVE IS EMPTY");
+            builder.getPolarSortedVertices().get(0).setInsideActive(false);
+            builder.setNextVertex(builder.getPolarSortedVertices().get(0));
+            return;
         }
 
-        Vertex afterAktive = builder.getPolarSortedVertices().stream()
+
+        /**TODO THIS needs to be checked again**/
+        Optional<Vertex> afterAktive = Optional.ofNullable(builder.getPolarSortedVertices().stream()
                 .filter(vertex -> vertex.getTheta() > active.get(active.size() - 1).getTheta())
-                .findFirst().get();
+                .findFirst().orElse(builder.getPolarSortedVertices().get(0)));
 
         if (active.size() <= 1) {
-            builder.setNextVertex(afterAktive);
+            afterAktive.get().setInsideActive(false);
+            builder.setNextVertex(afterAktive.get());
             return;
         }
 
@@ -74,15 +76,16 @@ public class Step {
         LineSegment BETA = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
 
 
-        System.out.println("DISTANCE after to ALPHA:::" + ALPHA.distance(afterAktive.getCoordinate()));
-        System.out.println("PERPENDICULAR after to ALPHA:::" + ALPHA.distancePerpendicular(afterAktive.getCoordinate()));
+        System.out.println("DISTANCE after to ALPHA:::" + ALPHA.distance(afterAktive.get().getCoordinate()));
+        System.out.println("PERPENDICULAR after to ALPHA:::" + ALPHA.distancePerpendicular(afterAktive.get().getCoordinate()));
 
-        if (ALPHA.distancePerpendicular(afterAktive.getCoordinate()) > BETA.distancePerpendicular(insideAktive.getCoordinate())) {
+        if (ALPHA.distancePerpendicular(afterAktive.get().getCoordinate()) > BETA.distancePerpendicular(insideAktive.getCoordinate())) {
+            insideAktive.setInsideActive(true);
             builder.setNextVertex(insideAktive);
         } else {
-            builder.setNextVertex(afterAktive);
+            afterAktive.get().setInsideActive(false);
+            builder.setNextVertex(afterAktive.get());
         }
-
 
     }
 
@@ -129,7 +132,6 @@ public class Step {
         builder.getLineStack().push(parallelLine);
 
     }
-
 
     public void addToRedLines(LineSegment redLine) {
         Line parallelLine = new Line(redLine.getCoordinate(0).getX(), redLine.getCoordinate(0).getY(), redLine.getCoordinate(1).getX(), redLine.getCoordinate(1).getY());

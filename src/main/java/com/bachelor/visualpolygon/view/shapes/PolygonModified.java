@@ -36,7 +36,6 @@ public class PolygonModified extends Polygon {
      * MALFUNCTION AT SOME CASES
      */
     public void removeVertexAndPoint(Point point) {
-        System.out.println("Removing " + point);
         if (vertices.removeIf(v -> v.getXCoordinate() == point.getCenterX() && v.getYCoordinate() == point.getCenterY())) {
             updatePoints();
         }
