@@ -54,11 +54,7 @@ public class DataModelManager implements DataModel {
             return null;
         }
 
-        if (Objects.isNull(builder.getNextVertex())) {
-            System.out.println("WHZ");
-        }
-
-        return builder.createStreifeForBETA(builder.getPolarSortedVertices().get(index));
+        return builder.createStreifeForALPHA(builder.getPolarSortedVertices().get(index));
 
         //return builder.createStreifeForALPHA(builder.getNextVertex());
     }

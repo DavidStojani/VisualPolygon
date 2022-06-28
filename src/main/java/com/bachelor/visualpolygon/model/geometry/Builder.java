@@ -1,6 +1,7 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -121,8 +122,16 @@ public class Builder {
 
         stepPolygon = createStepPolygon(streifenCoordinates);
         stepCoordinates = streifenCoordinates;
+        addRadiusLines();
 
         return streifenCoordinates;
+    }
+
+    public void addRadiusLines() {
+        Line line = new Line(stepCoordinates.get(0).getX(),stepCoordinates.get(0).getY(),stepCoordinates.get(3).getX(),stepCoordinates.get(3).getY());
+        line.setStroke(Color.BLACK);
+        line.setStrokeWidth(1.9);
+        lineStack.push(line);
     }
 
 

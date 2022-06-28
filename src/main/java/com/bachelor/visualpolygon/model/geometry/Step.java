@@ -5,9 +5,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.locationtech.jts.algorithm.locate.IndexedPointInAreaLocator;
 import org.locationtech.jts.geom.*;
-import org.locationtech.jts.geom.util.PointExtracter;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
 
 import java.util.ArrayList;
@@ -91,7 +89,7 @@ public class Step {
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
     private void setTemps() {
         for (Vertex vertex : active) {
-            LineSegment parallelToBeChecked = getParallelLineForCoordinate(vertex.getCoordinate());
+            LineSegment parallelToBeChecked = getParallelLineForALPHA(vertex.getCoordinate());
             if (parallelToBeChecked.toGeometry(new GeometryFactory()).within(initialPolygon)) {
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
@@ -107,7 +105,7 @@ public class Step {
 
     }
 
-    public LineSegment getParallelLineForCoordinate(Coordinate point) {
+    public LineSegment getParallelLineForBETA(Coordinate point) {
         LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
         Coordinate baseMirror = lineSegment.pointAlongOffset(0, -lineSegment.distance(point));
         Coordinate endMirror = lineSegment.pointAlongOffset(1, -lineSegment.distance(point));
@@ -116,6 +114,14 @@ public class Step {
         return parallelToStep;
     }
 
+    public LineSegment getParallelLineForALPHA(Coordinate point) {
+        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
+        Coordinate baseMirror = lineSegment.pointAlongOffset(0, lineSegment.distancePerpendicular(point));
+        Coordinate endMirror = lineSegment.pointAlongOffset(1, lineSegment.distancePerpendicular(point));
+        LineSegment parallelToStep = new LineSegment(baseMirror, point);
+
+        return parallelToStep;
+    }
     public void addToGreenLines(LineSegment greenLine) {
         Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
         parallelLine.setStroke(Color.GREEN);
