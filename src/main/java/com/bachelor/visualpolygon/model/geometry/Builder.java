@@ -59,18 +59,18 @@ public class Builder {
     /**
      * TODO Here sometimes ends in a loop and sometimes calls wrong function for points inside active
      */
-    public List<Coordinate> createStreife(Vertex vertex) {
+    public List<Coordinate> createStreife() {
 
         if (stepCoordinates.isEmpty()) {
             System.out.println("[ON builder.createStreife] ::: ACTIVE IS EMPTY");
-            return createStepFromALPHA(vertex);
+            return createStepFromALPHA(nextVertex);
         }
 
-        if (isInsideActive(vertex)) {
-            return createStepFromBETA(vertex);
-        }
+      /*  if (isInsideActive(nextVertex)) {
+            return createStepFromBETA(nextVertex);
+        }*/
 
-        return createStepFromALPHA(vertex);
+        return createStepFromALPHA(nextVertex);
 
     }
 
@@ -84,6 +84,68 @@ public class Builder {
         vertex.setInGrey(true);
         return false;
     }
+/*
+    public void findNextVertexToBuildStep() {
+ *//*       if (active.isEmpty()) {
+            System.out.println("===============");
+            System.out.println("ACTIVE IS EMPTY");
+
+            System.out.println("===============");
+            builder.getPolarSortedVertices().get(0).setInBlue(true);
+            builder.setNextVertex(builder.getPolarSortedVertices().get(0));
+            return;
+        }*//*
+
+
+        *//**TODO THIS needs to be checked again**//*
+        //ALPHA and BETA not always the same coordinates, depending on wich step is called
+       *//* Optional<Vertex> afterAktive = Optional.ofNullable(builder.getPolarSortedVertices().stream()
+                .filter(vertex -> vertex.getTheta() > active.get(active.size() - 1).getTheta())
+                .findFirst().orElse(builder.getPolarSortedVertices().get(0)));
+        afterAktive.get().setInBlue(true);
+       *//*
+        Vertex afterAktive = null;
+        double minDistance = 99999;
+        for (Vertex vertex : getPolarSortedVertices()) {
+            if (ALPHA.distance(vertex.getCoordinate()) <= minDistance) {
+                if(Orientation.index(ALPHA.getCoordinate(0),ALPHA.getCoordinate(1),vertex.getCoordinate())==-1) {
+                    System.out.println("");
+                    minDistance = ALPHA.distance(vertex.getCoordinate());
+                    afterAktive = vertex;
+                }
+            }
+        }
+        if (active.size() == 1) {
+            System.out.println("ACTIVE KLEINER/GLEICH ALS 1");
+            afterAktive.setInBlue(true);
+            return;
+        }
+
+
+        double mindistace = 99999;
+        Vertex firstInsideAktive = null;
+        for (Vertex vertex : active) {
+            if (BETA.distance(vertex.getCoordinate()) <= mindistace) {
+                System.out.println("FOUND IN AKTIVE ");
+                mindistace = BETA.distance(vertex.getCoordinate());
+                firstInsideAktive = vertex;
+                firstInsideAktive.isGrey();
+            } else {
+
+                firstInsideAktive = active.get(0);
+                //            firstInsideAktive.setInGrey(true);
+            }
+        }
+
+
+        if (ALPHA.distancePerpendicular(afterAktive.getCoordinate()) > BETA.distancePerpendicular(firstInsideAktive.getCoordinate())) {
+            builder.setNextVertex(firstInsideAktive);
+        } else {
+            builder.setNextVertex(afterAktive);
+        }
+
+    }*/
+
 
 
     //Should give back the 4 coordinates. Those should be given to form the polygon and

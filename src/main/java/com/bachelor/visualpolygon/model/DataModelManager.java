@@ -53,7 +53,7 @@ public class DataModelManager implements DataModel {
             return null;
         }
 
-        return builder.createStreife(builder.getNextVertex());
+        return builder.createStreife();
 
         //return builder.createStreifeForALPHA(builder.getNextVertex());
     }

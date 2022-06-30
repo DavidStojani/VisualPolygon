@@ -5,6 +5,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
 
@@ -39,7 +40,7 @@ public class Step {
         BETA = builder.getBETA();
         setActive();
         //setTemps();
-        findNextVertexToBuildStep();
+        //findNextVertexToBuildStep();
     }
 
     private void setActive() {
@@ -52,56 +53,6 @@ public class Step {
         }
     }
 
-    public void findNextVertexToBuildStep() {
-        if (active.isEmpty()) {
-            System.out.println("===============");
-            System.out.println("ACTIVE IS EMPTY");
-
-            System.out.println("===============");
-            builder.getPolarSortedVertices().get(0).setInBlue(true);
-            builder.setNextVertex(builder.getPolarSortedVertices().get(0));
-            return;
-        }
-
-
-        /**TODO THIS needs to be checked again**/
-        //ALPHA and BETA not always the same coordinates, depending on wich step is called
-        Optional<Vertex> afterAktive = Optional.ofNullable(builder.getPolarSortedVertices().stream()
-                .filter(vertex -> vertex.getTheta() > active.get(active.size() - 1).getTheta())
-                .findFirst().orElse(builder.getPolarSortedVertices().get(0)));
-
-        if (active.size() <= 1) {
-            System.out.println("ACTIVE KLEINER/GLEICH ALS 1");
-            afterAktive.get().setInBlue(true);
-            builder.setNextVertex(afterAktive.get());
-            return;
-        }
-
-
-        Vertex firstInsideAktive = null;
-        for (Vertex vertex : active) {
-            double mindistace = 99999;
-            if (BETA.distance(vertex.getCoordinate()) <= mindistace) {
-                System.out.println("FOUND IN AKTIVE ");
-                mindistace = BETA.distance(vertex.getCoordinate());
-                firstInsideAktive = vertex;
-                firstInsideAktive.isGrey();
-            }else {
-
-                firstInsideAktive = active.get(0);
-    //            firstInsideAktive.setInGrey(true);
-            }
-        }
-
-
-
-        if (ALPHA.distancePerpendicular(afterAktive.get().getCoordinate()) > BETA.distancePerpendicular(firstInsideAktive.getCoordinate())) {
-            builder.setNextVertex(firstInsideAktive);
-        } else {
-            builder.setNextVertex(afterAktive.get());
-        }
-
-    }
 
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
     private void setTemps() {
@@ -139,6 +90,7 @@ public class Step {
 
         return parallelToStep;
     }
+
     public void addToGreenLines(LineSegment greenLine) {
         Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
         parallelLine.setStroke(Color.GREEN);
