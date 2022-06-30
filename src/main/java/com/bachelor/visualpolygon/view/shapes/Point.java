@@ -33,6 +33,14 @@ public class Point extends Circle {
        setStroke(Color.GREEN);
    }
 
+    public void changeColorToBlue() {
+        //setFill(Color.BLUE.deriveColor(1, 0.7, 1, 0.5));
+        setStroke(Color.BLUE);
+    }
+    public void changeColorToGrey() {
+        setStroke(Color.GRAY);
+    }
+
     // make a node movable by dragging it around with the mouse.
 
 
@@ -63,5 +71,4 @@ public class Point extends Circle {
             }
         });
     }
-
 }

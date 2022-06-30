@@ -84,6 +84,12 @@ public class PolygonModified extends Polygon {
             } else if (vertices.get(idx).getIsVisible() == 1) {
                 p.changeColorToGreen();
             }
+            if (vertices.get(idx).isInBlue()){
+                p.changeColorToBlue();
+            }
+            if (vertices.get(idx).isGrey()){
+                p.changeColorToGrey();
+            }
             points.add(p);
         }
         return points;

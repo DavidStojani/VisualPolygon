@@ -21,7 +21,8 @@ public class Step {
     List<Vertex> active;
     List<Vertex> tempVisible;
     List<Vertex> tempInvisible;
-
+    LineSegment ALPHA;
+    LineSegment BETA;
 
     public Step(Builder builder) {
         this.builder = builder;
@@ -34,8 +35,10 @@ public class Step {
 
     public void initStep() {
         stepPolygon = builder.getStepPolygon();
+        ALPHA = builder.getALPHA();
+        BETA = builder.getBETA();
         setActive();
-        setTemps();
+        //setTemps();
         findNextVertexToBuildStep();
     }
 
@@ -51,39 +54,50 @@ public class Step {
 
     public void findNextVertexToBuildStep() {
         if (active.isEmpty()) {
+            System.out.println("===============");
             System.out.println("ACTIVE IS EMPTY");
-            builder.getPolarSortedVertices().get(0).setInsideActive(false);
+
+            System.out.println("===============");
+            builder.getPolarSortedVertices().get(0).setInBlue(true);
             builder.setNextVertex(builder.getPolarSortedVertices().get(0));
             return;
         }
 
 
         /**TODO THIS needs to be checked again**/
+        //ALPHA and BETA not always the same coordinates, depending on wich step is called
         Optional<Vertex> afterAktive = Optional.ofNullable(builder.getPolarSortedVertices().stream()
                 .filter(vertex -> vertex.getTheta() > active.get(active.size() - 1).getTheta())
                 .findFirst().orElse(builder.getPolarSortedVertices().get(0)));
 
         if (active.size() <= 1) {
-            afterAktive.get().setInsideActive(false);
+            System.out.println("ACTIVE KLEINER/GLEICH ALS 1");
+            afterAktive.get().setInBlue(true);
             builder.setNextVertex(afterAktive.get());
             return;
         }
 
-        Vertex insideAktive = active.get(1);
 
-        LineSegment ALPHA = new LineSegment(stepPolygon.getCoordinates()[3], stepPolygon.getCoordinates()[2]);
+        Vertex firstInsideAktive = null;
+        for (Vertex vertex : active) {
+            double mindistace = 99999;
+            if (BETA.distance(vertex.getCoordinate()) <= mindistace) {
+                System.out.println("FOUND IN AKTIVE ");
+                mindistace = BETA.distance(vertex.getCoordinate());
+                firstInsideAktive = vertex;
+                firstInsideAktive.isGrey();
+            }else {
 
-        LineSegment BETA = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
+                firstInsideAktive = active.get(0);
+    //            firstInsideAktive.setInGrey(true);
+            }
+        }
 
 
-        System.out.println("DISTANCE after to ALPHA:::" + ALPHA.distance(afterAktive.get().getCoordinate()));
-        System.out.println("PERPENDICULAR after to ALPHA:::" + ALPHA.distancePerpendicular(afterAktive.get().getCoordinate()));
 
-        if (ALPHA.distancePerpendicular(afterAktive.get().getCoordinate()) > BETA.distancePerpendicular(insideAktive.getCoordinate())) {
-            insideAktive.setInsideActive(true);
-            builder.setNextVertex(insideAktive);
+        if (ALPHA.distancePerpendicular(afterAktive.get().getCoordinate()) > BETA.distancePerpendicular(firstInsideAktive.getCoordinate())) {
+            builder.setNextVertex(firstInsideAktive);
         } else {
-            afterAktive.get().setInsideActive(false);
             builder.setNextVertex(afterAktive.get());
         }
 
