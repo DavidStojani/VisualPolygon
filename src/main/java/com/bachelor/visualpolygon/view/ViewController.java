@@ -82,7 +82,6 @@ public class ViewController {
             System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
         }*/
 
-        viewModel.createStep();
         viewModel.setStepInfo();
         if (stepPoly != null) {
             refreshView();

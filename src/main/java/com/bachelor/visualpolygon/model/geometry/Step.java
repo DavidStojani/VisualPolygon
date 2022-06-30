@@ -38,73 +38,15 @@ public class Step {
         stepPolygon = builder.getStepPolygon();
         ALPHA = builder.getALPHA();
         BETA = builder.getBETA();
-        setActive();
+      //  setActive();
         //setTemps();
         //findNextVertexToBuildStep();
     }
 
-    private void setActive() {
-        /**TODO Warum ist Tolerance 2 ?*/
-        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 2);
-        for (Vertex vertex : builder.getPolarSortedVertices()) {
-            if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
-                active.add(vertex);
-            }
-        }
-    }
 
 
-    //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
-    private void setTemps() {
-        for (Vertex vertex : active) {
-            LineSegment parallelToBeChecked = getParallelLineForALPHA(vertex.getCoordinate());
-            if (parallelToBeChecked.toGeometry(new GeometryFactory()).within(initialPolygon)) {
-                tempVisible.add(vertex);
-                vertex.setIsVisible(1);
-                addToGreenLines(parallelToBeChecked);
-            } else {
-                tempInvisible.add(vertex);
-                if (vertex.getIsVisible() != 1) {
-                    vertex.setIsVisible(-1);
-                }
-                addToRedLines(parallelToBeChecked);
-            }
-        }
 
-    }
 
-    public LineSegment getParallelLineForBETA(Coordinate point) {
-        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
-        Coordinate baseMirror = lineSegment.pointAlongOffset(0, -lineSegment.distance(point));
-        Coordinate endMirror = lineSegment.pointAlongOffset(1, -lineSegment.distance(point));
-        LineSegment parallelToStep = new LineSegment(baseMirror, point);
 
-        return parallelToStep;
-    }
-
-    public LineSegment getParallelLineForALPHA(Coordinate point) {
-        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
-        Coordinate baseMirror = lineSegment.pointAlongOffset(0, lineSegment.distancePerpendicular(point));
-        Coordinate endMirror = lineSegment.pointAlongOffset(1, lineSegment.distancePerpendicular(point));
-        LineSegment parallelToStep = new LineSegment(baseMirror, point);
-
-        return parallelToStep;
-    }
-
-    public void addToGreenLines(LineSegment greenLine) {
-        Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
-        parallelLine.setStroke(Color.GREEN);
-        parallelLine.setStrokeWidth(1.9);
-        builder.getLineStack().push(parallelLine);
-
-    }
-
-    public void addToRedLines(LineSegment redLine) {
-        Line parallelLine = new Line(redLine.getCoordinate(0).getX(), redLine.getCoordinate(0).getY(), redLine.getCoordinate(1).getX(), redLine.getCoordinate(1).getY());
-        parallelLine.setStroke(Color.RED);
-        parallelLine.setStrokeWidth(1.9);
-        builder.getLineStack().push(parallelLine);
-
-    }
 
 }

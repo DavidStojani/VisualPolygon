@@ -21,7 +21,7 @@ public class DataModelManager implements DataModel {
     GeometryFactory factory;
     GeometryCamera geometryCamera;
     Builder builder;
-    Step step;
+
 
 
     public DataModelManager() {
@@ -36,15 +36,13 @@ public class DataModelManager implements DataModel {
         builder.updateBuilder(vertices, camera);
     }
 
-    @Override
-    public void createStep() {
-        step = new Step(builder);
-        step.initStep();
-    }
 
     @Override
     public String getStepInfo() {
-        return String.valueOf(step.getActive().size());
+        if(Objects.isNull(builder.getActive())){
+            return "Active is empty";
+        }
+        return String.valueOf(builder.getActive().size());
     }
 
     @Override
@@ -53,7 +51,8 @@ public class DataModelManager implements DataModel {
             return null;
         }
 
-        return builder.createStreife();
+        builder.createStep(builder.findNextAfterALPHA());
+        return builder.getStepCoordinates();
 
         //return builder.createStreifeForALPHA(builder.getNextVertex());
     }

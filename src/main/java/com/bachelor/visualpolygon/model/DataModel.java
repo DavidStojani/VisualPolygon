@@ -14,8 +14,6 @@ public interface DataModel {
 
     void updateBuilder(List<Vertex> vertices, List<Double> camera);
 
-    void createStep();
-
     String getStepInfo();
 
     Stack<Line> getTheParallels();

@@ -23,7 +23,10 @@ public class Vertex extends Coordinate {
     private Vertex nextVertex;
     @ToString.Exclude
     private double r;
+    @ToString.Exclude
     private boolean inBlue;
+    @ToString.Exclude
+
     private boolean grey;
     @ToString.Exclude
     private double theta;

@@ -60,9 +60,6 @@ public class ViewModel {
         return stepPolygon;
     }
 
-    public void createStep() {
-        model.createStep();
-    }
 
     public void setStepInfo() {
         setLabelText("Step Created! " +"ACTIVE size: " + model.getStepInfo());

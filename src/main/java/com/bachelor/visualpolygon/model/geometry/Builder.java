@@ -7,13 +7,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.locationtech.jts.algorithm.Orientation;
+import org.locationtech.jts.algorithm.PointLocator;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
+import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
 
-import java.nio.channels.AcceptPendingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 
 
 @NoArgsConstructor
@@ -28,10 +27,12 @@ public class Builder {
     private static final GeometryFactory factory = new GeometryFactory();
     List<Coordinate> stepCoordinates = new ArrayList<>();
     Stack<Line> lineStack = new Stack<>();
-    @Setter
     Vertex nextVertex;
     private LineSegment ALPHA;
     private LineSegment BETA;
+    private List<Vertex> active;
+    private List<Vertex> tempVisible;
+    private List<Vertex> tempInvisible;
 
 
     /**
@@ -53,72 +54,110 @@ public class Builder {
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
         nextVertex = polarSortedVertices.get(0);
+        System.out.println("=======THE PolarSortedLIST======");
+        polarSortedVertices.forEach(System.out::println);
     }
 
 
     /**
      * TODO Here sometimes ends in a loop and sometimes calls wrong function for points inside active
      */
-    public List<Coordinate> createStreife() {
+    public void createStep(Vertex vertex) {
 
-        if (stepCoordinates.isEmpty()) {
-            System.out.println("[ON builder.createStreife] ::: ACTIVE IS EMPTY");
-            return createStepFromALPHA(nextVertex);
+
+        System.out.println("[ON builder.createStreife] ::: getting " + vertex + " as parameter");
+        createStepFromALPHA(vertex);
+        setActive();
+        setTemps();
+
+        if (!isInsideActive(findNextAfterALPHA())) {
+            System.out.println("==== next vertex is NOT inside active");
         }
+        if (isInsideActive(findNextAfterBETA())){
+            System.out.println("======next vertex in INSIDE Active");
+        }
+        return;
 
-      /*  if (isInsideActive(nextVertex)) {
-            return createStepFromBETA(nextVertex);
+
+
+      /*  if (isInsideActive(vertex)) {
+            createStepFromBETA(vertex);
+            setActive();
+            setTemps();
+            nextVertex = findNextVertex();
+        } else {
+            createStepFromALPHA(vertex);
+            setActive();
+            setTemps();
+            nextVertex = findNextVertex();
         }*/
 
-        return createStepFromALPHA(nextVertex);
 
     }
 
-    public boolean isInsideActive(Vertex vertex) {
-        int i = Orientation.index(ALPHA.getCoordinate(0), ALPHA.getCoordinate(1), vertex.getCoordinate());
-        if (i == Orientation.LEFT) {
-            System.out.println("[ON builder.isInsideActive]"+ i + "ON THE LEFT");
-            return true;
+    public Vertex findNextAfterBETA() {
+
+        if ( Objects.isNull(active) ||active.size() == 1) {
+            return nextVertex;
         }
-        System.out.println("[ON builder.isInsideActive]"+ i + "ON THE RIGHT");
-        vertex.setInGrey(true);
-        return false;
+        PointLocator locator = new PointLocator();
+
+        double minDistance = 99999;
+        Vertex insideStepVertex = null;
+        for (Vertex v : active) {
+            if (locator.locate(v.getCoordinate(), BETA.toGeometry(factory)) == Location.BOUNDARY) {
+                System.out.println("Point on BETA");
+            }
+            if (BETA.distance(v.getCoordinate()) < minDistance) {
+                minDistance = BETA.distance(v.getCoordinate());
+                insideStepVertex = v;
+            }
+        }
+        return insideStepVertex;
     }
-/*
-    public void findNextVertexToBuildStep() {
- *//*       if (active.isEmpty()) {
-            System.out.println("===============");
-            System.out.println("ACTIVE IS EMPTY");
 
-            System.out.println("===============");
-            builder.getPolarSortedVertices().get(0).setInBlue(true);
-            builder.setNextVertex(builder.getPolarSortedVertices().get(0));
-            return;
-        }*//*
+    public Vertex findNextAfterALPHA() {
 
-
-        *//**TODO THIS needs to be checked again**//*
-        //ALPHA and BETA not always the same coordinates, depending on wich step is called
-       *//* Optional<Vertex> afterAktive = Optional.ofNullable(builder.getPolarSortedVertices().stream()
+        if (Objects.isNull(active)) {
+            return polarSortedVertices.get(0);
+        }
+        Optional<Vertex> afterAktive = Optional.ofNullable(getPolarSortedVertices().stream()
                 .filter(vertex -> vertex.getTheta() > active.get(active.size() - 1).getTheta())
-                .findFirst().orElse(builder.getPolarSortedVertices().get(0)));
+                .findFirst().orElse(getPolarSortedVertices().get(0)));
+
         afterAktive.get().setInBlue(true);
-       *//*
+        return afterAktive.get();
+    }
+
+
+    public Vertex findNextVertex() {
+
+        if (Objects.isNull(stepPolygon)) {
+            System.out.println("===============");
+            System.out.println("StepPolygon IS EMPTY");
+            System.out.println("===============");
+            polarSortedVertices.get(0).setInBlue(true);
+            return polarSortedVertices.get(0);
+        }
+
+
         Vertex afterAktive = null;
         double minDistance = 99999;
         for (Vertex vertex : getPolarSortedVertices()) {
             if (ALPHA.distance(vertex.getCoordinate()) <= minDistance) {
-                if(Orientation.index(ALPHA.getCoordinate(0),ALPHA.getCoordinate(1),vertex.getCoordinate())==-1) {
-                    System.out.println("");
-                    minDistance = ALPHA.distance(vertex.getCoordinate());
-                    afterAktive = vertex;
+                if (Orientation.index(ALPHA.getCoordinate(0), ALPHA.getCoordinate(1), vertex.getCoordinate()) == 1) {
+                    if (!active.contains(vertex)) {
+                        System.out.println("ON THE LEFT OF ALFA");
+                        minDistance = ALPHA.distance(vertex.getCoordinate());
+                        afterAktive = vertex;
+                    }
                 }
             }
         }
         if (active.size() == 1) {
             System.out.println("ACTIVE KLEINER/GLEICH ALS 1");
             afterAktive.setInBlue(true);
-            return;
+            return nextVertex;
         }
 
 
@@ -126,31 +165,113 @@ public class Builder {
         Vertex firstInsideAktive = null;
         for (Vertex vertex : active) {
             if (BETA.distance(vertex.getCoordinate()) <= mindistace) {
-                System.out.println("FOUND IN AKTIVE ");
+                System.out.println("FOUND IN AKTIVE (on findNextVertex)");
                 mindistace = BETA.distance(vertex.getCoordinate());
                 firstInsideAktive = vertex;
-                firstInsideAktive.isGrey();
-            } else {
 
+            } else {
+                System.out.println("Hat nicht funktioniert das firstInsideAktive yu finden");
                 firstInsideAktive = active.get(0);
                 //            firstInsideAktive.setInGrey(true);
             }
         }
+        firstInsideAktive.isGrey();
 
 
         if (ALPHA.distancePerpendicular(afterAktive.getCoordinate()) > BETA.distancePerpendicular(firstInsideAktive.getCoordinate())) {
-            builder.setNextVertex(firstInsideAktive);
+            firstInsideAktive.setInGrey(true);
+            return firstInsideAktive;
         } else {
-            builder.setNextVertex(afterAktive);
+            afterAktive.setInBlue(true);
+            return afterAktive;
         }
 
-    }*/
+
+    }
 
 
+    public boolean isInsideActive(Vertex vertex) {
+        int i = Orientation.index(ALPHA.getCoordinate(0), ALPHA.getCoordinate(1), vertex.getCoordinate());
+        if (i == Orientation.LEFT) {
+            System.out.println("[ON builder.isInsideActive]" + i + "ON THE LEFT");
+            return true;
+        }
+        System.out.println("[ON builder.isInsideActive]" + i + "ON THE RIGHT");
+        vertex.setInGrey(true);
+        return false;
+    }
+
+
+    private void setActive() {
+        active = new ArrayList<>();
+        /**TODO Warum ist Tolerance 2 ?*/
+        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 2);
+        for (Vertex vertex : getPolarSortedVertices()) {
+            if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
+                active.add(vertex);
+            }
+        }
+    }
+
+    //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
+    private void setTemps() {
+        tempInvisible = new ArrayList<>();
+        tempVisible = new ArrayList<>();
+        for (Vertex vertex : active) {
+            LineSegment parallelToBeChecked = getParallelLineForALPHA(vertex.getCoordinate());
+            if (parallelToBeChecked.toGeometry(factory).within(polygon)) {
+                tempVisible.add(vertex);
+                vertex.setIsVisible(1);
+                addToGreenLines(parallelToBeChecked);
+            } else {
+                tempInvisible.add(vertex);
+                if (vertex.getIsVisible() != 1) {
+                    vertex.setIsVisible(-1);
+                }
+                addToRedLines(parallelToBeChecked);
+            }
+        }
+
+    }
+
+
+    public LineSegment getParallelLineForBETA(Coordinate point) {
+        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
+        Coordinate baseMirror = lineSegment.pointAlongOffset(0, -lineSegment.distance(point));
+        Coordinate endMirror = lineSegment.pointAlongOffset(1, -lineSegment.distance(point));
+        LineSegment parallelToStep = new LineSegment(baseMirror, point);
+
+        return parallelToStep;
+    }
+
+    public LineSegment getParallelLineForALPHA(Coordinate point) {
+        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
+        Coordinate baseMirror = lineSegment.pointAlongOffset(0, lineSegment.distancePerpendicular(point));
+        Coordinate endMirror = lineSegment.pointAlongOffset(1, lineSegment.distancePerpendicular(point));
+        LineSegment parallelToStep = new LineSegment(baseMirror, point);
+
+        return parallelToStep;
+    }
+
+    public void addToGreenLines(LineSegment greenLine) {
+        Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
+        parallelLine.setStroke(Color.GREEN);
+        parallelLine.setStrokeWidth(1.9);
+        lineStack.push(parallelLine);
+
+    }
+
+    public void addToRedLines(LineSegment redLine) {
+        Line parallelLine = new Line(redLine.getCoordinate(0).getX(), redLine.getCoordinate(0).getY(), redLine.getCoordinate(1).getX(), redLine.getCoordinate(1).getY());
+        parallelLine.setStroke(Color.RED);
+        parallelLine.setStrokeWidth(1.9);
+        lineStack.push(parallelLine);
+
+    }
 
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
-    public List<Coordinate> createStepFromBETA(Vertex vertex) {
+    public void createStepFromBETA(Vertex vertex) {
         List<Coordinate> streifenCoordinates = new ArrayList<>();
         System.out.println("BETA CALLED");
 
@@ -171,10 +292,9 @@ public class Builder {
         addRadiusLines();
 
         System.out.println("BETA TERMINDATED");
-        return streifenCoordinates;
     }
 
-    public List<Coordinate> createStepFromALPHA(Vertex vertex) {
+    public void createStepFromALPHA(Vertex vertex) {
         List<Coordinate> streifenCoordinates = new ArrayList<>();
         System.out.println("ALPHA CALLED");
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
@@ -194,8 +314,8 @@ public class Builder {
         addRadiusLines();
 
         System.out.println("ALPHA TERMINATED");
-        return streifenCoordinates;
     }
+
     public void addRadiusLines() {
         Line line = new Line(ALPHA.getCoordinate(0).getX(), ALPHA.getCoordinate(0).getY(), ALPHA.getCoordinate(1).getX(), ALPHA.getCoordinate(1).getY());
         line.setStroke(Color.BLACK);
