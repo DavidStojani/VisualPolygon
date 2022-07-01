@@ -29,6 +29,7 @@ import javafx.scene.shape.StrokeLineCap;
 import javafx.util.Callback;
 
 import java.io.File;
+import java.net.URI;
 import java.util.Objects;
 
 
@@ -73,17 +74,18 @@ public class ViewController {
     }
 
     public void initList() {
-        uploadList.getItems().add(new File("output.txt"));
-        uploadList.getItems().add(new File("alfaBug.txt"));
-        uploadList.getItems().add(new File("alfaStucked.txt"));
-
+        uploadList.setItems(viewModel.getFileObservableList());
+        uploadList.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(File file, boolean empty) {
+                super.updateItem(file, empty);
+                setText(file == null ? null : file.getName());
+            }
+        });
         uploadList.setOnMouseClicked(click -> {
-            System.out.println("CLICKED");
             if (click.getClickCount() == 2) {
-                //Use ListView's getSelected Item
                 File f = uploadList.getSelectionModel().getSelectedItem();
                 uploadPolygon(f);
-                //use this to do whatever you want to. Open Link etc.
             }
         });
     }

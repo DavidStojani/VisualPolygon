@@ -2,6 +2,7 @@ package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
+import javafx.beans.binding.FloatExpression;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -35,11 +36,13 @@ public class ViewModel {
     private ObservableList<Vertex> vertices = FXCollections.observableArrayList();
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
     private WKTWriter wktWriter = new WKTWriter(3);
+    private ObservableList<File> fileObservableList = FXCollections.observableArrayList();
 
 
 
     public ViewModel(DataModel model) {
         this.model = model;
+        initListOfFiles();
     }
 
     /**
@@ -53,6 +56,18 @@ public class ViewModel {
     public void resetView() {
         model.reset();
         setLabelText("Reset Pressed! All Cleared Out!");
+    }
+
+    public void initListOfFiles() {
+        File folder = new File("src/test/resources");
+        File[] listOfFiles = folder.listFiles();
+
+        for (int i = 0; i < listOfFiles.length; i++) {
+            if (listOfFiles[i].isFile()) {
+                System.out.println("File " + listOfFiles[i].getName());
+                fileObservableList.add(listOfFiles[i]);
+            }
+        }
     }
 
     public StringProperty labelTextProperty() {
@@ -83,9 +98,11 @@ public class ViewModel {
 
     public void save() {
         try {
-            Writer writer = new FileWriter(setFile());
+            File saveFile = setFile();
+            Writer writer = new FileWriter(saveFile);
             wktWriter.writeFormatted(model.getPolygon(), writer);
             writer.close();
+            fileObservableList.add(saveFile);
             setLabelText("Polygon Saved!!");
         } catch (IOException e) {
             setLabelText("Save Failed!");
@@ -95,6 +112,7 @@ public class ViewModel {
 
     private File setFile() {
         FileChooser fileChooser = new FileChooser();
+        fileChooser.setInitialDirectory(new File("src/test/resources"));
         fileChooser.setTitle("Save");
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
@@ -102,20 +120,9 @@ public class ViewModel {
         return file;
     }
 
-
-    private File getFile() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Open");
-        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
-        fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showOpenDialog(new Popup());
-        return file;
-    }
-
-
     public void uploadFile(File file) {
-         WKTReader wktReader = new WKTReader();
-         WKTFileReader wktFileReader = new WKTFileReader(file, wktReader);
+        WKTReader wktReader = new WKTReader();
+        WKTFileReader wktFileReader = new WKTFileReader(file, wktReader);
 
         try {
             List a = wktFileReader.read();
