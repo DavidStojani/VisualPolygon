@@ -6,14 +6,24 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
-import javafx.scene.shape.StrokeLineCap;
+import javafx.stage.FileChooser;
+import javafx.stage.Popup;
 import lombok.Getter;
 import lombok.Setter;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTFileReader;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKTWriter;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
 import java.util.Stack;
 
 @Getter
@@ -24,6 +34,7 @@ public class ViewModel {
     private StringProperty labelText = new SimpleStringProperty("Welcome");
     private ObservableList<Vertex> vertices = FXCollections.observableArrayList();
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
+    private WKTWriter wktWriter = new WKTWriter(3);
 
 
 
@@ -40,6 +51,7 @@ public class ViewModel {
     }
 
     public void resetView() {
+        model.reset();
         setLabelText("Reset Pressed! All Cleared Out!");
     }
 
@@ -51,9 +63,9 @@ public class ViewModel {
         this.labelText.set(labelText);
     }
 
-    public Polygon getStepPolygon(int index) {
+    public Polygon getStepPolygon() {
         Polygon stepPolygon = new Polygon();
-        for (Coordinate coordinate : model.getStreifenCoordinates(index)) {
+        for (Coordinate coordinate : model.getStreifenCoordinates()) {
             stepPolygon.getPoints().add(coordinate.getX());
             stepPolygon.getPoints().add(coordinate.getY());
         }
@@ -62,30 +74,61 @@ public class ViewModel {
 
 
     public void setStepInfo() {
-        setLabelText("Step Created! " +"ACTIVE size: " + model.getStepInfo());
+        setLabelText("Step Created! " + "ACTIVE size: " + model.getStepInfo());
     }
 
     public Stack<Line> getParallels() {
         return model.getTheParallels();
     }
 
+    public void save() {
+        try {
+            Writer writer = new FileWriter(setFile());
+            wktWriter.writeFormatted(model.getPolygon(), writer);
+            writer.close();
+            setLabelText("Polygon Saved!!");
+        } catch (IOException e) {
+            setLabelText("Save Failed!");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private File setFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save");
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+        File file = fileChooser.showSaveDialog(new Popup());
+        return file;
+    }
 
 
-    /*    transition.setNode(camera);
-        transition.setDuration(Duration.seconds(4));
-        transition.setPath(polygon);
-        transition.setCycleCount(PathTransition.INDEFINITE);
-        transition.play();*/
-     /*   Line radius = new Line();
+    private File getFile() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open");
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
+        fileChooser.getExtensionFilters().add(extFilter);
+        File file = fileChooser.showOpenDialog(new Popup());
+        return file;
+    }
 
 
-        radius.startXProperty().bind(camera.centerXProperty());
-        radius.startYProperty().bind(camera.centerYProperty());
-        radius.setEndY(camera.getBaselineOffset());
-        radius.setEndX(camera.getBaselineOffset());
+    public void uploadFile() {
+         WKTReader wktReader = new WKTReader();
+         WKTFileReader wktFileReader = new WKTFileReader(getFile(), wktReader);
 
-        //radius.setEndX(camera.getLayoutBounds().getMinX());
-        //radius.setEndY(camera.get);*/
-
-
+        try {
+            List a = wktFileReader.read();
+            Geometry p = wktReader.read(a.get(0).toString());
+            Coordinate[] coordinates = p.getCoordinates();
+            for (int i = 0; i < coordinates.length - 1; i++) {
+                Coordinate coordinate = coordinates[i];
+                vertices.add(new Vertex(coordinate));
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

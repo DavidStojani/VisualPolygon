@@ -77,8 +77,6 @@ public class PolygonModified extends Polygon {
 
             Point p = new Point(xProperty, yProperty);
 
-            //p.setOnMouseReleased(mouseEvent -> updateStatus());
-            //Here can be added smth like "isVisible" at all not only from center
             if (vertices.get(idx).getIsVisible() == -1) {
                 p.changeColorToRed();
             } else if (vertices.get(idx).getIsVisible() == 1) {

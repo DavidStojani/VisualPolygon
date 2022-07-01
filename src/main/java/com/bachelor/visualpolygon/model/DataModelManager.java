@@ -8,6 +8,7 @@ import javafx.scene.shape.Line;
 import lombok.Getter;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Polygon;
 
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +34,7 @@ public class DataModelManager implements DataModel {
 
     @Override
     public void updateBuilder(List<Vertex> vertices, List<Double> camera) {
+
         builder.updateBuilder(vertices, camera);
     }
 
@@ -46,7 +48,12 @@ public class DataModelManager implements DataModel {
     }
 
     @Override
-    public List<Coordinate> getStreifenCoordinates(int index) {
+    public Polygon getPolygon() {
+        return builder.getPolygon();
+    }
+
+    @Override
+    public List<Coordinate> getStreifenCoordinates() {
         if (builder.getPolarSortedVertices().isEmpty()) {
             return null;
         }
@@ -61,5 +68,15 @@ public class DataModelManager implements DataModel {
     @Override
     public Stack<Line> getTheParallels() {
         return builder.getLineStack();
+    }
+
+    @Override
+    public void reset() {
+        builder.getLineStack().clear();
+        if(Objects.nonNull(builder.getActive())){
+            builder.getActive().clear();
+            //builder.getTempInvisible().clear();
+            //builder.getTempVisible().clear();
+        }
     }
 }

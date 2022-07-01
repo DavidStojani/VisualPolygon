@@ -65,7 +65,7 @@ public class ViewController {
     }
 
     public void nextStep() {
-        Polygon stepPoly = viewModel.getStepPolygon(index);
+        Polygon stepPoly = viewModel.getStepPolygon();
         /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*?
      /*   System.out.println("STEPPOLY COORD-----" + stepPoly.getPoints() );
         System.out.println("LAYOUT X-----" + stepPoly.getBoundsInParent());
@@ -98,7 +98,22 @@ public class ViewController {
         }
     }
 
+    public void updatePolygon() {
+        if (!isPolygonReady()) return;
+        if (Objects.isNull(camera)) {
+            viewModel.setLabelText("Polygon Updated! Click to add Camera");
+        }
+        viewModel.updatePolygon();
+        refreshView();
+    }
+
     public void playStep(ActionEvent actionEvent) {
+        if (!isPolygonReady()) return;
+        if (Objects.isNull(camera)) {
+            viewModel.setLabelText("Camera not yet in Polygon!");
+            return;
+        }
+
         if (viewModel.getParallels().empty()) {
             nextStep();
         } else {
@@ -108,10 +123,18 @@ public class ViewController {
     }
 
     public void savePolygon(ActionEvent actionEvent) {
+        if (!isPolygonReady()) return;
+
         viewModel.setLabelText("Saved was pressed");
+        viewModel.save();
     }
 
     public void uploadPolygon(ActionEvent actionEvent) {
+        resetApplication();
+        viewModel.uploadFile();
+        polygon = new PolygonModified();
+        updatePolygon();
+        refreshView();
         viewModel.setLabelText("Update was pressed");
     }
 
@@ -119,29 +142,16 @@ public class ViewController {
         root.getChildren().clear();
         camera = null;
         polyline.getPoints().clear();
-
-        polygon.getPoints().clear();
-        polygon.getVertices().clear();
-
+        if (Objects.nonNull(polygon)){
+            polygon.getPoints().clear();
+            polygon.getVertices().clear();
+        }
+        listPropertyForVertex.clear();
         cameraRequirements.clear();
         polygon = null;
         viewModel.resetView();
         index = 0;
     }
-
-    public void updateStatus() {
-        viewModel.updatePolygon();
-        refreshView();
-    }
-
-    public void drawStepPolygon(Polygon stepPolygon) {
-
-        stepPolygon.setStroke(Color.DARKRED);
-        stepPolygon.setStrokeWidth(0.1);
-        stepPolygon.setStrokeLineCap(StrokeLineCap.ROUND);
-        stepPolygon.setFill(Color.RED.deriveColor(0, 1, 1, 0.3));
-    }
-
 
     private void initMouseHandlerForPane() {
         mouseHandlerForPane = mouseEvent -> {
@@ -151,20 +161,19 @@ public class ViewController {
                 refreshLine();
             } else if (isPrimaryOnPaneAndFullPolygon(mouseEvent)) {
                 polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
-                updateStatus();
+                updatePolygon();
             }
 
             if (isPrimaryOnPointAndEmptyPolygon(mouseEvent)) {
                 Point point = (Point) mouseEvent.getTarget();
                 if (point.getCenterX() == polyline.getPoints().get(0) && point.getCenterY() == polyline.getPoints().get(1)) {
                     polygon = new PolygonModified();
-                    updateStatus();
+                    updatePolygon();
                 }
             }
             onSecondaryButton(mouseEvent);
         };
     }
-
 
     private void onSecondaryButton(MouseEvent mouseEvent) {
 
@@ -178,14 +187,14 @@ public class ViewController {
         if (isSecondaryOnPointAndFullPolygon(mouseEvent)) {
             Point point = (Point) mouseEvent.getTarget();
             polygon.removeVertexAndPoint(point);
-            updateStatus();
+            updatePolygon();
         }
 
         if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
             cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
             camera = Camera.createCamera(cameraRequirements);
-            camera.setOnMouseReleased(mouseEvent1 -> updateStatus());
-            updateStatus();
+            camera.setOnMouseReleased(mouseEvent1 -> updatePolygon());
+            updatePolygon();
         }
     }
 
@@ -202,12 +211,19 @@ public class ViewController {
         }
     }
 
+    private void drawStepPolygon(Polygon stepPolygon) {
+
+        stepPolygon.setStroke(Color.DARKRED);
+        stepPolygon.setStrokeWidth(0.1);
+        stepPolygon.setStrokeLineCap(StrokeLineCap.ROUND);
+        stepPolygon.setFill(Color.RED.deriveColor(0, 1, 1, 0.3));
+    }
+
     private void drawPolygon() {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
         root.getChildren().addAll(polygon.createModeratePoints());
     }
-
 
     private Polyline drawPolyline() {
         polyline.setStroke(Color.AZURE);
@@ -216,7 +232,6 @@ public class ViewController {
 
         return polyline;
     }
-
 
     private ObservableList<Point> createControlPointsFor(final ObservableList<Double> coordinates) {
         ObservableList<Point> points = FXCollections.observableArrayList();
@@ -236,6 +251,14 @@ public class ViewController {
             points.add(new Point(xProperty, yProperty));
         }
         return points;
+    }
+
+    private boolean isPolygonReady() {
+        if (listPropertyForVertex.isEmpty() || Objects.isNull(polygon)) {
+            viewModel.setLabelText("No Polygon formed yet, start Clicking, close the Polyline or Upload!");
+            return false;
+        }
+        return true;
     }
 
     private boolean isPrimaryAndEmptyPolygon(MouseEvent mouseEvent) {
