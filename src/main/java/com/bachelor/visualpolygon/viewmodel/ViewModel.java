@@ -113,9 +113,9 @@ public class ViewModel {
     }
 
 
-    public void uploadFile() {
+    public void uploadFile(File file) {
          WKTReader wktReader = new WKTReader();
-         WKTFileReader wktFileReader = new WKTFileReader(getFile(), wktReader);
+         WKTFileReader wktFileReader = new WKTFileReader(file, wktReader);
 
         try {
             List a = wktFileReader.read();

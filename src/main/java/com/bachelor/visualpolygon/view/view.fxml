@@ -3,15 +3,21 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="950.0" style="-fx-background-color: #604758" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
    <left>
       <VBox prefHeight="465.0" prefWidth="204.0" BorderPane.alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" onAction="#updateStatus" prefHeight="63.0" prefWidth="204.0" text="Update" />
+            <Button mnemonicParsing="false" onAction="#updatePolygon" prefHeight="63.0" prefWidth="204.0" text="Update" />
             <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0" prefWidth="204.0" text="Play Step" />
             <Button layoutX="10.0" layoutY="136.0" mnemonicParsing="false" onAction="#savePolygon" prefHeight="63.0" prefWidth="204.0" text="Save" />
-            <Button layoutX="10.0" layoutY="262.0" mnemonicParsing="false" onAction="#uploadPolygon" prefHeight="63.0" prefWidth="204.0" text="Upload" />
+            <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="55.0" prefWidth="204.0" style="-fx-background-color: #D2D2CF;" text="Upload Files">
+               <font>
+                  <Font size="15.0" />
+               </font>
+            </Label>
+            <ListView fx:id="uploadList" prefHeight="200.0" prefWidth="200.0" />
             <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#resetApplication" prefHeight="63.0" prefWidth="204.0" text="Reset" />
          </children>
       </VBox>
@@ -20,7 +26,7 @@
       <AnchorPane fx:id="pane" prefHeight="465.0" prefWidth="761.0" style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
-      <Label fx:id="statusText" alignment="CENTER" prefHeight="58.0" prefWidth="950.0" style="-fx-font-size: 18; -fx-background-color: grey;" text="Status" BorderPane.alignment="BOTTOM_LEFT">
+      <Label fx:id="statusText" alignment="CENTER" prefHeight="58.0" prefWidth="950.0" style="-fx-font-size: 18; -fx-background-color: #D2D2CF;" text="Status" BorderPane.alignment="BOTTOM_LEFT">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin></Label>

@@ -15,7 +15,10 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -23,7 +26,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
+import javafx.util.Callback;
 
+import java.io.File;
 import java.util.Objects;
 
 
@@ -33,6 +38,8 @@ public class ViewController {
     public AnchorPane pane;
     @FXML
     private Label statusText;
+    @FXML
+    private ListView<File> uploadList;
 
     private ViewModel viewModel;
 
@@ -60,27 +67,44 @@ public class ViewController {
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(root);
+        initList();
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
+    }
+
+    public void initList() {
+        uploadList.getItems().add(new File("output.txt"));
+        uploadList.getItems().add(new File("alfaBug.txt"));
+        uploadList.getItems().add(new File("alfaStucked.txt"));
+
+        uploadList.setOnMouseClicked(click -> {
+            System.out.println("CLICKED");
+            if (click.getClickCount() == 2) {
+                //Use ListView's getSelected Item
+                File f = uploadList.getSelectionModel().getSelectedItem();
+                uploadPolygon(f);
+                //use this to do whatever you want to. Open Link etc.
+            }
+        });
     }
 
     public void nextStep() {
         Polygon stepPoly = viewModel.getStepPolygon();
         /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*?
-     /*   System.out.println("STEPPOLY COORD-----" + stepPoly.getPoints() );
-        System.out.println("LAYOUT X-----" + stepPoly.getBoundsInParent());
-        System.out.println("LAYOUT Y-----" + pane.getBoundsInLocal());
+         /*   System.out.println("STEPPOLY COORD-----" + stepPoly.getPoints() );
+         System.out.println("LAYOUT X-----" + stepPoly.getBoundsInParent());
+         System.out.println("LAYOUT Y-----" + pane.getBoundsInLocal());
 
-        if (stepPoly.getBoundsInParent().getMaxX() > pane.getBoundsInLocal().getMaxX()) {
-            //stepPoly.getBoundsInLocal().getMaxX() = pane.getBoundsInLocal().getMaxX();
-            System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
-        }
+         if (stepPoly.getBoundsInParent().getMaxX() > pane.getBoundsInLocal().getMaxX()) {
+         //stepPoly.getBoundsInLocal().getMaxX() = pane.getBoundsInLocal().getMaxX();
+         System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
+         }
 
-        if (stepPoly.getBoundsInParent().getMaxY() > pane.getBoundsInLocal().getMaxY()) {
+         if (stepPoly.getBoundsInParent().getMaxY() > pane.getBoundsInLocal().getMaxY()) {
 
-            stepPoly.getPoints().replaceAll(aDouble -> aDouble == stepPoly.getBoundsInLocal().getMaxY() ? 0 : pane.getBoundsInLocal().getMaxY());
-            System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
-        }*/
+         stepPoly.getPoints().replaceAll(aDouble -> aDouble == stepPoly.getBoundsInLocal().getMaxY() ? 0 : pane.getBoundsInLocal().getMaxY());
+         System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
+         }*/
 
         viewModel.setStepInfo();
         if (stepPoly != null) {
@@ -129,9 +153,9 @@ public class ViewController {
         viewModel.save();
     }
 
-    public void uploadPolygon(ActionEvent actionEvent) {
+    public void uploadPolygon(File file) {
         resetApplication();
-        viewModel.uploadFile();
+        viewModel.uploadFile(file);
         polygon = new PolygonModified();
         updatePolygon();
         refreshView();
@@ -142,7 +166,7 @@ public class ViewController {
         root.getChildren().clear();
         camera = null;
         polyline.getPoints().clear();
-        if (Objects.nonNull(polygon)){
+        if (Objects.nonNull(polygon)) {
             polygon.getPoints().clear();
             polygon.getVertices().clear();
         }
