@@ -24,12 +24,14 @@ public class Vertex extends Coordinate {
     @ToString.Exclude
     private double r;
     @ToString.Exclude
+    @Getter
     private boolean inBlue;
     @ToString.Exclude
 
     private boolean grey;
-    @ToString.Exclude
     private double theta;
+
+    private double distanceToALPHA;
 
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;

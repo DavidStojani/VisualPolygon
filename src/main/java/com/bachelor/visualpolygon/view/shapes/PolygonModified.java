@@ -76,6 +76,13 @@ public class PolygonModified extends Polygon {
             });
 
             Point p = new Point(xProperty, yProperty);
+            p.setOnMouseClicked(mouseEvent ->{
+                System.out.println("==VERTEX PROPERTY===");
+                System.out.println("X -- " + vertices.get(idx).getXProperty().get());
+                System.out.println("Y -- " + vertices.get(idx).getYProperty().get());
+                System.out.println("THETA -- "+ vertices.get(idx).getTheta());
+
+            });
 
             if (vertices.get(idx).getIsVisible() == -1) {
                 p.changeColorToRed();

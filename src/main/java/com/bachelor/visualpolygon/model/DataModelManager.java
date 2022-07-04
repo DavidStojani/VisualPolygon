@@ -58,7 +58,7 @@ public class DataModelManager implements DataModel {
             return null;
         }
 
-        builder.createStep(builder.findNextAfterALPHA());
+        builder.createStep(builder.getNextVertex());
         return builder.getStepCoordinates();
 
         //return builder.createStreifeForALPHA(builder.getNextVertex());

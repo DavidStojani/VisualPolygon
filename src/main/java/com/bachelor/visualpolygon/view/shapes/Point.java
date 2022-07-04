@@ -45,7 +45,10 @@ public class Point extends Circle {
 
 
     private void enableDragForGolden() {
-        setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
+        setOnMousePressed(mouseEvent -> {
+            this.getScene().setCursor(javafx.scene.Cursor.MOVE);
+
+        });
         setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
         setOnMouseDragged(mouseEvent -> {
             double newX = mouseEvent.getX();

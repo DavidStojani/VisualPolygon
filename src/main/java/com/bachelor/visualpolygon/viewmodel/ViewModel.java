@@ -113,6 +113,7 @@ public class ViewModel {
     private File setFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setInitialDirectory(new File("src/test/resources"));
+        fileChooser.setInitialFileName("Test.txt");
         fileChooser.setTitle("Save");
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
