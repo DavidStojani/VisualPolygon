@@ -35,6 +35,7 @@ public class Vertex extends Coordinate {
 
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
+    private boolean inWhite;
 
 
     public Vertex(Coordinate c) {
@@ -66,4 +67,5 @@ public class Vertex extends Coordinate {
     public void setInGrey(boolean b) {
         grey= b;
     }
+
 }

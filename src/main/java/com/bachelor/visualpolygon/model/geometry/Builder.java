@@ -65,7 +65,7 @@ public class Builder {
      * TODO implement both for ALPHA and BETA
      */
     public void createStep(Vertex vertex) {
-        System.out.println("[ON builder.createStreife] ::: getting " + vertex + " as parameter");
+        System.out.println("[ON builder.createStreife]PARAMETER ::: " + vertex.getCoordinate());
         createStepFromBETA(vertex);
         setActive();
         //setTemps();
@@ -85,39 +85,42 @@ public class Builder {
     }
 
     public Vertex findNextAfterBETA() {
-
-        if (Objects.isNull(active) || active.size() == 1) {
-            return nextVertex;
+        if (active.size() == 1) {
+            active.get(0).setInGrey(true);
+            return active.get(0);
         }
-        active.stream().sorted(Comparator.comparing(Vertex::getTheta));
 
         Map<Double, Vertex> mapper = new HashMap<>();
-        List<Double> keys = new ArrayList<>();
         for (Vertex v : active) {
             Double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
             mapper.put(angle, v);
-            keys.add(angle);
         }
+        System.out.println("=====MAPPER=====   --size " + mapper.size());
+        mapper.forEach(((aDouble, vertex) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex.getCoordinate() + " ]")));
 
-        Double d = Collections.min(keys);
-        keys.removeIf(aDouble -> aDouble == d);
-        mapper.remove(d);
+        System.out.println("---ON THE LINE---");
+        Vertex onTheLine = mapper.remove(Collections.min(mapper.keySet()));
+        System.out.println("[ " + onTheLine.getCoordinate() + " ]" + " is removed from mapper!---MAPPER SIZE --- " + mapper.size());
 
-        Vertex result = mapper.get(Collections.min(keys));
+        System.out.println("--- NEXT on MAPPER/ACTIVE is ---");
 
+        Vertex result = mapper.get(Collections.min(mapper.keySet()));
+        System.out.println("[ " + result.getCoordinate() + " ]");
 
         /**TODO: Was passiert wenn next Vertex in gleiche Linie liegt?*/
-        FuzzyPointLocator locator = new FuzzyPointLocator(stepPolygon, 2);
+        FuzzyPointLocator locator = new FuzzyPointLocator(stepPolygon, 1.5);
         if (locator.getLocation(result.getCoordinate()) == 1) {
-            System.out.println(" NEXT Point on BETA  " + result.getCoordinate());
-            Double key = Collections.min(keys);
-            keys.removeIf(aDouble -> aDouble == key);
-            mapper.remove(key);
-            result = mapper.get(Collections.min(keys));
+            System.out.println(" ++++NEXT Point on BETA+++++ " + result.getCoordinate());
+            result = mapper.remove(Collections.min(mapper.keySet()));
+            result.setInWhite(true);
         }
 
-        result.setInGrey(true);
-        return result;
+        if (mapper.keySet().isEmpty()) {
+            throw new RuntimeException("KEYs are EMPTY" + mapper.keySet().size());
+        }
+        Vertex res = mapper.get(Collections.min(mapper.keySet()));
+        res.setInGrey(true);
+        return res;
 
     }
 
@@ -172,6 +175,8 @@ public class Builder {
                 active.add(vertex);
             }
         }
+        active.stream().sorted(Comparator.comparing(Vertex::getTheta));
+        System.out.println("===ACTIVE CREATED AND SORTED--- SIZE-- " + active.size());
     }
 
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
@@ -232,7 +237,6 @@ public class Builder {
     //to the viewController to render the view. In the view they should not cross the borders of pane
     public void createStepFromBETA(Vertex vertex) {
         CoordinateList streifenCoordinates = new CoordinateList();
-        System.out.println("BETA CALLED");
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
         streifenCoordinates.add(rightPointOnCircle);
@@ -248,9 +252,9 @@ public class Builder {
         stepCoordinates = streifenCoordinates;
         setALPHA(streifenCoordinates.get(3), streifenCoordinates.get(2));
         setBETA(streifenCoordinates.get(0), streifenCoordinates.get(1));
-        addRadiusLines(BETA);
+        addRadiusLines(BETA, vertex);
 
-        System.out.println("BETA TERMINDATED");
+        System.out.println("BETA STEP TERMINDATED");
     }
 
     public void createStepFromALPHA(Vertex vertex) {
@@ -270,15 +274,14 @@ public class Builder {
         stepCoordinates = streifenCoordinates;
         setALPHA(streifenCoordinates.get(0), streifenCoordinates.get(1));
         setBETA(streifenCoordinates.get(3), streifenCoordinates.get(2));
-        addRadiusLines(ALPHA);
+        addRadiusLines(ALPHA, vertex);
 
         System.out.println("ALPHA TERMINATED");
     }
 
 
-
-    public void addRadiusLines(LineSegment AB) {
-        Line line = new Line(AB.getCoordinate(0).getX(), AB.getCoordinate(0).getY(), AB.getCoordinate(1).getX(), AB.getCoordinate(1).getY());
+    public void addRadiusLines(LineSegment AB, Vertex vertex) {
+        Line line = new Line(AB.getCoordinate(0).getX(), AB.getCoordinate(0).getY(), vertex.getXCoordinate(), vertex.getYCoordinate());
         line.setStroke(Color.BLACK);
         line.setStrokeWidth(1.9);
         lineStack.push(line);

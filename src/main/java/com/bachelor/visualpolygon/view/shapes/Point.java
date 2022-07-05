@@ -40,6 +40,9 @@ public class Point extends Circle {
     public void changeColorToGrey() {
         setStroke(Color.GRAY);
     }
+    public void changeColorToWhite() {
+        setStroke(Color.WHITE);
+    }
 
     // make a node movable by dragging it around with the mouse.
 

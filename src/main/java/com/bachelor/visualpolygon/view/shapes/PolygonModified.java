@@ -76,11 +76,11 @@ public class PolygonModified extends Polygon {
             });
 
             Point p = new Point(xProperty, yProperty);
-            p.setOnMouseClicked(mouseEvent ->{
+            p.setOnMouseClicked(mouseEvent -> {
                 System.out.println("==VERTEX PROPERTY===");
                 System.out.println("X -- " + vertices.get(idx).getXProperty().get());
                 System.out.println("Y -- " + vertices.get(idx).getYProperty().get());
-                System.out.println("THETA -- "+ vertices.get(idx).getTheta());
+                System.out.println("THETA -- " + vertices.get(idx).getTheta());
 
             });
 
@@ -89,11 +89,14 @@ public class PolygonModified extends Polygon {
             } else if (vertices.get(idx).getIsVisible() == 1) {
                 p.changeColorToGreen();
             }
-            if (vertices.get(idx).isInBlue()){
+            if (vertices.get(idx).isInBlue()) {
                 p.changeColorToBlue();
             }
-            if (vertices.get(idx).isGrey()){
+            if (vertices.get(idx).isGrey()) {
                 p.changeColorToGrey();
+            }
+            if (vertices.get(idx).isInWhite()) {
+                p.changeColorToWhite();
             }
             points.add(p);
         }
