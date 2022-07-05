@@ -31,7 +31,7 @@ public class Vertex extends Coordinate {
     private boolean grey;
     private double theta;
 
-    private double distanceToALPHA;
+    private double angleToBETA;
 
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;

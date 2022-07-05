@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.algorithm.Angle;
 import org.locationtech.jts.algorithm.Orientation;
-import org.locationtech.jts.algorithm.PointLocator;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
@@ -34,6 +33,8 @@ public class Builder {
     private List<Vertex> active;
     private List<Vertex> tempVisible;
     private List<Vertex> tempInvisible;
+    private final double EPSILON = 0.0000005;
+    private Map<Double, Vertex> bigMap = new HashMap<>();
 
 
     /**
@@ -57,7 +58,7 @@ public class Builder {
         polygon = createGeometryPolygon(vertices);
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
-        nextVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
+
     }
 
 
@@ -65,15 +66,89 @@ public class Builder {
      * TODO implement both for ALPHA and BETA
      */
     public void createStep(Vertex vertex) {
-        System.out.println("[ON builder.createStreife]PARAMETER ::: " + vertex.getCoordinate());
-        createStepFromBETA(vertex);
+        bigMap.clear();
+        if (Objects.isNull(vertex)) {
+            vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
+        }
+        System.out.println("========================= ON VERTEX ------- " + vertex.getCoordinate());
+
+        if (isInsideActive(vertex)) {
+            System.out.println("+++++++IS INSIDE+++++++++++");
+            vertex.setInGrey(true);
+            createStepFromBETA(vertex);
+        }else {
+            System.out.println("-------IS OUTSIDE-----------");
+            vertex.setInBlue(true);
+            createStepFromALPHA(vertex);
+        }
         setActive();
+        nextVertex = findNextAfterALPHA();
+        /*if (Objects.isNull(vertex)) {
+            vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
+            createStepFromALPHA(vertex);
+            setActive();
+            Vertex temp1 = findNextAfterBETA();
+            Vertex temp2 = findNextAfterALPHA();
+            System.out.println("=====MAPPER FOR BIG FIRST=====   --size " + bigMap.size());
+            bigMap.forEach(((aDouble, vertex2) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex2.getCoordinate() + " ]")));
+            if (Collections.min(bigMap.keySet()) != 0) {
+                nextVertex = bigMap.get(Collections.min(bigMap.keySet()));
+                nextVertex.setInBlue(true);
+                return;
+            }
+            nextVertex = bigMap.get(Collections.max(bigMap.keySet()));
+            nextVertex.setInBlue(true);
+            return;
+        }
+
+        if (isInsideActive(vertex)) {
+            createStepFromBETA(vertex);
+            setActive();
+            Vertex temp1 = findNextAfterBETA();
+            Vertex temp2 = findNextAfterALPHA();
+            System.out.println("=====MAPPER FOR BIG createBETA=====   --size " + bigMap.size());
+            bigMap.forEach(((aDouble, vertex2) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex2.getCoordinate() + " ]")));
+            if (Collections.min(bigMap.keySet()) != 0) {
+                nextVertex = bigMap.get(Collections.min(bigMap.keySet()));
+                nextVertex.setInBlue(true);
+                return;
+            }
+            nextVertex = bigMap.get(Collections.max(bigMap.keySet()));
+            nextVertex.setInBlue(true);
+            return;
+
+        }
+
+        createStepFromALPHA(vertex);
+        setActive();
+        Vertex temp1 = findNextAfterBETA();
+        Vertex temp2 = findNextAfterALPHA();
+        System.out.println("=====MAPPER FOR BIG createALPHA=====   --size " + bigMap.size());
+        bigMap.forEach(((aDouble, vertex2) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex2.getCoordinate() + " ]")));
+        if (Collections.min(bigMap.keySet()) != 0) {
+            nextVertex = bigMap.get(Collections.min(bigMap.keySet()));
+            nextVertex.setInBlue(true);
+            return;
+        }
+        nextVertex = bigMap.get(Collections.max(bigMap.keySet()));
+        nextVertex.setInBlue(true);
+        return;
+*/
+
+/*
+        System.out.println("[ON builder.createStreife]PARAMETER ::: " + vertex.getCoordinate());
+
         //setTemps();
 
         //resetColors();
         nextVertex = findNextAfterBETA();
+        Vertex temp = findNextAfterALPHA();
+
+        System.out.println(" BIG MAP ");
+        bigMap.forEach(((aDouble, vertex1) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex1.getCoordinate() + " ]")));
 
         vertex.setInBlue(true);
+*/
 
     }
 
@@ -84,52 +159,34 @@ public class Builder {
         }
     }
 
+
     public Vertex findNextAfterBETA() {
+        double minAgle = 999999;
+        Vertex tempBETA = null;
         if (active.size() == 1) {
-            active.get(0).setInGrey(true);
-            return active.get(0);
+            System.out.println("ONLY ONE ON ACTIVE");
+            return new Vertex(0, 0);
         }
 
-        Map<Double, Vertex> mapper = new HashMap<>();
+        FuzzyPointLocator locator = new FuzzyPointLocator(stepPolygon, 1.1);
+
         for (Vertex v : active) {
-            Double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
-            mapper.put(angle, v);
-        }
-        System.out.println("=====MAPPER=====   --size " + mapper.size());
-        mapper.forEach(((aDouble, vertex) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex.getCoordinate() + " ]")));
-
-        System.out.println("---ON THE LINE---");
-        Vertex onTheLine = mapper.remove(Collections.min(mapper.keySet()));
-        System.out.println("[ " + onTheLine.getCoordinate() + " ]" + " is removed from mapper!---MAPPER SIZE --- " + mapper.size());
-
-        System.out.println("--- NEXT on MAPPER/ACTIVE is ---");
-
-        Vertex result = mapper.get(Collections.min(mapper.keySet()));
-        System.out.println("[ " + result.getCoordinate() + " ]");
-
-        /**TODO: Was passiert wenn next Vertex in gleiche Linie liegt?*/
-        FuzzyPointLocator locator = new FuzzyPointLocator(stepPolygon, 1.5);
-        if (locator.getLocation(result.getCoordinate()) == 1) {
-            System.out.println(" ++++NEXT Point on BETA+++++ " + result.getCoordinate());
-            result = mapper.remove(Collections.min(mapper.keySet()));
-            result.setInWhite(true);
+            System.out.println("ANGLE ---- " + Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1) + "  VERTEX----- " + v.getCoordinate());
+            v.setAngleToBETA(Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1));
+            if (Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1) < minAgle) {
+                if (locator.getLocation(v.getCoordinate()) != Location.BOUNDARY) {
+                    minAgle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
+                    tempBETA = v;
+                }
+            }
         }
 
-        if (mapper.keySet().isEmpty()) {
-            throw new RuntimeException("KEYs are EMPTY" + mapper.keySet().size());
-        }
-        Vertex res = mapper.get(Collections.min(mapper.keySet()));
-        res.setInGrey(true);
-        return res;
+        System.out.println("RESULT OF FINDBETA ---" + tempBETA.getCoordinate());
 
+        return tempBETA;
     }
 
     public Vertex findNextAfterALPHA() {
-
-        if (Objects.isNull(active) || active.isEmpty()) {
-            return polarSortedVertices.get(0);
-        }
-        active.stream().sorted(Comparator.comparing(Vertex::getTheta));
 
         List<Vertex> leftToALPHA = getPolarSortedVertices().stream()
                 .filter(vertex -> ALPHA.orientationIndex(vertex.getCoordinate()) == -1)
@@ -137,31 +194,43 @@ public class Builder {
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
 
-        Map<Double, Vertex> mapper = new HashMap<>();
-        List<Double> keys = new ArrayList<>();
+
+        double minAgle = 999999;
+        Vertex tempALFA = null;
         for (Vertex v : leftToALPHA) {
-            Double angle = Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1);
-            mapper.put(angle, v);
-            keys.add(angle);
+            if (Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1) < minAgle) {
+                minAgle = Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1);
+                tempALFA = v;
+            }
         }
 
-        Double d = Collections.min(keys);
+        Vertex fromBeta = findNextAfterBETA();
 
-        Vertex result = mapper.get(d);
+        if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) < Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1)) {
+            System.out.println("BETA  SMALLER THAN APLHA");
+            return fromBeta;
+        }
 
-        result.setInBlue(true);
-        return result;
+
+        return tempALFA;
     }
 
 
     public boolean isInsideActive(Vertex vertex) {
-        int i = Orientation.index(ALPHA.getCoordinate(0), ALPHA.getCoordinate(1), vertex.getCoordinate());
+       /* int i = Orientation.index(ALPHA.getCoordinate(0), ALPHA.getCoordinate(1), vertex.getCoordinate());
         if (i == Orientation.LEFT) {
             System.out.println("[ON builder.isInsideActive]" + i + "ON THE LEFT");
             return true;
         }
         System.out.println("[ON builder.isInsideActive]" + i + "ON THE RIGHT");
 
+        return false;*/
+        if (Objects.isNull(active)){
+            return false;
+        }
+        if (active.contains(vertex)) {
+            return true;
+        }
         return false;
     }
 
@@ -169,14 +238,15 @@ public class Builder {
     private void setActive() {
         active = new ArrayList<>();
         /**TODO Warum ist Tolerance 2 ?*/
-        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 2);
+        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 1.1);
         for (Vertex vertex : getPolarSortedVertices()) {
             if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
                 active.add(vertex);
             }
         }
         active.stream().sorted(Comparator.comparing(Vertex::getTheta));
-        System.out.println("===ACTIVE CREATED AND SORTED--- SIZE-- " + active.size());
+        System.out.println("===ACTIVE CREATED AND SORTED--- SIZE-- ");
+        active.forEach(System.out::println);
     }
 
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
