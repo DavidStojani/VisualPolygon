@@ -76,7 +76,7 @@ public class Builder {
             System.out.println("+++++++IS INSIDE+++++++++++");
             vertex.setInGrey(true);
             createStepFromBETA(vertex);
-        }else {
+        } else {
             System.out.println("-------IS OUTSIDE-----------");
             vertex.setInBlue(true);
             createStepFromALPHA(vertex);
@@ -165,7 +165,7 @@ public class Builder {
         Vertex tempBETA = null;
         if (active.size() == 1) {
             System.out.println("ONLY ONE ON ACTIVE");
-            return new Vertex(0, 0);
+            return active.get(0);
         }
 
         FuzzyPointLocator locator = new FuzzyPointLocator(stepPolygon, 1.1);
@@ -207,8 +207,13 @@ public class Builder {
         Vertex fromBeta = findNextAfterBETA();
 
         if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) < Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1)) {
-            System.out.println("BETA  SMALLER THAN APLHA");
-            return fromBeta;
+            if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) != 0) {
+                if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) > EPSILON) {
+                    System.out.println("BETA  SMALLER THAN APLHA ::: BETA is" + Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1));
+                    System.out.println("ALFA IS   " + Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1));
+                    return fromBeta;
+                }
+            }
         }
 
 
@@ -225,7 +230,7 @@ public class Builder {
         System.out.println("[ON builder.isInsideActive]" + i + "ON THE RIGHT");
 
         return false;*/
-        if (Objects.isNull(active)){
+        if (Objects.isNull(active)) {
             return false;
         }
         if (active.contains(vertex)) {
@@ -237,7 +242,6 @@ public class Builder {
 
     private void setActive() {
         active = new ArrayList<>();
-        /**TODO Warum ist Tolerance 2 ?*/
         FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 1.1);
         for (Vertex vertex : getPolarSortedVertices()) {
             if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
