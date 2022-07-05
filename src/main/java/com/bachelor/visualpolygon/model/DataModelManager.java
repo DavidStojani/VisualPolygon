@@ -57,11 +57,8 @@ public class DataModelManager implements DataModel {
         if (builder.getPolarSortedVertices().isEmpty()) {
             return null;
         }
-
         builder.createStep(builder.getNextVertex());
         return builder.getStepCoordinates();
-
-        //return builder.createStreifeForALPHA(builder.getNextVertex());
     }
 
 

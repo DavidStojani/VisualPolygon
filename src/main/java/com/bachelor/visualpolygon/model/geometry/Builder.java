@@ -62,7 +62,7 @@ public class Builder {
 
 
     /**
-     * TODO Here sometimes ends in a loop and sometimes calls wrong function for points inside active
+     * TODO implement both for ALPHA and BETA
      */
     public void createStep(Vertex vertex) {
         System.out.println("[ON builder.createStreife] ::: getting " + vertex + " as parameter");
@@ -73,12 +73,7 @@ public class Builder {
         //resetColors();
         nextVertex = findNextAfterBETA();
 
-
         vertex.setInBlue(true);
-        if (Orientation.index(BETA.p0, vertex, nextVertex) == Orientation.COLLINEAR) {
-            System.out.println("IS COLLINEAR");
-        }
-
 
     }
 
@@ -95,16 +90,6 @@ public class Builder {
             return nextVertex;
         }
         active.stream().sorted(Comparator.comparing(Vertex::getTheta));
-        System.out.println("====ACTIVe =====");
-
-       /* List<Vertex> leftToBETA = getPolarSortedVertices().stream()
-                .filter(vertex -> BETA.orientationIndex(vertex.getCoordinate()) == -1)
-                .filter(vertex -> active.contains(vertex))
-                .sorted(Comparator.comparing(Vertex::getTheta).reversed())
-                .collect(Collectors.toList());
-
-        System.out.println("======LEFT TO BETAA=====");
-        leftToBETA.forEach(System.out::println);*/
 
         Map<Double, Vertex> mapper = new HashMap<>();
         List<Double> keys = new ArrayList<>();
@@ -291,10 +276,6 @@ public class Builder {
     }
 
 
-    public LineSegment getAlphaForVertex(Vertex vertex) {
-        Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
-        return new LineSegment(leftPointOnCircle, getExtentCoordinateForALPHA(vertex));
-    }
 
     public void addRadiusLines(LineSegment AB) {
         Line line = new Line(AB.getCoordinate(0).getX(), AB.getCoordinate(0).getY(), AB.getCoordinate(1).getX(), AB.getCoordinate(1).getY());
