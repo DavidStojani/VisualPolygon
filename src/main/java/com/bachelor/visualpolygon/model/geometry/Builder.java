@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 @Getter
 public class Builder extends Initializer {
 
-    public final static GeometryCamera camera = new GeometryCamera();
+    public static final GeometryCamera camera = new GeometryCamera();
     Polygon polygon;
     Polygon stepPolygon;
     List<Vertex> vertices;
@@ -57,11 +57,10 @@ public class Builder extends Initializer {
      */
     public void init() {
         polygon = createGeometryPolygon(vertices);
-        calculatePolarCoordinates(vertices, camera);
+        calculatePolarCoordinates(vertices);
         polarSortedVertices = sortPolarCoordinate(vertices);
         firstVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
     }
-
 
 
     public void createStep(Vertex vertex) {
@@ -88,7 +87,7 @@ public class Builder extends Initializer {
 
     public Vertex findNextVertex() {
         if (active.isEmpty()) {
-            throw new RuntimeException("active  IS EMPTYYYY");
+            throw new RuntimeException("active  IS EMPTY");
         }
         Vertex tempALFA = null;
         double angleToALPHA = 999999;
@@ -103,11 +102,9 @@ public class Builder extends Initializer {
 
         for (Vertex v : active) {
             double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
-            if (angle < angleToBETA && angle > 0) {
-                if (angle > EPSILON) {
-                    angleToBETA = angle;
-                    tempBETA = v;
-                }
+            if (angle < angleToBETA && angle > 0 && angle > EPSILON) {
+                angleToBETA = angle;
+                tempBETA = v;
             }
         }
 
@@ -223,7 +220,7 @@ public class Builder extends Initializer {
 
     private Coordinate getExtentCoordinateForBETA(Vertex vertex) {
         Vector2D vector = new Vector2D(camera.getRightTangentPoint(vertex), vertex.getCoordinate());
-        double k = getMaxDistanceFrom(camera) / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
+        double k = getMaxDistanceFrom() / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
         Vector2D extentVector = vector.multiply(k);
         double x = extentVector.getX() + camera.getRightTangentPoint(vertex).getX();
         double y = extentVector.getY() + camera.getRightTangentPoint(vertex).getY();
@@ -232,7 +229,7 @@ public class Builder extends Initializer {
 
     private Coordinate getExtentCoordinateForALPHA(Vertex vertex) {
         Vector2D vector = new Vector2D(camera.getLeftTangentPoint(vertex), vertex.getCoordinate());
-        double k = getMaxDistanceFrom(camera) / (camera.getLeftTangentPoint(vertex).distance(vertex.getCoordinate()));
+        double k = getMaxDistanceFrom() / (camera.getLeftTangentPoint(vertex).distance(vertex.getCoordinate()));
         Vector2D extentVector = vector.multiply(k);
         double x = extentVector.getX() + camera.getLeftTangentPoint(vertex).getX();
         double y = extentVector.getY() + camera.getLeftTangentPoint(vertex).getY();

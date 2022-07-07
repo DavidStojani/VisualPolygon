@@ -15,21 +15,13 @@ public class Vertex extends Coordinate {
     private Vertex previousVertex;
     private Vertex nextVertex;
     private boolean isPrime;
-    private double r;
-
     private double theta;
-
-    private double angleToBETA;
-
-
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
-    private boolean inWhite;
     private int visited = 0;
 
 
     public Vertex(Coordinate c) {
-
         xProperty = new SimpleDoubleProperty(c.getX());
         yProperty = new SimpleDoubleProperty(c.getY());
     }
@@ -39,7 +31,6 @@ public class Vertex extends Coordinate {
         yProperty = new SimpleDoubleProperty(yCoordinate);
         xProperty.addListener((observableValue, number, t1) -> xProperty.set(t1.doubleValue()));
         yProperty.addListener((observableValue, number, t1) -> yProperty.set(t1.doubleValue()));
-
     }
 
     public Coordinate getCoordinate() {

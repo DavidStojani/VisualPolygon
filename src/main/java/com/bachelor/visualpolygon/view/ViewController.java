@@ -11,26 +11,21 @@ import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleListProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
-import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
-import javafx.util.Callback;
 
 import java.io.File;
-import java.net.URI;
 import java.util.Objects;
 
 
@@ -48,12 +43,12 @@ public class ViewController {
     private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
 
-    private ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
+    private final ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
     private PolygonModified polygon;
-    private Polyline polyline;
+    private final Polyline polyline;
     private Camera camera;
-    private ListProperty<Vertex> listPropertyForVertex;
-    private ListProperty<Double> listPropertyForCamera;
+    private final ListProperty<Vertex> listPropertyForVertex;
+    private final ListProperty<Double> listPropertyForCamera;
 
 
 
@@ -131,7 +126,7 @@ public class ViewController {
         refreshView();
     }
 
-    public void playStep(ActionEvent actionEvent) {
+    public void playStep() {
         if (!isPolygonReady()) return;
         if (Objects.isNull(camera)) {
             viewModel.setLabelText("Camera not yet in Polygon!");

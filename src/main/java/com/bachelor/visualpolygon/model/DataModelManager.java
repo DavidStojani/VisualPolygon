@@ -47,7 +47,7 @@ public class DataModelManager implements DataModel {
 
     @Override
     public boolean isScanReady() {
-       return builder.IsScanComplete();
+       return builder.isScanComplete();
     }
 
 
@@ -77,8 +77,8 @@ public class DataModelManager implements DataModel {
         builder.setNextVertex(null);
         if(Objects.nonNull(builder.getActive())){
             builder.getActive().clear();
-            //builder.getTempInvisible().clear();
-            //builder.getTempVisible().clear();
+            builder.getTempInvisible().clear();
+            builder.getTempVisible().clear();
         }
     }
 }

@@ -14,16 +14,16 @@ import java.util.stream.Collectors;
 @Getter
 public abstract class Initializer {
     static final GeometryFactory factory = new GeometryFactory();
-    final double EPSILON = 0.0000005;
+    static final double EPSILON = 0.0000005;
     List<Vertex> polarSortedVertices;
     Stack<Line> lineStack = new Stack<>();
     Vertex firstVertex;
 
 
-     void calculatePolarCoordinates(List<Vertex> vertexList, GeometryCamera camera) {
+     void calculatePolarCoordinates(List<Vertex> vertexList) {
         double theta;
         for (Vertex vertex : vertexList) {
-            theta = Angle.angleBetweenOriented(vertexList.get(0), camera.getCenter(), vertex.getCoordinate());
+            theta = Angle.angleBetweenOriented(vertexList.get(0), Builder.camera.getCenter(), vertex.getCoordinate());
             theta = Angle.normalizePositive(theta);
             vertex.setTheta(theta);
         }
@@ -34,10 +34,9 @@ public abstract class Initializer {
         if (vertices.isEmpty()) {
             throw new RuntimeException("THIS List of Vertices IS EMPTY");
         }
-        List<Vertex> vertexList = vertices.stream()
+        return vertices.stream()
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
-        return vertexList;
     }
 
     void addToGreenLines(LineSegment greenLine) {
@@ -77,23 +76,20 @@ public abstract class Initializer {
         coordinates.add(nextVertex.getCoordinate());
         coordinates.add(actual.getCoordinate());
         coordinates.add(base);
-        if (Area.ofRing(coordinates.toCoordinateArray()) == 0) {
-            return true;
-        }
-        return false;
+        return Area.ofRing(coordinates.toCoordinateArray()) == 0;
     }
 
-    double getMaxDistanceFrom(GeometryCamera camera) {
+    double getMaxDistanceFrom() {
         double max = 0;
         for (Vertex vertex : polarSortedVertices) {
-            if (max < vertex.getCoordinate().distance(camera.getRightTangentPoint(vertex))) {
-                max = vertex.getCoordinate().distance(camera.getRightTangentPoint(vertex));
+            if (max < vertex.getCoordinate().distance(Builder.camera.getRightTangentPoint(vertex))) {
+                max = vertex.getCoordinate().distance(Builder.camera.getRightTangentPoint(vertex));
             }
         }
         return max;
     }
 
-    public boolean IsScanComplete() {
+    public boolean isScanComplete() {
         return firstVertex.getVisited() == 4;
     }
 

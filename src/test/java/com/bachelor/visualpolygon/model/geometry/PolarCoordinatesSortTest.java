@@ -31,7 +31,6 @@ class PolarCoordinatesSortTest {
                 new Coordinate(746, 184),
                 new Coordinate(26, 60)});
 
-        sort = new Initializer();
     }
 
 

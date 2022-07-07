@@ -2,7 +2,6 @@ package com.bachelor.visualpolygon.view.shapes;
 
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.Cursor;
 import javafx.scene.paint.Color;
@@ -16,8 +15,6 @@ import lombok.NoArgsConstructor;
 public class Camera extends Circle {
 
     private static Camera camera;
-    private ObservableList cameraDetails = FXCollections.observableArrayList();
-    public static boolean created = false;
 
     public Camera(DoubleProperty x, DoubleProperty y, DoubleProperty r) {
 
@@ -26,7 +23,6 @@ public class Camera extends Circle {
         x.bind(centerXProperty());
         y.bind(centerYProperty());
         r.bindBidirectional(radiusProperty());
-        created = true;
         enableDrag();
     }
 
@@ -62,7 +58,7 @@ public class Camera extends Circle {
             if (newX > 0 && newX < getScene().getWidth()) {
                 setCenterX(newX);
             }
-            double newY = mouseEvent.getY(); //+ dragDelta.y;
+            double newY = mouseEvent.getY();
             if (newY > 0 && newY < getScene().getHeight()) {
                 setCenterY(newY);
             }
@@ -88,7 +84,7 @@ public class Camera extends Circle {
         this.setOnScroll(scrollEvent -> {
             double zoomFactor = 1.05;
             double deltaY = scrollEvent.getDeltaY();
-            System.out.println("DeltaY::" + deltaY + '\n' + getRadius());
+            /***TODO: Radius scrolling makes problem*/
             if (deltaY > 0) {
                 zoomFactor = 2.0 - zoomFactor;
                 setScaleX(getScaleX() * zoomFactor);
@@ -96,7 +92,6 @@ public class Camera extends Circle {
                 setRadius(getRadius() * zoomFactor);
                 setStrokeWidth(getStrokeWidth() * zoomFactor);
 
-                System.out.println("DeltaY::" + deltaY + '\n' + radiusProperty());
 
             } else if (deltaY < 0) {
                 zoomFactor = 0.1 + zoomFactor;
@@ -109,8 +104,4 @@ public class Camera extends Circle {
         });
     }
 
-
-    public static boolean isCreated() {
-        return created;
-    }
 }

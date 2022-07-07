@@ -10,7 +10,6 @@ import javafx.scene.shape.StrokeType;
 public class Point extends Circle {
 
 
-
     public Point(DoubleProperty x, DoubleProperty y) {
 
         super(x.get(), y.get(), 6);
@@ -23,27 +22,22 @@ public class Point extends Circle {
         enableDragForGolden();
     }
 
-   public void changeColorToRed() {
-       setFill(Color.RED.deriveColor(1, 0.7, 1, 0.3));
-       setStroke(Color.RED);
-   }
+    public void changeColorToRed() {
+        setFill(Color.RED.deriveColor(1, 0.7, 1, 0.3));
+        setStroke(Color.RED);
+    }
 
-   public void changeColorToGreen() {
-       setFill(Color.GREEN.deriveColor(1, 0.7, 1, 0.3));
-       setStroke(Color.GREEN);
-   }
-
-
+    public void changeColorToGreen() {
+        setFill(Color.GREEN.deriveColor(1, 0.7, 1, 0.3));
+        setStroke(Color.GREEN);
+    }
 
 
     // make a node movable by dragging it around with the mouse.
 
 
     private void enableDragForGolden() {
-        setOnMousePressed(mouseEvent -> {
-            this.getScene().setCursor(javafx.scene.Cursor.MOVE);
-
-        });
+        setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));
         setOnMouseReleased(mouseEvent -> getScene().setCursor(javafx.scene.Cursor.HAND));
         setOnMouseDragged(mouseEvent -> {
             double newX = mouseEvent.getX();

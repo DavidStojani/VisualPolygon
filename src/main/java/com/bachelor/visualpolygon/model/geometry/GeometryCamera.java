@@ -49,8 +49,10 @@ public class GeometryCamera {
     }
 
     private List<Coordinate> findTangentPointsOnCameraFor(Vertex pt) {
-        double px = pt.getXCoordinate(), py = pt.getYCoordinate();
-        double cx = centerX, cy = centerY;
+        double px = pt.getXCoordinate();
+        double py = pt.getYCoordinate();
+        double cx = centerX;
+        double cy = centerY;
         // Compute the distance to the circle center
         double dx = cx - px;
         double dy = cy - py;
@@ -59,7 +61,9 @@ public class GeometryCamera {
         // Point is strictly contained within the circle
         if (dist < radius) throw new RuntimeException("Vertex within Camera");
 
-        double angle, angle1, angle2;
+        double angle;
+        double angle1;
+        double angle2;
 
         angle1 = arcsinSafe(radius / dist);
         angle2 = atan2(dy, dx);
@@ -70,9 +74,6 @@ public class GeometryCamera {
         angle = angle1 + angle2;
         Coordinate p2 = new Coordinate(cx + radius * -sin(angle), cy + radius * cos(angle));
 
-        // Points are sufficiently close to be considered the same point
-        // (i.e the original point is on the circle circumference)
-        //if (p1.distance(p2) < EPS) return new Point2D[] {pt};
         List<Coordinate> coordinates = new ArrayList<>();
         coordinates.add(p1);
         coordinates.add(p2);
