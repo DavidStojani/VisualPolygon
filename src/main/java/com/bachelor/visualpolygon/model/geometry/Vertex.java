@@ -5,7 +5,6 @@ import javafx.beans.property.SimpleDoubleProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 import org.locationtech.jts.geom.Coordinate;
 
 @Getter
@@ -17,13 +16,11 @@ public class Vertex extends Coordinate {
     private Vertex nextVertex;
     private boolean isPrime;
     private double r;
-    private boolean inBlue;
 
-
-    private boolean grey;
     private double theta;
 
     private double angleToBETA;
+
 
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;

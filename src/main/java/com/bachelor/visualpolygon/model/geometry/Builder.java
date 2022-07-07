@@ -1,36 +1,34 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.locationtech.jts.algorithm.Angle;
-import org.locationtech.jts.algorithm.Area;
 import org.locationtech.jts.algorithm.Orientation;
-import org.locationtech.jts.geom.*;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateList;
+import org.locationtech.jts.geom.LineSegment;
+import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 
 @NoArgsConstructor
 @Getter
-public class Builder {
+public class Builder extends Initializer {
 
+    public final static GeometryCamera camera = new GeometryCamera();
     Polygon polygon;
     Polygon stepPolygon;
-    public final static GeometryCamera camera = new GeometryCamera();
     List<Vertex> vertices;
-    List<Vertex> polarSortedVertices;
-    private static final GeometryFactory factory = new GeometryFactory();
     List<Coordinate> stepCoordinates = new ArrayList<>();
-    Stack<Line> lineStack = new Stack<>();
-    Vertex firstVertex;
-
     @Setter
     Vertex nextVertex;
     private LineSegment ALPHA;
@@ -38,7 +36,6 @@ public class Builder {
     private List<Vertex> active;
     private List<Vertex> tempVisible;
     private List<Vertex> tempInvisible;
-    private final double EPSILON = 0.0000005;
 
 
     /**
@@ -60,74 +57,32 @@ public class Builder {
      */
     public void init() {
         polygon = createGeometryPolygon(vertices);
-        Initializer.calculatePolarCoordinates(vertices, camera);
-        polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
-        firstVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
-        System.out.println("FIRST" + firstVertex.getCoordinate());
-    }
-
-    public boolean IsScanComplete() {
-        if (firstVertex.getVisited() == 4) {
-            return true;
-        }
-        return false;
+        calculatePolarCoordinates(vertices, camera);
+        polarSortedVertices = sortPolarCoordinate(vertices);
+        firstVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
     }
 
 
-    /**
-     * TODO implement both for ALPHA and BETA
-     */
+
     public void createStep(Vertex vertex) {
-        resetColors();
         if (Objects.isNull(vertex)) {
-            vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
-            createStepFromALPHA(vertex);
-            setActive();
-            nextVertex = findNextVertex();
-            return;
+            vertex = firstVertex;
         }
         System.out.println("========================= ON VERTEX ------- " + vertex.getCoordinate());
 
         if (isInsideActive(vertex)) {
             System.out.println("+++++++WAS INSIDE STEP+++++++++++");
             createStepFromBETA(vertex);
-            setActive();
-            nextVertex = findNextVertex();
-            isOnSameLine(nextVertex, vertex, BETA.p0);
+
         } else {
             System.out.println("-------WAS OUTSIDE STEP-----------");
             createStepFromALPHA(vertex);
-            setActive();
-            nextVertex = findNextVertex();
-            isOnSameLine(nextVertex, vertex, ALPHA.p0);
-
         }
 
+        setActive();
+        setTemps();
+        nextVertex = findNextVertex();
 
-    }
-
-    private void resetColors() {
-        for (Vertex v : polarSortedVertices) {
-            v.setGrey(false);
-            v.setInBlue(false);
-        }
-    }
-
-    public boolean isOnSameLine(Vertex nextVertex, Vertex actual, Coordinate base) {
-        if (nextVertex.getCoordinate().equals(actual.getCoordinate())) {
-            return false;
-        }
-
-        CoordinateList coordinates = new CoordinateList();
-        coordinates.add(nextVertex.getCoordinate());
-        coordinates.add(actual.getCoordinate());
-        coordinates.add(base);
-        if (Area.ofRing(coordinates.toCoordinateArray()) == 0) {
-            System.out.println("ON THE SAME LINE >>> DEAL WITH IT");
-            return true;
-        }
-
-        return false;
     }
 
 
@@ -135,15 +90,17 @@ public class Builder {
         if (active.isEmpty()) {
             throw new RuntimeException("active  IS EMPTYYYY");
         }
-        List<Vertex> leftToALPHA = getPolarSortedVertices().stream()
+        Vertex tempALFA = null;
+        double angleToALPHA = 999999;
+        Vertex tempBETA = null;
+        double angleToBETA = 99999;
+
+        List<Vertex> leftToALPHA = polarSortedVertices.stream()
                 .filter(vertex -> ALPHA.orientationIndex(vertex.getCoordinate()) == Orientation.CLOCKWISE)
                 .filter(vertex -> !active.contains(vertex))
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
-        leftToALPHA.forEach(vertex -> vertex.setInBlue(true));
 
-        Vertex tempBETA = null;
-        double angleToBETA = 99999;
         for (Vertex v : active) {
             double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
             if (angle < angleToBETA && angle > 0) {
@@ -154,9 +111,6 @@ public class Builder {
             }
         }
 
-        double angleToALPHA = 999999;
-        Vertex tempALFA = null;
-
         for (Vertex v : leftToALPHA) {
             double angle = Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1);
             if (angle < angleToALPHA && angle > 0) {
@@ -165,16 +119,9 @@ public class Builder {
             }
         }
 
-
         if (angleToBETA < angleToALPHA) {
-
-            System.out.println("BETA SMALLER THAN APLHA");
             return tempBETA;
-
         }
-
-        System.out.println("ALPHA SMALLER THAN BETA");
-        System.out.println("Vertex " + tempALFA.getCoordinate() + " as NEXT" + " with angle" + Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1));
         return tempALFA;
     }
 
@@ -183,17 +130,14 @@ public class Builder {
         if (Objects.isNull(active)) {
             return false;
         }
-        if (active.contains(vertex)) {
-            return true;
-        }
-        return false;
+        return active.contains(vertex);
     }
 
 
     private void setActive() {
         active = new ArrayList<>();
         FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.1);
-        for (Vertex vertex : getPolarSortedVertices()) {
+        for (Vertex vertex : polarSortedVertices) {
             if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
                 active.add(vertex);
             }
@@ -205,7 +149,7 @@ public class Builder {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
         for (Vertex vertex : active) {
-            LineSegment parallelToBeChecked = getParallelLineForALPHA(vertex.getCoordinate());
+            LineSegment parallelToBeChecked = getParallelLine(vertex.getCoordinate());
             if (parallelToBeChecked.toGeometry(factory).within(polygon)) {
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
@@ -221,38 +165,13 @@ public class Builder {
 
     }
 
-
-    public LineSegment getParallelLineForBETA(Coordinate point) {
-        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
-        Coordinate baseMirror = lineSegment.pointAlongOffset(0, -lineSegment.distance(point));
-        Coordinate endMirror = lineSegment.pointAlongOffset(1, -lineSegment.distance(point));
+    public LineSegment getParallelLine(Coordinate point) {
+        Coordinate baseMirror = ALPHA.pointAlongOffset(0, ALPHA.distancePerpendicular(point));
+        Coordinate endMirror = ALPHA.pointAlongOffset(1, ALPHA.distancePerpendicular(point));
 
         return new LineSegment(baseMirror, point);
     }
 
-    public LineSegment getParallelLineForALPHA(Coordinate point) {
-        LineSegment lineSegment = new LineSegment(stepPolygon.getCoordinates()[0], stepPolygon.getCoordinates()[1]);
-        Coordinate baseMirror = lineSegment.pointAlongOffset(0, lineSegment.distancePerpendicular(point));
-        Coordinate endMirror = lineSegment.pointAlongOffset(1, lineSegment.distancePerpendicular(point));
-
-        return new LineSegment(baseMirror, point);
-    }
-
-    public void addToGreenLines(LineSegment greenLine) {
-        Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
-        parallelLine.setStroke(Color.GREEN);
-        parallelLine.setStrokeWidth(1.9);
-        lineStack.push(parallelLine);
-
-    }
-
-    public void addToRedLines(LineSegment redLine) {
-        Line parallelLine = new Line(redLine.getCoordinate(0).getX(), redLine.getCoordinate(0).getY(), redLine.getCoordinate(1).getX(), redLine.getCoordinate(1).getY());
-        parallelLine.setStroke(Color.RED);
-        parallelLine.setStrokeWidth(1.9);
-        lineStack.push(parallelLine);
-
-    }
 
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
@@ -273,10 +192,10 @@ public class Builder {
         stepCoordinates = streifenCoordinates;
         setALPHA(streifenCoordinates.get(3), streifenCoordinates.get(2));
         setBETA(streifenCoordinates.get(0), streifenCoordinates.get(1));
-        addRadiusLines(BETA, vertex);
+
 
         vertex.increaseVisited();
-        System.out.println("BETA STEP TERMINDATED");
+
     }
 
     public void createStepFromALPHA(Vertex vertex) {
@@ -296,48 +215,15 @@ public class Builder {
         stepCoordinates = streifenCoordinates;
         setALPHA(streifenCoordinates.get(0), streifenCoordinates.get(1));
         setBETA(streifenCoordinates.get(3), streifenCoordinates.get(2));
-        addRadiusLines(ALPHA, vertex);
 
         vertex.increaseVisited();
-        System.out.println("ALPHA TERMINATED");
+
     }
 
-
-    public void addRadiusLines(LineSegment AB, Vertex vertex) {
-        Line line = new Line(AB.getCoordinate(0).getX(), AB.getCoordinate(0).getY(), vertex.getXCoordinate(), vertex.getYCoordinate());
-        line.setStroke(Color.BLACK);
-        line.setStrokeWidth(1.9);
-        lineStack.push(line);
-    }
-
-
-    public Polygon createStepPolygon(CoordinateList vertices) {
-        vertices.add(vertices.get(0));
-        return factory.createPolygon(vertices.toCoordinateArray());
-    }
-
-    private Polygon createGeometryPolygon(List<Vertex> vertices) {
-        CoordinateList tempVertices = new CoordinateList();
-        for (Vertex vertex : vertices) {
-            tempVertices.add(vertex.getCoordinate());
-        }
-        tempVertices.add(vertices.get(0).getCoordinate());
-        return factory.createPolygon(tempVertices.toCoordinateArray());
-    }
-
-    private double getMax() {
-        double max = 0;
-        for (Vertex vertex : polarSortedVertices) {
-            if (max < vertex.getCoordinate().distance(camera.getRightTangentPoint(vertex))) {
-                max = vertex.getCoordinate().distance(camera.getRightTangentPoint(vertex));
-            }
-        }
-        return max;
-    }
 
     private Coordinate getExtentCoordinateForBETA(Vertex vertex) {
         Vector2D vector = new Vector2D(camera.getRightTangentPoint(vertex), vertex.getCoordinate());
-        double k = getMax() / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
+        double k = getMaxDistanceFrom(camera) / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
         Vector2D extentVector = vector.multiply(k);
         double x = extentVector.getX() + camera.getRightTangentPoint(vertex).getX();
         double y = extentVector.getY() + camera.getRightTangentPoint(vertex).getY();
@@ -346,18 +232,18 @@ public class Builder {
 
     private Coordinate getExtentCoordinateForALPHA(Vertex vertex) {
         Vector2D vector = new Vector2D(camera.getLeftTangentPoint(vertex), vertex.getCoordinate());
-        double k = getMax() / (camera.getLeftTangentPoint(vertex).distance(vertex.getCoordinate()));
+        double k = getMaxDistanceFrom(camera) / (camera.getLeftTangentPoint(vertex).distance(vertex.getCoordinate()));
         Vector2D extentVector = vector.multiply(k);
         double x = extentVector.getX() + camera.getLeftTangentPoint(vertex).getX();
         double y = extentVector.getY() + camera.getLeftTangentPoint(vertex).getY();
         return new Coordinate(x, y);
     }
 
-    private void setALPHA(Coordinate start, Coordinate end) {
+    void setALPHA(Coordinate start, Coordinate end) {
         ALPHA = new LineSegment(start, end);
     }
 
-    private void setBETA(Coordinate start, Coordinate end) {
+    void setBETA(Coordinate start, Coordinate end) {
         BETA = new LineSegment(start, end);
     }
 }

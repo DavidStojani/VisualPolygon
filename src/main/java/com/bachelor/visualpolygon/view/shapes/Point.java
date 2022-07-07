@@ -24,25 +24,17 @@ public class Point extends Circle {
     }
 
    public void changeColorToRed() {
-       setFill(Color.RED.deriveColor(1, 0.7, 1, 0.5));
+       setFill(Color.RED.deriveColor(1, 0.7, 1, 0.3));
        setStroke(Color.RED);
    }
 
    public void changeColorToGreen() {
-       setFill(Color.GREEN.deriveColor(1, 0.7, 1, 0.5));
+       setFill(Color.GREEN.deriveColor(1, 0.7, 1, 0.3));
        setStroke(Color.GREEN);
    }
 
-    public void changeColorToBlue() {
-        //setFill(Color.BLUE.deriveColor(1, 0.7, 1, 0.5));
-        setStroke(Color.BLUE);
-    }
-    public void changeColorToGrey() {
-        setStroke(Color.GRAY);
-    }
-    public void changeColorToWhite() {
-        setStroke(Color.WHITE);
-    }
+
+
 
     // make a node movable by dragging it around with the mouse.
 

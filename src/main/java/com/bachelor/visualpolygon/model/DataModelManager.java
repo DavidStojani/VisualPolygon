@@ -2,7 +2,6 @@ package com.bachelor.visualpolygon.model;
 
 import com.bachelor.visualpolygon.model.geometry.Builder;
 import com.bachelor.visualpolygon.model.geometry.GeometryCamera;
-import com.bachelor.visualpolygon.model.geometry.Step;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import lombok.Getter;
@@ -59,7 +58,7 @@ public class DataModelManager implements DataModel {
 
     @Override
     public List<Coordinate> getStreifenCoordinates() {
-        if (builder.getPolarSortedVertices().isEmpty()) {
+        if (builder.getVertices().isEmpty()) {
             return null;
         }
         builder.createStep(builder.getNextVertex());
