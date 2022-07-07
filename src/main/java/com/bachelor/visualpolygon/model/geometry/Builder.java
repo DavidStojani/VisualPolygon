@@ -5,7 +5,9 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.locationtech.jts.algorithm.Angle;
+import org.locationtech.jts.algorithm.Area;
 import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
@@ -27,6 +29,8 @@ public class Builder {
     private static final GeometryFactory factory = new GeometryFactory();
     List<Coordinate> stepCoordinates = new ArrayList<>();
     Stack<Line> lineStack = new Stack<>();
+
+    @Setter
     Vertex nextVertex;
     private LineSegment ALPHA;
     private LineSegment BETA;
@@ -34,7 +38,6 @@ public class Builder {
     private List<Vertex> tempVisible;
     private List<Vertex> tempInvisible;
     private final double EPSILON = 0.0000005;
-    private Map<Double, Vertex> bigMap = new HashMap<>();
 
 
     /**
@@ -66,89 +69,31 @@ public class Builder {
      * TODO implement both for ALPHA and BETA
      */
     public void createStep(Vertex vertex) {
-        bigMap.clear();
+        resetColors();
         if (Objects.isNull(vertex)) {
             vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
+            createStepFromALPHA(vertex);
+            setActive();
+            nextVertex = findNextVertex();
+            return;
         }
         System.out.println("========================= ON VERTEX ------- " + vertex.getCoordinate());
 
         if (isInsideActive(vertex)) {
-            System.out.println("+++++++IS INSIDE+++++++++++");
-            vertex.setInGrey(true);
+            System.out.println("+++++++WAS INSIDE STEP+++++++++++");
             createStepFromBETA(vertex);
+            setActive();
+            nextVertex = findNextVertex();
+            //  isOnSameLine(nextVertex, vertex, BETA.p0);
         } else {
-            System.out.println("-------IS OUTSIDE-----------");
-            vertex.setInBlue(true);
-            createStepFromALPHA(vertex);
-        }
-        setActive();
-        nextVertex = findNextAfterALPHA();
-        /*if (Objects.isNull(vertex)) {
-            vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
+            System.out.println("-------WAS OUTSIDE STEP-----------");
             createStepFromALPHA(vertex);
             setActive();
-            Vertex temp1 = findNextAfterBETA();
-            Vertex temp2 = findNextAfterALPHA();
-            System.out.println("=====MAPPER FOR BIG FIRST=====   --size " + bigMap.size());
-            bigMap.forEach(((aDouble, vertex2) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex2.getCoordinate() + " ]")));
-            if (Collections.min(bigMap.keySet()) != 0) {
-                nextVertex = bigMap.get(Collections.min(bigMap.keySet()));
-                nextVertex.setInBlue(true);
-                return;
-            }
-            nextVertex = bigMap.get(Collections.max(bigMap.keySet()));
-            nextVertex.setInBlue(true);
-            return;
-        }
-
-        if (isInsideActive(vertex)) {
-            createStepFromBETA(vertex);
-            setActive();
-            Vertex temp1 = findNextAfterBETA();
-            Vertex temp2 = findNextAfterALPHA();
-            System.out.println("=====MAPPER FOR BIG createBETA=====   --size " + bigMap.size());
-            bigMap.forEach(((aDouble, vertex2) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex2.getCoordinate() + " ]")));
-            if (Collections.min(bigMap.keySet()) != 0) {
-                nextVertex = bigMap.get(Collections.min(bigMap.keySet()));
-                nextVertex.setInBlue(true);
-                return;
-            }
-            nextVertex = bigMap.get(Collections.max(bigMap.keySet()));
-            nextVertex.setInBlue(true);
-            return;
+            nextVertex = findNextVertex();
+            //isOnSameLine(nextVertex, vertex, ALPHA.p0);
 
         }
 
-        createStepFromALPHA(vertex);
-        setActive();
-        Vertex temp1 = findNextAfterBETA();
-        Vertex temp2 = findNextAfterALPHA();
-        System.out.println("=====MAPPER FOR BIG createALPHA=====   --size " + bigMap.size());
-        bigMap.forEach(((aDouble, vertex2) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex2.getCoordinate() + " ]")));
-        if (Collections.min(bigMap.keySet()) != 0) {
-            nextVertex = bigMap.get(Collections.min(bigMap.keySet()));
-            nextVertex.setInBlue(true);
-            return;
-        }
-        nextVertex = bigMap.get(Collections.max(bigMap.keySet()));
-        nextVertex.setInBlue(true);
-        return;
-*/
-
-/*
-        System.out.println("[ON builder.createStreife]PARAMETER ::: " + vertex.getCoordinate());
-
-        //setTemps();
-
-        //resetColors();
-        nextVertex = findNextAfterBETA();
-        Vertex temp = findNextAfterALPHA();
-
-        System.out.println(" BIG MAP ");
-        bigMap.forEach(((aDouble, vertex1) -> System.out.println("[ " + aDouble + "]" + "[ " + vertex1.getCoordinate() + " ]")));
-
-        vertex.setInBlue(true);
-*/
 
     }
 
@@ -159,77 +104,76 @@ public class Builder {
         }
     }
 
+    public boolean isOnSameLine(Vertex nextVertex, Vertex actual, Coordinate base) {
 
-    public Vertex findNextAfterBETA() {
-        double minAgle = 999999;
-        Vertex tempBETA = null;
-        if (active.size() == 1) {
-            System.out.println("ONLY ONE ON ACTIVE");
-            return active.get(0);
+        CoordinateList coordinates = new CoordinateList();
+        coordinates.add(nextVertex.getCoordinate());
+        coordinates.add(actual.getCoordinate());
+        coordinates.add(base);
+        System.out.println("AREA IS ====" + Area.ofRing(coordinates.toCoordinateArray()));
+        if (Area.ofRing(coordinates.toCoordinateArray()) == 0) {
+            System.out.println("ON THE SAME LINE >>> DEAL WITH IT");
+            System.out.println("NEXT -  " + nextVertex.getCoordinate());
+            System.out.println("ACTUAL -  " + actual.getCoordinate());
+            System.out.println("BASE -  " + base);
+            return true;
         }
 
-        FuzzyPointLocator locator = new FuzzyPointLocator(stepPolygon, 1.1);
+        return false;
+    }
 
+
+
+
+    public Vertex findNextVertex() {
+        if (active.isEmpty()) {
+            throw new RuntimeException("active  IS EMPTYYYY");
+        }
+        List<Vertex> leftToALPHA = getPolarSortedVertices().stream()
+                .filter(vertex -> ALPHA.orientationIndex(vertex.getCoordinate()) == Orientation.CLOCKWISE)
+                .filter(vertex -> !active.contains(vertex))
+                .sorted(Comparator.comparing(Vertex::getTheta).reversed())
+                .collect(Collectors.toList());
+        leftToALPHA.forEach(vertex -> vertex.setInBlue(true));
+
+        Vertex tempBETA = null;
+        double angleToBETA = 99999;
         for (Vertex v : active) {
-            System.out.println("ANGLE ---- " + Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1) + "  VERTEX----- " + v.getCoordinate());
-            v.setAngleToBETA(Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1));
-            if (Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1) < minAgle) {
-                if (locator.getLocation(v.getCoordinate()) != Location.BOUNDARY) {
-                    minAgle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
+            double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
+            if (angle < angleToBETA && angle > 0) {
+                if (angle > EPSILON) {
+                    angleToBETA = angle;
                     tempBETA = v;
                 }
             }
         }
 
-        System.out.println("RESULT OF FINDBETA ---" + tempBETA.getCoordinate());
-
-        return tempBETA;
-    }
-
-    public Vertex findNextAfterALPHA() {
-
-        List<Vertex> leftToALPHA = getPolarSortedVertices().stream()
-                .filter(vertex -> ALPHA.orientationIndex(vertex.getCoordinate()) == -1)
-                .filter(vertex -> !active.contains(vertex))
-                .sorted(Comparator.comparing(Vertex::getTheta).reversed())
-                .collect(Collectors.toList());
-
-
-        double minAgle = 999999;
+        double angleToALPHA = 999999;
         Vertex tempALFA = null;
+
         for (Vertex v : leftToALPHA) {
-            if (Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1) < minAgle) {
-                minAgle = Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1);
+            double angle = Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1);
+            if (angle < angleToALPHA && angle > 0) {
+                angleToALPHA = angle;
                 tempALFA = v;
             }
         }
 
-        Vertex fromBeta = findNextAfterBETA();
 
-        if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) < Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1)) {
-            if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) != 0) {
-                if (Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1) > EPSILON) {
-                    System.out.println("BETA  SMALLER THAN APLHA ::: BETA is" + Angle.angleBetween(fromBeta.getCoordinate(), BETA.p0, BETA.p1));
-                    System.out.println("ALFA IS   " + Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1));
-                    return fromBeta;
-                }
+        if (angleToBETA < angleToALPHA) {
+            if (angleToBETA > EPSILON) {
+                System.out.println("BETA SMALLER THAN APLHA");
+                return tempBETA;
             }
         }
 
-
+        System.out.println("ALPHA SMALLER THAN BETA");
+        System.out.println("Vertex " + tempALFA.getCoordinate() + " as NEXT" + " with angle" + Angle.angleBetween(tempALFA.getCoordinate(), ALPHA.p0, ALPHA.p1));
         return tempALFA;
     }
 
 
     public boolean isInsideActive(Vertex vertex) {
-       /* int i = Orientation.index(ALPHA.getCoordinate(0), ALPHA.getCoordinate(1), vertex.getCoordinate());
-        if (i == Orientation.LEFT) {
-            System.out.println("[ON builder.isInsideActive]" + i + "ON THE LEFT");
-            return true;
-        }
-        System.out.println("[ON builder.isInsideActive]" + i + "ON THE RIGHT");
-
-        return false;*/
         if (Objects.isNull(active)) {
             return false;
         }
@@ -242,15 +186,15 @@ public class Builder {
 
     private void setActive() {
         active = new ArrayList<>();
-        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 1.1);
+        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 1);
         for (Vertex vertex : getPolarSortedVertices()) {
             if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
                 active.add(vertex);
             }
         }
         active.stream().sorted(Comparator.comparing(Vertex::getTheta));
-        System.out.println("===ACTIVE CREATED AND SORTED--- SIZE-- ");
-        active.forEach(System.out::println);
+        System.out.println("===ACTIVE CREATED AND SORTED--- SIZE-- " + active.size());
+        active.forEach(vertex -> System.out.println(vertex.getCoordinate()));
     }
 
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
@@ -328,6 +272,7 @@ public class Builder {
         setBETA(streifenCoordinates.get(0), streifenCoordinates.get(1));
         addRadiusLines(BETA, vertex);
 
+        vertex.increaseVisited();
         System.out.println("BETA STEP TERMINDATED");
     }
 
@@ -350,6 +295,7 @@ public class Builder {
         setBETA(streifenCoordinates.get(3), streifenCoordinates.get(2));
         addRadiusLines(ALPHA, vertex);
 
+        vertex.increaseVisited();
         System.out.println("ALPHA TERMINATED");
     }
 

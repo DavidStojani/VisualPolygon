@@ -62,10 +62,9 @@ public class ViewModel {
         File folder = new File("src/test/resources");
         File[] listOfFiles = folder.listFiles();
 
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                System.out.println("File " + listOfFiles[i].getName());
-                fileObservableList.add(listOfFiles[i]);
+        for (File listOfFile : listOfFiles) {
+            if (listOfFile.isFile()) {
+                fileObservableList.add(listOfFile);
             }
         }
     }

@@ -116,13 +116,6 @@ public class ViewController {
             root.getChildren().add(stepPoly);
         }
 
-        if (index == viewModel.getVertices().size() - 1) {
-            //DRAW FINAL POLYGON
-            viewModel.setLabelText("Last Step!");
-            index = 0;
-        } else {
-            index++;
-        }
     }
 
     public void updatePolygon() {

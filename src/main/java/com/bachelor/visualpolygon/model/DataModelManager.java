@@ -70,6 +70,7 @@ public class DataModelManager implements DataModel {
     @Override
     public void reset() {
         builder.getLineStack().clear();
+        builder.setNextVertex(null);
         if(Objects.nonNull(builder.getActive())){
             builder.getActive().clear();
             //builder.getTempInvisible().clear();

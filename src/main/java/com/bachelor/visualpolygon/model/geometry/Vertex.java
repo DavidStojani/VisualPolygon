@@ -13,20 +13,13 @@ import org.locationtech.jts.geom.Coordinate;
 @EqualsAndHashCode
 @ToString
 public class Vertex extends Coordinate {
-    @ToString.Exclude
     private int isVisible = 0;
-    @ToString.Exclude
-    private boolean isPrime;
-    @ToString.Exclude
     private Vertex previousVertex;
-    @ToString.Exclude
     private Vertex nextVertex;
-    @ToString.Exclude
+    private boolean isPrime;
     private double r;
-    @ToString.Exclude
-    @Getter
     private boolean inBlue;
-    @ToString.Exclude
+
 
     private boolean grey;
     private double theta;
@@ -36,6 +29,8 @@ public class Vertex extends Coordinate {
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
     private boolean inWhite;
+
+    private int visited = 0;
 
 
     public Vertex(Coordinate c) {
@@ -64,8 +59,8 @@ public class Vertex extends Coordinate {
         return yProperty.doubleValue();
     }
 
-    public void setInGrey(boolean b) {
-        grey= b;
+    public void increaseVisited() {
+        visited++;
     }
 
 }
