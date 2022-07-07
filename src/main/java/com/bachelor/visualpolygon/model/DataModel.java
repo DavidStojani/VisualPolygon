@@ -19,7 +19,10 @@ public interface DataModel {
 
     String getStepInfo();
 
+    boolean isScanReady();
+
     Stack<Line> getTheParallels();
+
 
     void reset();
 }

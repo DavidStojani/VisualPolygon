@@ -28,7 +28,6 @@ public class DataModelManager implements DataModel {
     public DataModelManager() {
         factory = new GeometryFactory();
         builder = new Builder();
-
     }
 
 
@@ -46,6 +45,12 @@ public class DataModelManager implements DataModel {
         }
         return String.valueOf(builder.getActive().size());
     }
+
+    @Override
+    public boolean isScanReady() {
+       return builder.IsScanComplete();
+    }
+
 
     @Override
     public Polygon getPolygon() {

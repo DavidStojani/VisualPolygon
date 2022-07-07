@@ -29,6 +29,7 @@ public class Builder {
     private static final GeometryFactory factory = new GeometryFactory();
     List<Coordinate> stepCoordinates = new ArrayList<>();
     Stack<Line> lineStack = new Stack<>();
+    Vertex firstVertex;
 
     @Setter
     Vertex nextVertex;
@@ -61,7 +62,15 @@ public class Builder {
         polygon = createGeometryPolygon(vertices);
         Initializer.calculatePolarCoordinates(vertices, camera);
         polarSortedVertices = Initializer.sortPolarCoordinate(vertices);
+        firstVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).get();
+        System.out.println("FIRST" + firstVertex.getCoordinate());
+    }
 
+    public boolean IsScanComplete() {
+        if (firstVertex.getVisited() == 4) {
+            return true;
+        }
+        return false;
     }
 
 
@@ -84,13 +93,13 @@ public class Builder {
             createStepFromBETA(vertex);
             setActive();
             nextVertex = findNextVertex();
-            //  isOnSameLine(nextVertex, vertex, BETA.p0);
+            isOnSameLine(nextVertex, vertex, BETA.p0);
         } else {
             System.out.println("-------WAS OUTSIDE STEP-----------");
             createStepFromALPHA(vertex);
             setActive();
             nextVertex = findNextVertex();
-            //isOnSameLine(nextVertex, vertex, ALPHA.p0);
+            isOnSameLine(nextVertex, vertex, ALPHA.p0);
 
         }
 
@@ -105,24 +114,21 @@ public class Builder {
     }
 
     public boolean isOnSameLine(Vertex nextVertex, Vertex actual, Coordinate base) {
+        if (nextVertex.getCoordinate().equals(actual.getCoordinate())) {
+            return false;
+        }
 
         CoordinateList coordinates = new CoordinateList();
         coordinates.add(nextVertex.getCoordinate());
         coordinates.add(actual.getCoordinate());
         coordinates.add(base);
-        System.out.println("AREA IS ====" + Area.ofRing(coordinates.toCoordinateArray()));
         if (Area.ofRing(coordinates.toCoordinateArray()) == 0) {
             System.out.println("ON THE SAME LINE >>> DEAL WITH IT");
-            System.out.println("NEXT -  " + nextVertex.getCoordinate());
-            System.out.println("ACTUAL -  " + actual.getCoordinate());
-            System.out.println("BASE -  " + base);
             return true;
         }
 
         return false;
     }
-
-
 
 
     public Vertex findNextVertex() {
@@ -161,10 +167,10 @@ public class Builder {
 
 
         if (angleToBETA < angleToALPHA) {
-            if (angleToBETA > EPSILON) {
-                System.out.println("BETA SMALLER THAN APLHA");
-                return tempBETA;
-            }
+
+            System.out.println("BETA SMALLER THAN APLHA");
+            return tempBETA;
+
         }
 
         System.out.println("ALPHA SMALLER THAN BETA");
@@ -186,15 +192,12 @@ public class Builder {
 
     private void setActive() {
         active = new ArrayList<>();
-        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 1);
+        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.1);
         for (Vertex vertex : getPolarSortedVertices()) {
             if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
                 active.add(vertex);
             }
         }
-        active.stream().sorted(Comparator.comparing(Vertex::getTheta));
-        System.out.println("===ACTIVE CREATED AND SORTED--- SIZE-- " + active.size());
-        active.forEach(vertex -> System.out.println(vertex.getCoordinate()));
     }
 
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption

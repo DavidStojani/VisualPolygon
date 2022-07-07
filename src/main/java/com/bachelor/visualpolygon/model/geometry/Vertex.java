@@ -11,7 +11,6 @@ import org.locationtech.jts.geom.Coordinate;
 @Getter
 @Setter
 @EqualsAndHashCode
-@ToString
 public class Vertex extends Coordinate {
     private int isVisible = 0;
     private Vertex previousVertex;
@@ -29,7 +28,6 @@ public class Vertex extends Coordinate {
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
     private boolean inWhite;
-
     private int visited = 0;
 
 

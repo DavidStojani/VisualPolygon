@@ -40,6 +40,7 @@ public class ViewModel {
 
 
 
+
     public ViewModel(DataModel model) {
         this.model = model;
         initListOfFiles();
@@ -50,6 +51,7 @@ public class ViewModel {
      */
     public void updatePolygon() {
         model.updateBuilder(vertices, cameraDetails);
+
         setLabelText("Model Updated");
     }
 
@@ -88,8 +90,19 @@ public class ViewModel {
 
 
     public void setStepInfo() {
+
         setLabelText("Step Created! " + "ACTIVE size: " + model.getStepInfo());
     }
+
+    public boolean isScanDone(){
+        if (model.isScanReady()) {
+            setLabelText("!!SCAN IS DONE!!");
+            return true;
+        }
+        return false;
+    }
+
+
 
     public Stack<Line> getParallels() {
         return model.getTheParallels();

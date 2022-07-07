@@ -54,7 +54,7 @@ public class ViewController {
     private Camera camera;
     private ListProperty<Vertex> listPropertyForVertex;
     private ListProperty<Double> listPropertyForCamera;
-    private int index = 0;
+
 
 
     public ViewController() {
@@ -92,6 +92,9 @@ public class ViewController {
     }
 
     public void nextStep() {
+        if (viewModel.isScanDone()) {
+            return;
+        }
         Polygon stepPoly = viewModel.getStepPolygon();
         /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*?
          /*   System.out.println("STEPPOLY COORD-----" + stepPoly.getPoints() );
@@ -114,6 +117,7 @@ public class ViewController {
             refreshView();
             drawStepPolygon(stepPoly);
             root.getChildren().add(stepPoly);
+            root.getChildren().add(viewModel.getParallels().pop());
         }
 
     }
@@ -142,7 +146,7 @@ public class ViewController {
 
     }
 
-    public void savePolygon(ActionEvent actionEvent) {
+    public void savePolygon() {
         if (!isPolygonReady()) return;
 
         viewModel.setLabelText("Saved was pressed");
@@ -170,7 +174,7 @@ public class ViewController {
         cameraRequirements.clear();
         polygon = null;
         viewModel.resetView();
-        index = 0;
+
     }
 
     private void initMouseHandlerForPane() {
