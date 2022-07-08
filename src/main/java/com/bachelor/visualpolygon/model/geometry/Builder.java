@@ -5,10 +5,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.locationtech.jts.algorithm.Angle;
 import org.locationtech.jts.algorithm.Orientation;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.CoordinateList;
-import org.locationtech.jts.geom.LineSegment;
-import org.locationtech.jts.geom.Polygon;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
 
@@ -146,11 +143,15 @@ public class Builder extends Initializer {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
         for (Vertex vertex : active) {
-            LineSegment parallelToBeChecked = getParallelLine(vertex.getCoordinate());
+            LineSegment check = new LineSegment(vertex.getCoordinate(), getParallelLine(vertex.getCoordinate()).p1);
+            LineSegment parallelToBeChecked = new LineSegment(getParallelLine(vertex.getCoordinate()).p0, vertex.getCoordinate());
             if (parallelToBeChecked.toGeometry(factory).within(polygon)) {
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
                 addToGreenLines(parallelToBeChecked);
+                getAllPolygonIntersection(vertex);
+                //addToBlackLine(check);
+
             } else {
                 tempInvisible.add(vertex);
                 if (vertex.getIsVisible() != 1) {
@@ -158,6 +159,46 @@ public class Builder extends Initializer {
                 }
                 addToRedLines(parallelToBeChecked);
             }
+        }
+    }
+
+    public void getAllPolygonIntersection(Vertex vertex) {
+
+        LineSegment line = getParallelLine(vertex.getCoordinate());
+        Geometry intersection = polygon.getBoundary().intersection(line.toGeometry(factory));
+        Coordinate nearest = null;
+        double minDistance = 999999;
+        for (Coordinate c : intersection.getCoordinates()) {
+            if (vertex.getCoordinate().equals(c)) {
+                continue;
+            }
+            if (vertex.getCoordinate().distance(c) < minDistance) {
+                minDistance = vertex.getCoordinate().distance(c);
+                nearest = c;
+            }
+        }
+        if (nearest == null) {
+            System.out.println("Nothing found");
+            return;
+        }
+            System.out.println("FOUND NEAREST " + nearest);
+        LineSegment toTest = new LineSegment(vertex.getCoordinate(), nearest);
+        addToBlackLine(toTest);
+
+        if (polygon.covers(toTest.toGeometry(factory))) {
+            System.out.println("touched || within");
+            Vertex v = new Vertex(nearest);
+            v.setIsVisible(1);
+            vertices.add(v);
+
+        }else {
+            System.out.println("ADDED as RED to CHECK ");
+            Vertex vv = new Vertex(nearest);
+            vv.setIsVisible(-1);
+            vertices.add(vv);
+            System.out.println("IS WITHIN ? " + toTest.toGeometry(factory).within(polygon));
+            System.out.println( "IS TOUCHING ? " + toTest.toGeometry(factory).touches(polygon));
+            System.out.println(" IS COVERING ? "+ polygon.covers(toTest.toGeometry(factory)));
         }
     }
 
@@ -173,7 +214,7 @@ public class Builder extends Initializer {
                 if (polygon.contains(uv.toGeometry(factory))) {
                     if (isInCollisionWithCamera(uv)) {
                         invisible.setIsVisible(1);
-                        addToGreenLines(new LineSegment(invisible.getCoordinate(),getIntersection(uv)));
+                        addToGreenLines(new LineSegment(invisible.getCoordinate(), getIntersection(uv)));
                         tempVisible.add(invisible);
                         tempInvisible.remove(invisible);
                     }
@@ -186,7 +227,7 @@ public class Builder extends Initializer {
         Coordinate baseMirror = ALPHA.pointAlongOffset(0, ALPHA.distancePerpendicular(point));
         Coordinate endMirror = ALPHA.pointAlongOffset(1, ALPHA.distancePerpendicular(point));
 
-        return new LineSegment(baseMirror, point);
+        return new LineSegment(baseMirror, endMirror);
     }
 
 

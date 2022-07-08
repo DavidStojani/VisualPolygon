@@ -38,6 +38,13 @@ public abstract class Initializer {
                 .collect(Collectors.toList());
     }
 
+    void addToBlackLine(LineSegment greenLine) {
+        Line parallelLine = new Line(greenLine.p0.getX(), greenLine.p0.getY(), greenLine.p1.getX(), greenLine.p1.getY());
+        parallelLine.setStroke(Color.BLACK);
+        parallelLine.setStrokeWidth(1.9);
+        lineStack.push(parallelLine);
+    }
+
     void addToGreenLines(LineSegment greenLine) {
         Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
         parallelLine.setStroke(Color.GREEN);
