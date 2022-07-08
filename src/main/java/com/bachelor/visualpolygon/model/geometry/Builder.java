@@ -1,6 +1,5 @@
 package com.bachelor.visualpolygon.model.geometry;
 
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -80,6 +79,7 @@ public class Builder extends Initializer {
 
         setActive();
         setTemps();
+        testTempInvisible();
         nextVertex = findNextVertex();
 
     }
@@ -159,7 +159,27 @@ public class Builder extends Initializer {
                 addToRedLines(parallelToBeChecked);
             }
         }
+    }
 
+    public void testTempInvisible() {
+        if (tempInvisible.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < tempVisible.size(); i++) {
+            Vertex visible = tempVisible.get(i);
+            for (int j = 0; j < tempInvisible.size(); j++) {
+                Vertex invisible = tempInvisible.get(j);
+                LineSegment uv = new LineSegment(invisible.getCoordinate(), visible.getCoordinate());
+                if (polygon.contains(uv.toGeometry(factory))) {
+                    if (isInCollisionWithCamera(uv)) {
+                        invisible.setIsVisible(1);
+                        addToGreenLines(new LineSegment(invisible.getCoordinate(),getIntersection(uv)));
+                        tempVisible.add(invisible);
+                        tempInvisible.remove(invisible);
+                    }
+                }
+            }
+        }
     }
 
     public LineSegment getParallelLine(Coordinate point) {

@@ -20,6 +20,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
@@ -31,6 +32,8 @@ import java.util.Objects;
 
 public class ViewController {
 
+    @FXML
+    BorderPane border;
     @FXML
     public AnchorPane pane;
     @FXML
@@ -49,7 +52,6 @@ public class ViewController {
     private Camera camera;
     private final ListProperty<Vertex> listPropertyForVertex;
     private final ListProperty<Double> listPropertyForCamera;
-
 
 
     public ViewController() {

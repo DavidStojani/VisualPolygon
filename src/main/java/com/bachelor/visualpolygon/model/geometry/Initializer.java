@@ -7,10 +7,9 @@ import org.locationtech.jts.algorithm.Angle;
 import org.locationtech.jts.algorithm.Area;
 import org.locationtech.jts.geom.*;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.stream.Collectors;
+
 @Getter
 public abstract class Initializer {
     static final GeometryFactory factory = new GeometryFactory();
@@ -20,7 +19,7 @@ public abstract class Initializer {
     Vertex firstVertex;
 
 
-     void calculatePolarCoordinates(List<Vertex> vertexList) {
+    void calculatePolarCoordinates(List<Vertex> vertexList) {
         double theta;
         for (Vertex vertex : vertexList) {
             theta = Angle.angleBetweenOriented(vertexList.get(0), Builder.camera.getCenter(), vertex.getCoordinate());
@@ -91,6 +90,71 @@ public abstract class Initializer {
 
     public boolean isScanComplete() {
         return firstVertex.getVisited() == 4;
+    }
+
+    public HashMap<String, Double> getParametersOfEquation(Coordinate v1, Coordinate v2) {
+        HashMap<String, Double> parameter = new HashMap<>();
+        double A = v1.getY() - v2.getY();
+        double B = v2.getX() - v1.getX();
+        double C = (v1.getX() * v2.getY()) - (v2.getX() * v1.getY());
+
+        parameter.put("A", A);
+        parameter.put("B", B);
+        parameter.put("C", C);
+        return parameter;
+    }
+
+    public boolean isInCollisionWithCamera(LineSegment segment) {
+
+        if (Builder.camera.getRadius() < segment.distancePerpendicular(Builder.camera.getCenter())) {
+            System.out.println("DOES NOT INTERSECT WITH CAMERA");
+            return false;
+        } else {
+            System.out.println("INTERSECTS WITH CAMERA");
+            return true;
+        }
+    }
+
+    public Coordinate getIntersection(LineSegment segment) {
+        return getCircleLineIntersectionPoint(segment.p0,
+                                                segment.p1,
+                                                Builder.camera.getCenter(),
+                                                Builder.camera.getRadius()).get(0);
+    }
+
+    public List<Coordinate> getCircleLineIntersectionPoint(Coordinate pointA,
+                                                           Coordinate pointB,
+                                                           Coordinate center,
+                                                           double radius) {
+        double baX = pointB.x - pointA.x;
+        double baY = pointB.y - pointA.y;
+        double caX = center.x - pointA.x;
+        double caY = center.y - pointA.y;
+
+        double a = baX * baX + baY * baY;
+        double bBy2 = baX * caX + baY * caY;
+        double c = caX * caX + caY * caY - radius * radius;
+
+        double pBy2 = bBy2 / a;
+        double q = c / a;
+
+        double disc = pBy2 * pBy2 - q;
+        if (disc < 0) {
+            return Collections.emptyList();
+        }
+        // if disc == 0 ... dealt with later
+        double tmpSqrt = Math.sqrt(disc);
+        double abScalingFactor1 = -pBy2 + tmpSqrt;
+        double abScalingFactor2 = -pBy2 - tmpSqrt;
+
+        Coordinate p1 = new Coordinate(pointA.x - baX * abScalingFactor1, pointA.y
+                - baY * abScalingFactor1);
+        if (disc == 0) { // abScalingFactor1 == abScalingFactor2
+            return Collections.singletonList(p1);
+        }
+        Coordinate p2 = new Coordinate(pointA.x - baX * abScalingFactor2, pointA.y
+                - baY * abScalingFactor2);
+        return Arrays.asList(p1, p2);
     }
 
 }
