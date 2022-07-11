@@ -22,11 +22,13 @@ public class Vertex extends Coordinate {
 
 
     public Vertex(Coordinate c) {
+        super(c);
         xProperty = new SimpleDoubleProperty(c.getX());
         yProperty = new SimpleDoubleProperty(c.getY());
     }
 
     public Vertex(double xCoordinate, double yCoordinate) {
+        super(xCoordinate,yCoordinate);
         xProperty = new SimpleDoubleProperty(xCoordinate);
         yProperty = new SimpleDoubleProperty(yCoordinate);
         xProperty.addListener((observableValue, number, t1) -> xProperty.set(t1.doubleValue()));
