@@ -64,7 +64,7 @@ public class Builder extends Initializer {
         if (Objects.isNull(vertex)) {
             vertex = firstVertex;
         }
-        System.out.println("========================= ON VERTEX ------- " + vertex.getCoordinate());
+        System.out.println("========================= ON VERTEX ------- " + vertex);
 
         if (isInsideActive(vertex)) {
             System.out.println("+++++++WAS INSIDE STEP+++++++++++");
@@ -92,13 +92,13 @@ public class Builder extends Initializer {
         double angleToBETA = 99999;
 
         List<Vertex> leftToALPHA = polarSortedVertices.stream()
-                .filter(vertex -> ALPHA.orientationIndex(vertex.getCoordinate()) == Orientation.CLOCKWISE)
+                .filter(vertex -> ALPHA.orientationIndex(vertex) == Orientation.CLOCKWISE)
                 .filter(vertex -> !active.contains(vertex))
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
 
         for (Vertex v : active) {
-            double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
+            double angle = Angle.angleBetween(v, BETA.p0, BETA.p1);
             if (angle < angleToBETA && angle > EPSILON) {
                 angleToBETA = angle;
                 tempBETA = v;
@@ -106,7 +106,7 @@ public class Builder extends Initializer {
         }
 
         for (Vertex v : leftToALPHA) {
-            double angle = Angle.angleBetween(v.getCoordinate(), ALPHA.p0, ALPHA.p1);
+            double angle = Angle.angleBetween(v, ALPHA.p0, ALPHA.p1);
             if (angle < angleToALPHA && angle > 0) {
                 angleToALPHA = angle;
                 tempALFA = v;
@@ -132,7 +132,7 @@ public class Builder extends Initializer {
         active = new ArrayList<>();
         FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.1);
         for (Vertex vertex : polarSortedVertices) {
-            if (pointLocator.getLocation(vertex.getCoordinate()) != 2) {
+            if (pointLocator.getLocation(vertex) != 2) {
                 active.add(vertex);
             }
         }
@@ -143,7 +143,7 @@ public class Builder extends Initializer {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
         for (Vertex vertex : active) {
-            LineSegment parallelCameraToVertex = new LineSegment(getParallelLine(vertex.getCoordinate()).p0, vertex.getCoordinate());
+            LineSegment parallelCameraToVertex = new LineSegment(getParallelLine(vertex).p0, vertex);
             if (parallelCameraToVertex.toGeometry(factory).within(polygon)) {
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
@@ -162,7 +162,7 @@ public class Builder extends Initializer {
     public void addNewVertecies() {
 
         for (Vertex vertex : tempVisible) {
-            LineSegment line = getParallelLine(vertex.getCoordinate());
+            LineSegment line = getParallelLine(vertex);
             if (addNewVertex(vertex, line)) {
                 System.out.println("Nothing was added!");
                 return;
@@ -177,7 +177,7 @@ public class Builder extends Initializer {
         Coordinate nearestIntersection = null;
         double minDistanceBaseToIntersection = 999999;
         for (Coordinate intersection : intersections.getCoordinates()) {
-            if (vertex.getCoordinate().equals(intersection) || base.equals(intersection)) {
+            if (vertex.equalCoordinate(intersection) || base.equals(intersection)) {
                 System.out.println("Skipped " + intersection);
                 continue;
             }
@@ -191,7 +191,7 @@ public class Builder extends Initializer {
             return true;
         }
 
-        if (minDistanceBaseToIntersection < base.distance(vertex.getCoordinate())) {
+        if (minDistanceBaseToIntersection < base.distance(vertex)) {
             System.out.println("Intersection is before Vertex!!");
             return true;
         }
@@ -215,12 +215,12 @@ public class Builder extends Initializer {
             Vertex visible = tempVisible.get(i);
             for (int j = 0; j < tempInvisible.size(); j++) {
                 Vertex invisible = tempInvisible.get(j);
-                LineSegment visibleToInvisible = new LineSegment(visible.getCoordinate(), invisible.getCoordinate());
+                LineSegment visibleToInvisible = new LineSegment(visible, invisible);
                 if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
                     invisible.setIsVisible(1);
-                    addToGreenLines(new LineSegment(invisible.getCoordinate(), getIntersectionPointWithCamera(visibleToInvisible)));
+                    addToGreenLines(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)));
                     tempVisible.add(invisible);
-                    LineSegment extentOfVisibleToInvisible = new LineSegment(visible.getCoordinate(), getExtentCoordinate(invisible, visible.getCoordinate()));
+                    LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
                     tempInvisible.remove(invisible);
                 }
@@ -281,8 +281,8 @@ public class Builder extends Initializer {
     }
 
     private Coordinate getExtentCoordinate(Vertex vertex, Coordinate base) {
-        Vector2D vector2D = new Vector2D(base, vertex.getCoordinate());
-        double k = getMaxDistanceFrom() / base.distance(vertex.getCoordinate());
+        Vector2D vector2D = new Vector2D(base, vertex);
+        double k = getMaxDistanceFrom() / base.distance(vertex);
         Vector2D extentVector = vector2D.multiply(k);
         double x = extentVector.getX() + base.getX();
         double y = extentVector.getY() + base.getY();

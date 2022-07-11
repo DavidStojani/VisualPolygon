@@ -23,7 +23,7 @@ public abstract class Initializer {
     void calculatePolarCoordinates(List<Vertex> vertexList) {
         double theta;
         for (Vertex vertex : vertexList) {
-            theta = Angle.angleBetweenOriented(vertexList.get(0), Builder.camera.getCenter(), vertex.getCoordinate());
+            theta = Angle.angleBetweenOriented(vertexList.get(0), Builder.camera.getCenter(), vertex);
             theta = Angle.normalizePositive(theta);
             vertex.setTheta(theta);
         }
@@ -69,19 +69,19 @@ public abstract class Initializer {
     Polygon createGeometryPolygon(List<Vertex> vertices) {
         CoordinateList tempVertices = new CoordinateList();
         for (Vertex vertex : vertices) {
-            tempVertices.add(vertex.getCoordinate());
+            tempVertices.add(vertex);
         }
-        tempVertices.add(vertices.get(0).getCoordinate());
+        tempVertices.add(vertices.get(0));
         return factory.createPolygon(tempVertices.toCoordinateArray());
     }
 
     boolean isOnSameLine(Vertex nextVertex, Vertex actual, Coordinate base) {
-        if (nextVertex.getCoordinate().equals(actual.getCoordinate())) {
+        if (nextVertex.equals(actual)) {
             return false;
         }
         CoordinateList coordinates = new CoordinateList();
-        coordinates.add(nextVertex.getCoordinate());
-        coordinates.add(actual.getCoordinate());
+        coordinates.add(nextVertex);
+        coordinates.add(actual);
         coordinates.add(base);
         return Area.ofRing(coordinates.toCoordinateArray()) == 0;
     }
@@ -89,8 +89,8 @@ public abstract class Initializer {
     double getMaxDistanceFrom() {
         double max = 0;
         for (Vertex vertex : polarSortedVertices) {
-            if (max < vertex.getCoordinate().distance(Builder.camera.getRightTangentPoint(vertex))) {
-                max = vertex.getCoordinate().distance(Builder.camera.getRightTangentPoint(vertex));
+            if (max < vertex.distance(Builder.camera.getRightTangentPoint(vertex))) {
+                max = vertex.distance(Builder.camera.getRightTangentPoint(vertex));
             }
         }
         return max;

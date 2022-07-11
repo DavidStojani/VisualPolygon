@@ -43,6 +43,12 @@ public class Vertex extends Coordinate {
         return xProperty.doubleValue();
     }
 
+    public boolean equalCoordinate(Coordinate coordinate) {
+        if (this.getXCoordinate() == coordinate.getX() && this.getYCoordinate() == coordinate.getY()){
+            return true;
+        }
+        return false;
+    }
     public double getYCoordinate() {
         return yProperty.doubleValue();
     }
