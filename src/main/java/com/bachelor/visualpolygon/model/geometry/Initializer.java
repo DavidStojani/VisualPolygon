@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public abstract class Initializer {
+    static final PrecisionModel precision = new PrecisionModel(10);
     static final GeometryFactory factory = new GeometryFactory();
     static final double EPSILON = 0.0000005;
     List<Vertex> polarSortedVertices;
@@ -122,11 +123,11 @@ public abstract class Initializer {
         }
     }
 
-    public Coordinate getIntersection(LineSegment segment) {
+    public Coordinate getIntersectionPointWithCamera(LineSegment segment) {
         return getCircleLineIntersectionPoint(segment.p0,
-                                                segment.p1,
-                                                Builder.camera.getCenter(),
-                                                Builder.camera.getRadius()).get(0);
+                segment.p1,
+                Builder.camera.getCenter(),
+                Builder.camera.getRadius()).get(0);
     }
 
     public List<Coordinate> getCircleLineIntersectionPoint(Coordinate pointA,

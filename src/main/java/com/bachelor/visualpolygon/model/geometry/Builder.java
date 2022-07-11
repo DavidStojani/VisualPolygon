@@ -8,6 +8,7 @@ import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
+import org.locationtech.jts.precision.GeometryPrecisionReducer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -73,12 +74,11 @@ public class Builder extends Initializer {
             System.out.println("-------WAS OUTSIDE STEP-----------");
             createStepFromALPHA(vertex);
         }
-
         setActive();
         setTemps();
-        testTempInvisible();
+        doubleChekInvisibles();
+        addNewVertecies();
         nextVertex = findNextVertex();
-
     }
 
 
@@ -99,7 +99,7 @@ public class Builder extends Initializer {
 
         for (Vertex v : active) {
             double angle = Angle.angleBetween(v.getCoordinate(), BETA.p0, BETA.p1);
-            if (angle < angleToBETA && angle > 0 && angle > EPSILON) {
+            if (angle < angleToBETA && angle > EPSILON) {
                 angleToBETA = angle;
                 tempBETA = v;
             }
@@ -143,66 +143,71 @@ public class Builder extends Initializer {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
         for (Vertex vertex : active) {
-            LineSegment check = new LineSegment(vertex.getCoordinate(), getParallelLine(vertex.getCoordinate()).p1);
-            LineSegment parallelToBeChecked = new LineSegment(getParallelLine(vertex.getCoordinate()).p0, vertex.getCoordinate());
-            if (parallelToBeChecked.toGeometry(factory).within(polygon)) {
+            LineSegment parallelCameraToVertex = new LineSegment(getParallelLine(vertex.getCoordinate()).p0, vertex.getCoordinate());
+            if (parallelCameraToVertex.toGeometry(factory).within(polygon)) {
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
-                addToGreenLines(parallelToBeChecked);
-                getAllPolygonIntersection(vertex);
-                //addToBlackLine(check);
+                addToGreenLines(parallelCameraToVertex);
 
             } else {
                 tempInvisible.add(vertex);
                 if (vertex.getIsVisible() != 1) {
                     vertex.setIsVisible(-1);
                 }
-                addToRedLines(parallelToBeChecked);
+                addToRedLines(parallelCameraToVertex);
             }
         }
     }
 
-    public void getAllPolygonIntersection(Vertex vertex) {
+    public void addNewVertecies() {
 
-        LineSegment line = getParallelLine(vertex.getCoordinate());
-        Geometry intersection = polygon.getBoundary().intersection(line.toGeometry(factory));
-        Coordinate nearest = null;
-        double minDistance = 999999;
-        for (Coordinate c : intersection.getCoordinates()) {
-            if (vertex.getCoordinate().equals(c)) {
+        for (Vertex vertex : tempVisible) {
+            LineSegment line = getParallelLine(vertex.getCoordinate());
+            if (addNewVertex(vertex, line)) {
+                System.out.println("Nothing was added!");
+                return;
+            }
+        }
+    }
+
+    private boolean addNewVertex(Vertex vertex, LineSegment line) {
+        Coordinate base = line.p0;
+        Geometry intersections = polygon.getBoundary().intersection(line.toGeometry(factory));
+        intersections = GeometryPrecisionReducer.reduce(intersections, precision);
+        Coordinate nearestIntersection = null;
+        double minDistanceBaseToIntersection = 999999;
+        for (Coordinate intersection : intersections.getCoordinates()) {
+            if (vertex.getCoordinate().equals(intersection) || base.equals(intersection)) {
+                System.out.println("Skipped " + intersection);
                 continue;
             }
-            if (vertex.getCoordinate().distance(c) < minDistance) {
-                minDistance = vertex.getCoordinate().distance(c);
-                nearest = c;
+            if (base.distance(intersection) < minDistanceBaseToIntersection) {
+                minDistanceBaseToIntersection = base.distance(intersection);
+                nearestIntersection = intersection;
             }
         }
-        if (nearest == null) {
-            System.out.println("Nothing found");
-            return;
+        if (nearestIntersection == null) {
+            System.out.println("No Intersection found!!!");
+            return true;
         }
-            System.out.println("FOUND NEAREST " + nearest);
-        LineSegment toTest = new LineSegment(vertex.getCoordinate(), nearest);
+
+        if (minDistanceBaseToIntersection < base.distance(vertex.getCoordinate())) {
+            System.out.println("Intersection is before Vertex!!");
+            return true;
+        }
+
+        Vertex v = new Vertex(nearestIntersection);
+        v.setIsVisible(1);
+        vertices.add(v);
+        System.out.println(v + " was added!!");
+        LineSegment toTest = new LineSegment(base, nearestIntersection);
+        System.out.println("IS toTEST in ? " + polygon.within(toTest.toGeometry(factory)));
         addToBlackLine(toTest);
-
-        if (polygon.covers(toTest.toGeometry(factory))) {
-            System.out.println("touched || within");
-            Vertex v = new Vertex(nearest);
-            v.setIsVisible(1);
-            vertices.add(v);
-
-        }else {
-            System.out.println("ADDED as RED to CHECK ");
-            Vertex vv = new Vertex(nearest);
-            vv.setIsVisible(-1);
-            vertices.add(vv);
-            System.out.println("IS WITHIN ? " + toTest.toGeometry(factory).within(polygon));
-            System.out.println( "IS TOUCHING ? " + toTest.toGeometry(factory).touches(polygon));
-            System.out.println(" IS COVERING ? "+ polygon.covers(toTest.toGeometry(factory)));
-        }
+        return false;
     }
 
-    public void testTempInvisible() {
+
+    public void doubleChekInvisibles() {
         if (tempInvisible.isEmpty()) {
             return;
         }
@@ -210,14 +215,14 @@ public class Builder extends Initializer {
             Vertex visible = tempVisible.get(i);
             for (int j = 0; j < tempInvisible.size(); j++) {
                 Vertex invisible = tempInvisible.get(j);
-                LineSegment uv = new LineSegment(invisible.getCoordinate(), visible.getCoordinate());
-                if (polygon.contains(uv.toGeometry(factory))) {
-                    if (isInCollisionWithCamera(uv)) {
-                        invisible.setIsVisible(1);
-                        addToGreenLines(new LineSegment(invisible.getCoordinate(), getIntersection(uv)));
-                        tempVisible.add(invisible);
-                        tempInvisible.remove(invisible);
-                    }
+                LineSegment visibleToInvisible = new LineSegment(visible.getCoordinate(), invisible.getCoordinate());
+                if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
+                    invisible.setIsVisible(1);
+                    addToGreenLines(new LineSegment(invisible.getCoordinate(), getIntersectionPointWithCamera(visibleToInvisible)));
+                    tempVisible.add(invisible);
+                    LineSegment extentOfVisibleToInvisible = new LineSegment(visible.getCoordinate(), getExtentCoordinate(invisible, visible.getCoordinate()));
+                    addNewVertex(invisible, extentOfVisibleToInvisible);
+                    tempInvisible.remove(invisible);
                 }
             }
         }
@@ -238,8 +243,8 @@ public class Builder extends Initializer {
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
         streifenCoordinates.add(rightPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinateForBETA(vertex));
-        LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinateForBETA(vertex));
+        streifenCoordinates.add(getExtentCoordinate(vertex, rightPointOnCircle));
+        LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinate(vertex, rightPointOnCircle));
 
         Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0, -camera.getRadius() * 2);
         Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1, -camera.getRadius() * 2);
@@ -250,8 +255,6 @@ public class Builder extends Initializer {
         stepCoordinates = streifenCoordinates;
         setALPHA(streifenCoordinates.get(3), streifenCoordinates.get(2));
         setBETA(streifenCoordinates.get(0), streifenCoordinates.get(1));
-
-
         vertex.increaseVisited();
 
     }
@@ -261,8 +264,8 @@ public class Builder extends Initializer {
         System.out.println("ALPHA CALLED");
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
         streifenCoordinates.add(leftPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinateForALPHA(vertex));
-        LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinateForALPHA(vertex));
+        streifenCoordinates.add(getExtentCoordinate(vertex, leftPointOnCircle));
+        LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinate(vertex, leftPointOnCircle));
 
         Coordinate rightPointOnCircle = leftTangent.pointAlongOffset(0, camera.getRadius() * 2);
         Coordinate mirrorOfExtent = leftTangent.pointAlongOffset(1, camera.getRadius() * 2);
@@ -273,29 +276,21 @@ public class Builder extends Initializer {
         stepCoordinates = streifenCoordinates;
         setALPHA(streifenCoordinates.get(0), streifenCoordinates.get(1));
         setBETA(streifenCoordinates.get(3), streifenCoordinates.get(2));
-
         vertex.increaseVisited();
 
     }
 
+    private Coordinate getExtentCoordinate(Vertex vertex, Coordinate base) {
+        Vector2D vector2D = new Vector2D(base, vertex.getCoordinate());
+        double k = getMaxDistanceFrom() / base.distance(vertex.getCoordinate());
+        Vector2D extentVector = vector2D.multiply(k);
+        double x = extentVector.getX() + base.getX();
+        double y = extentVector.getY() + base.getY();
 
-    private Coordinate getExtentCoordinateForBETA(Vertex vertex) {
-        Vector2D vector = new Vector2D(camera.getRightTangentPoint(vertex), vertex.getCoordinate());
-        double k = getMaxDistanceFrom() / (camera.getRightTangentPoint(vertex).distance(vertex.getCoordinate()));
-        Vector2D extentVector = vector.multiply(k);
-        double x = extentVector.getX() + camera.getRightTangentPoint(vertex).getX();
-        double y = extentVector.getY() + camera.getRightTangentPoint(vertex).getY();
         return new Coordinate(x, y);
+
     }
 
-    private Coordinate getExtentCoordinateForALPHA(Vertex vertex) {
-        Vector2D vector = new Vector2D(camera.getLeftTangentPoint(vertex), vertex.getCoordinate());
-        double k = getMaxDistanceFrom() / (camera.getLeftTangentPoint(vertex).distance(vertex.getCoordinate()));
-        Vector2D extentVector = vector.multiply(k);
-        double x = extentVector.getX() + camera.getLeftTangentPoint(vertex).getX();
-        double y = extentVector.getY() + camera.getLeftTangentPoint(vertex).getY();
-        return new Coordinate(x, y);
-    }
 
     void setALPHA(Coordinate start, Coordinate end) {
         ALPHA = new LineSegment(start, end);
