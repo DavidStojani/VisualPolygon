@@ -8,6 +8,8 @@ import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
+import org.locationtech.jts.operation.overlayng.OverlayNG;
+import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 
 import java.util.ArrayList;
@@ -15,6 +17,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.zip.GZIPOutputStream;
 
 
 @NoArgsConstructor
@@ -170,10 +173,41 @@ public class Builder extends Initializer {
         }
     }
 
+    /***TODO: Precision should be added*/
+
+    private Polygon addNew(LineSegment line) throws Exception {
+
+        Geometry pol = polygon.copy();
+        System.out.println("===========POl==========================");
+        System.out.println();
+        System.out.println(pol);
+        System.out.println();
+        System.out.println("===========union==========================");
+        System.out.println();
+        Geometry union = OverlayNGRobust.overlay(pol, line.toGeometry(factory), 2);
+        System.out.println(union);
+        System.out.println();
+        GeometryCollectionIterator iterator = new GeometryCollectionIterator(union);
+        while (iterator.hasNext()) {
+            Geometry g = (Geometry) iterator.next();
+            if (g.getGeometryType().equals("Polygon")) {
+                return (Polygon) g;
+            }
+        }
+        throw new Exception("POLYGON NOT FOUND");
+    }
+
     private boolean addNewVertex(Vertex vertex, LineSegment line) {
+        Polygon polygon = null;
+        try {
+            polygon = addNew(line);
+        } catch (Exception e) {
+            return true;
+        }
         Coordinate base = line.p0;
+        System.out.println(" THE FULL LINE AS GEOMTRY " + line.toGeometry(factory));
         Geometry intersections = polygon.getBoundary().intersection(line.toGeometry(factory));
-        intersections = GeometryPrecisionReducer.reduce(intersections, precision);
+        //intersections = GeometryPrecisionReducer.reduce(intersections, precision);
         Coordinate nearestIntersection = null;
         double minDistanceBaseToIntersection = 999999;
         for (Coordinate intersection : intersections.getCoordinates()) {
@@ -196,13 +230,17 @@ public class Builder extends Initializer {
             return true;
         }
 
-        Vertex v = new Vertex(nearestIntersection);
-        v.setIsVisible(1);
-        vertices.add(v);
-        System.out.println(v + " was added!!");
-        LineSegment toTest = new LineSegment(base, nearestIntersection);
-        System.out.println("IS toTEST in ? " + polygon.within(toTest.toGeometry(factory)));
+        LineSegment toTest = new LineSegment(vertex, nearestIntersection);
+        System.out.println(toTest.toGeometry(factory));
+        System.out.println("IS toTEST in ? " + polygon.covers(toTest.toGeometry(factory)));
         addToBlackLine(toTest);
+
+        if (polygon.covers(toTest.toGeometry(factory)) || polygon.covers(toTest.toGeometry(factory).reverse())) {
+            Vertex v = new Vertex(nearestIntersection);
+            v.setIsVisible(1);
+            vertices.add(v);
+            System.out.println(v + " was added!!");
+        }
         return false;
     }
 
