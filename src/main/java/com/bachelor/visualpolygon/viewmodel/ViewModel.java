@@ -2,7 +2,6 @@ package com.bachelor.visualpolygon.viewmodel;
 
 import com.bachelor.visualpolygon.model.DataModel;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
-import javafx.beans.binding.FloatExpression;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -90,12 +89,12 @@ public class ViewModel {
 
 
     public void setStepInfo() {
-
         setLabelText("Step Created! " + "ACTIVE size: " + model.getStepInfo());
     }
 
     public boolean isScanDone(){
         if (model.isScanReady()) {
+            model.createVisPolygon();
             setLabelText("!!SCAN IS DONE!!");
             return true;
         }
@@ -129,8 +128,7 @@ public class ViewModel {
         fileChooser.setTitle("Save");
         FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt");
         fileChooser.getExtensionFilters().add(extFilter);
-        File file = fileChooser.showSaveDialog(new Popup());
-        return file;
+        return fileChooser.showSaveDialog(new Popup());
     }
 
     public void uploadFile(File file) {
@@ -138,17 +136,24 @@ public class ViewModel {
         WKTFileReader wktFileReader = new WKTFileReader(file, wktReader);
 
         try {
-            List a = wktFileReader.read();
+            List<Geometry> a = wktFileReader.read();
             Geometry p = wktReader.read(a.get(0).toString());
             Coordinate[] coordinates = p.getCoordinates();
             for (int i = 0; i < coordinates.length - 1; i++) {
                 Coordinate coordinate = coordinates[i];
                 vertices.add(new Vertex(coordinate));
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ParseException e) {
+        } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public Polygon getVisPoly() {
+        Polygon visPoly = new Polygon();
+        for (Coordinate coordinate : model.getVisualPolygon()){
+            visPoly.getPoints().add(coordinate.getX());
+            visPoly.getPoints().add(coordinate.getY());
+        }
+        return visPoly;
     }
 }

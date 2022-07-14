@@ -12,9 +12,6 @@ import org.locationtech.jts.geom.Coordinate;
 @EqualsAndHashCode
 public class Vertex extends Coordinate {
     private int isVisible = 0;
-    private Vertex previousVertex;
-    private Vertex nextVertex;
-    private boolean isPrime;
     private double theta;
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
@@ -22,25 +19,27 @@ public class Vertex extends Coordinate {
 
 
     public Vertex(Coordinate c) {
+        super(c);
         xProperty = new SimpleDoubleProperty(c.getX());
         yProperty = new SimpleDoubleProperty(c.getY());
     }
 
     public Vertex(double xCoordinate, double yCoordinate) {
+        super(xCoordinate,yCoordinate);
         xProperty = new SimpleDoubleProperty(xCoordinate);
         yProperty = new SimpleDoubleProperty(yCoordinate);
         xProperty.addListener((observableValue, number, t1) -> xProperty.set(t1.doubleValue()));
         yProperty.addListener((observableValue, number, t1) -> yProperty.set(t1.doubleValue()));
     }
 
-    public Coordinate getCoordinate() {
-        return new Coordinate(xProperty.doubleValue(), yProperty.doubleValue());
-    }
 
     public double getXCoordinate() {
         return xProperty.doubleValue();
     }
 
+    public boolean equalCoordinate(Coordinate coordinate) {
+        return this.getXCoordinate() == coordinate.getX() && this.getYCoordinate() == coordinate.getY();
+    }
     public double getYCoordinate() {
         return yProperty.doubleValue();
     }

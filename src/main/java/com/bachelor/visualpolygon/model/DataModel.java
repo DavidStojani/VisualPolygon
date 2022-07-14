@@ -3,12 +3,14 @@ package com.bachelor.visualpolygon.model;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateList;
 import org.locationtech.jts.geom.Polygon;
 
 import java.util.List;
 import java.util.Stack;
 
 public interface DataModel {
+
     Polygon getPolygon();
 
     List<Coordinate> getStreifenCoordinates();
@@ -19,8 +21,11 @@ public interface DataModel {
 
     boolean isScanReady();
 
+    void createVisPolygon();
+
     Stack<Line> getTheParallels();
 
-
     void reset();
+
+    CoordinateList getVisualPolygon();
 }

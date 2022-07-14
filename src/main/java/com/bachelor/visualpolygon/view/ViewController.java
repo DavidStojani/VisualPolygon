@@ -20,6 +20,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
@@ -31,6 +32,8 @@ import java.util.Objects;
 
 public class ViewController {
 
+    @FXML
+    BorderPane border;
     @FXML
     public AnchorPane pane;
     @FXML
@@ -49,8 +52,7 @@ public class ViewController {
     private Camera camera;
     private final ListProperty<Vertex> listPropertyForVertex;
     private final ListProperty<Double> listPropertyForCamera;
-
-
+    private boolean isScanDone = false;
 
     public ViewController() {
         initMouseHandlerForPane();
@@ -86,37 +88,6 @@ public class ViewController {
         });
     }
 
-    public void nextStep() {
-        if (viewModel.isScanDone()) {
-            return;
-        }
-        Polygon stepPoly = viewModel.getStepPolygon();
-        /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*?
-         /*   System.out.println("STEPPOLY COORD-----" + stepPoly.getPoints() );
-         System.out.println("LAYOUT X-----" + stepPoly.getBoundsInParent());
-         System.out.println("LAYOUT Y-----" + pane.getBoundsInLocal());
-
-         if (stepPoly.getBoundsInParent().getMaxX() > pane.getBoundsInLocal().getMaxX()) {
-         //stepPoly.getBoundsInLocal().getMaxX() = pane.getBoundsInLocal().getMaxX();
-         System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
-         }
-
-         if (stepPoly.getBoundsInParent().getMaxY() > pane.getBoundsInLocal().getMaxY()) {
-
-         stepPoly.getPoints().replaceAll(aDouble -> aDouble == stepPoly.getBoundsInLocal().getMaxY() ? 0 : pane.getBoundsInLocal().getMaxY());
-         System.out.println("NEW STEP POLY-------" + stepPoly.getPoints());
-         }*/
-
-        viewModel.setStepInfo();
-        if (stepPoly != null) {
-            refreshView();
-            drawStepPolygon(stepPoly);
-            root.getChildren().add(stepPoly);
-            root.getChildren().add(viewModel.getParallels().pop());
-        }
-
-    }
-
     public void updatePolygon() {
         if (!isPolygonReady()) return;
         if (Objects.isNull(camera)) {
@@ -124,6 +95,29 @@ public class ViewController {
         }
         viewModel.updatePolygon();
         refreshView();
+    }
+
+    public void nextStep() {
+        if (viewModel.isScanDone()) {
+            isScanDone = true;
+            Polygon visPoly = viewModel.getVisPoly();
+            refreshView();
+            drawPolygon(false);
+            drawVisPolygon(visPoly);
+            root.getChildren().add(camera);
+            root.getChildren().add(visPoly);
+            root.getChildren().addAll(visPolyPoints(visPoly.getPoints()));
+            return;
+        }
+        Polygon stepPoly = viewModel.getStepPolygon();
+        /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*/
+        viewModel.setStepInfo();
+        if (stepPoly != null) {
+            refreshView();
+            drawStepPolygon(stepPoly);
+            root.getChildren().add(stepPoly);
+            root.getChildren().add(viewModel.getParallels().pop());
+        }
     }
 
     public void playStep() {
@@ -178,7 +172,7 @@ public class ViewController {
                 polyline.getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
                 PolygonModified.vertices.add(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
                 refreshLine();
-            } else if (isPrimaryOnPaneAndFullPolygon(mouseEvent)) {
+            } else if (isPrimaryOnPaneAndFullPolygonAndScanNotDone(mouseEvent)) {
                 polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
                 updatePolygon();
             }
@@ -224,10 +218,29 @@ public class ViewController {
     }
 
     private void refreshView() {
-        drawPolygon();
+        drawPolygon(true);
         if (Objects.nonNull(camera)) {
             root.getChildren().add(camera);
         }
+    }
+
+    private ObservableList<Point> visPolyPoints(ObservableList<Double> coordinates) {
+        ObservableList<Point> points = FXCollections.observableArrayList();
+        for (int i = 0; i < coordinates.size() - 2; i += 2) {
+            Double x = coordinates.get(i);
+            Double y = coordinates.get(i + 1);
+            points.add(new Point(x, y));
+        }
+        return points;
+    }
+
+
+    private void drawVisPolygon(Polygon visPolygon) {
+
+        visPolygon.setStroke(Color.BLUE);
+        visPolygon.setStrokeWidth(3.3);
+        visPolygon.setStrokeLineCap(StrokeLineCap.ROUND);
+        visPolygon.setFill(Color.BLUE.deriveColor(0, 1, 1, 0.3));
     }
 
     private void drawStepPolygon(Polygon stepPolygon) {
@@ -238,10 +251,10 @@ public class ViewController {
         stepPolygon.setFill(Color.RED.deriveColor(0, 1, 1, 0.3));
     }
 
-    private void drawPolygon() {
+    private void drawPolygon(boolean movalbe) {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
-        root.getChildren().addAll(polygon.createModeratePoints());
+        root.getChildren().addAll(polygon.createModeratePoints(movalbe));
     }
 
     private Polyline drawPolyline() {
@@ -267,7 +280,7 @@ public class ViewController {
                 coordinates.set(idx + 1, (double) y);
                 PolygonModified.vertices.get(idx / 2).getYProperty().set(y.doubleValue());
             });
-            points.add(new Point(xProperty, yProperty));
+            points.add(new Point(xProperty, yProperty, true));
         }
         return points;
     }
@@ -292,8 +305,8 @@ public class ViewController {
         return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof Point);
     }
 
-    private boolean isPrimaryOnPaneAndFullPolygon(MouseEvent mouseEvent) {
-        return (mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof AnchorPane);
+    private boolean isPrimaryOnPaneAndFullPolygonAndScanNotDone(MouseEvent mouseEvent) {
+        return (!isScanDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof AnchorPane);
     }
 
     private boolean isSecondaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {

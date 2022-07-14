@@ -58,7 +58,7 @@ public class PolygonModified extends Polygon {
         }
     }
 
-    public ObservableList<Point> createModeratePoints() {
+    public ObservableList<Point> createModeratePoints(boolean movable) {
         ObservableList<Point> points = FXCollections.observableArrayList();
         for (int i = 0; i < vertices.size(); i++) {
             final int idx = i;
@@ -75,13 +75,11 @@ public class PolygonModified extends Polygon {
                 updatePoints();
             });
 
-            Point p = new Point(xProperty, yProperty);
+            Point p = new Point(xProperty, yProperty,movable);
             p.setOnMouseClicked(mouseEvent -> {
                 System.out.println("==VERTEX PROPERTY===");
                 System.out.println("X -- " + vertices.get(idx).getXProperty().get());
                 System.out.println("Y -- " + vertices.get(idx).getYProperty().get());
-                System.out.println("THETA -- " + vertices.get(idx).getTheta());
-
             });
 
             if (vertices.get(idx).getIsVisible() == -1) {
