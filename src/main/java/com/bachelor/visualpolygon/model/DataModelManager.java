@@ -6,9 +6,11 @@ import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.scene.shape.Line;
 import lombok.Getter;
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.CoordinateList;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Polygon;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Stack;
@@ -50,6 +52,11 @@ public class DataModelManager implements DataModel {
        return builder.isScanComplete();
     }
 
+    @Override
+    public void createVisPolygon() {
+        builder.createVisPolygon();
+    }
+
 
     @Override
     public Polygon getPolygon() {
@@ -59,7 +66,7 @@ public class DataModelManager implements DataModel {
     @Override
     public List<Coordinate> getStreifenCoordinates() {
         if (builder.getVertices().isEmpty()) {
-            return null;
+            return Collections.emptyList();
         }
         builder.createStep(builder.getNextVertex());
         return builder.getStepCoordinates();
@@ -80,5 +87,10 @@ public class DataModelManager implements DataModel {
             builder.getTempInvisible().clear();
             builder.getTempVisible().clear();
         }
+    }
+
+    @Override
+    public CoordinateList getVisualPolygon() {
+        return builder.getVisPolygonVertices();
     }
 }

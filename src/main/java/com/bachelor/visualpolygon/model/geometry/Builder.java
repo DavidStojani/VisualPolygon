@@ -24,7 +24,12 @@ public class Builder extends Initializer {
     public static final GeometryCamera camera = new GeometryCamera();
     Polygon polygon;
     Polygon stepPolygon;
+    Polygon visPolygon;
     List<Vertex> vertices;
+    CoordinateList visPolygonVertices;
+    CoordinateList coordinateList = new CoordinateList();
+    List<Vertex> initialVertices = new ArrayList<>();
+    List<Vertex> extraVertices = new ArrayList<>();
     List<Coordinate> stepCoordinates = new ArrayList<>();
     @Setter
     Vertex nextVertex;
@@ -82,52 +87,6 @@ public class Builder extends Initializer {
     }
 
 
-    public Vertex findNextVertex() {
-        if (active.isEmpty()) {
-            throw new RuntimeException("active  IS EMPTY");
-        }
-        Vertex tempALFA = null;
-        double angleToALPHA = 999999;
-        Vertex tempBETA = null;
-        double angleToBETA = 99999;
-
-        List<Vertex> leftToALPHA = polarSortedVertices.stream()
-                .filter(vertex -> ALPHA.orientationIndex(vertex) == Orientation.CLOCKWISE)
-                .filter(vertex -> !active.contains(vertex))
-                .sorted(Comparator.comparing(Vertex::getTheta).reversed())
-                .collect(Collectors.toList());
-
-        for (Vertex v : active) {
-            double angle = Angle.angleBetween(v, BETA.p0, BETA.p1);
-            if (angle < angleToBETA && angle > EPSILON) {
-                angleToBETA = angle;
-                tempBETA = v;
-            }
-        }
-
-        for (Vertex v : leftToALPHA) {
-            double angle = Angle.angleBetween(v, ALPHA.p0, ALPHA.p1);
-            if (angle < angleToALPHA && angle > 0) {
-                angleToALPHA = angle;
-                tempALFA = v;
-            }
-        }
-
-        if (angleToBETA < angleToALPHA) {
-            return tempBETA;
-        }
-        return tempALFA;
-    }
-
-
-    public boolean isInsideActive(Vertex vertex) {
-        if (Objects.isNull(active)) {
-            return false;
-        }
-        return active.contains(vertex);
-    }
-
-
     private void setActive() {
         active = new ArrayList<>();
         FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.1);
@@ -137,6 +96,7 @@ public class Builder extends Initializer {
             }
         }
     }
+
 
     //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
     private void setTemps() {
@@ -177,9 +137,6 @@ public class Builder extends Initializer {
     private Polygon addNew(LineSegment line) throws Exception {
 
         Geometry pol = polygon.copy();
-        System.out.println("===========POl==========================");
-        System.out.println(pol);
-        System.out.println();
         System.out.println("===========union BEFRORE PRECISION==========================");
         Geometry union = OverlayNGRobust.overlay(pol, line.toGeometry(factory), 2);
         System.out.println(union);
@@ -188,7 +145,7 @@ public class Builder extends Initializer {
         while (iterator.hasNext()) {
             Geometry g = (Geometry) iterator.next();
             if (g.getGeometryType().equals("Polygon")) {
-                for (Coordinate c : g.getCoordinates()){
+                for (Coordinate c : g.getCoordinates()) {
                     precision.makePrecise(c);
                 }
                 System.out.println("===========union AFTER PRECISION==========================");
@@ -216,7 +173,7 @@ public class Builder extends Initializer {
         for (Coordinate intersection : intersections.getCoordinates()) {
             precision.makePrecise(intersection);
             if (vertex.equalCoordinate(intersection) || base.equals(intersection)) {
-                System.out.println("Skipped INTERSEC.: " + intersection +"--- VERTEX: " +vertex);
+                System.out.println("Skipped INTERSEC.: " + intersection + "--- VERTEX: " + vertex);
                 continue;
             }
             if (base.distance(intersection) < minDistanceBaseToIntersection) {
@@ -238,8 +195,8 @@ public class Builder extends Initializer {
 
         LineSegment toTest = new LineSegment(vertex, nearestIntersection);
         LineString vertexToNearestIntersection = toTest.toGeometry(factory);
-        System.out.println("Vertex to Nearest Intersection ---- "+vertexToNearestIntersection);
-        if (vertexToNearestIntersection.getLength() == 0.0){
+        System.out.println("Vertex to Nearest Intersection ---- " + vertexToNearestIntersection);
+        if (vertexToNearestIntersection.getLength() == 0.0) {
             System.out.println(" BUG avoidance ");
             return true;
         }
@@ -250,13 +207,80 @@ public class Builder extends Initializer {
             Vertex v = new Vertex(nearestIntersection);
             v.setIsVisible(1);
             vertices.add(v);
+            extraVertices.add(v);
             System.out.println(v + " was added!!");
+            System.out.println("========= VERTECIES=========");
+            System.out.println(vertices);
         }
+
         return false;
     }
 
+    public void createVisPolygon() {
+        List<Vertex> verticesOnAB = null;
+        coordinateList.clear();
 
-    public void doubleChekInvisibles() {
+        for (int i = 0; i < polygon.getCoordinates().length - 1; i++) {
+            Vertex A = (Vertex) polygon.getCoordinates()[i];
+            Vertex B = (Vertex) polygon.getCoordinates()[i + 1];
+            verticesOnAB = findVerticesOnAB(A, B);
+
+            if (A.getIsVisible() == 1 && B.getIsVisible() == 1) {
+                coordinateList.add(A);
+                coordinateList.add(B);
+            }
+
+            if (A.getIsVisible() == 1 && B.getIsVisible() == -1) {
+                coordinateList.add(A);
+                addClosestToEndpoint(verticesOnAB, B);
+            }
+
+            if (A.getIsVisible() == -1 && B.getIsVisible() == 1) {
+                addClosestToEndpoint(verticesOnAB, A);
+                coordinateList.add(B);
+            }
+            if (A.getIsVisible() == -1 && B.getIsVisible() == -1) {
+                addClosestToEndpoint(verticesOnAB, A);
+                addClosestToEndpoint(verticesOnAB, B);
+            }
+        }
+
+        Coordinate[] array = CoordinateArrays.removeRepeatedPoints(coordinateList.toCoordinateArray());
+        visPolygonVertices = new CoordinateList(array);
+    }
+
+    private void addClosestToEndpoint(List<Vertex> verticesOnAB, Vertex endpoint) {
+        Vertex vertex = null;
+        double minDistance = 999999;
+        for (Vertex v : verticesOnAB) {
+            if (endpoint.distance(v) < minDistance) {
+                minDistance = endpoint.distance(v);
+                vertex = v;
+            } else {
+                vertices.remove(v);
+            }
+        }
+        if (Objects.nonNull(vertex)) {
+            coordinateList.add(vertex);
+            verticesOnAB.remove(vertex);
+        }
+    }
+
+    private List<Vertex> findVerticesOnAB(Vertex a, Vertex b) {
+
+        List<Vertex> verticesOnAB = new ArrayList<>();
+        LineSegment segmentAB = new LineSegment(a, b);
+        for (Vertex vertex : extraVertices) {
+
+            if (segmentAB.distancePerpendicular(vertex) <= 0.009) {
+                verticesOnAB.add(vertex);
+            }
+        }
+        return verticesOnAB;
+    }
+
+
+    private void doubleChekInvisibles() {
         if (tempInvisible.isEmpty()) {
             return;
         }
@@ -277,17 +301,54 @@ public class Builder extends Initializer {
         }
     }
 
-    public LineSegment getParallelLine(Coordinate point) {
+    private Vertex findNextVertex() {
+        if (active.isEmpty()) {
+            throw new RuntimeException("active  IS EMPTY");
+        }
+        Vertex tempALFA = null;
+        double angleToALPHA = 999999;
+        Vertex tempBETA = null;
+        double angleToBETA = 99999;
+
+        List<Vertex> leftToALPHA = polarSortedVertices.stream()
+                .filter(vertex -> ALPHA.orientationIndex(vertex) == Orientation.CLOCKWISE)
+                .filter(vertex -> !active.contains(vertex))
+                .sorted(Comparator.comparing(Vertex::getTheta).reversed())
+                .collect(Collectors.toList());
+
+        for (Vertex v : active) {
+            double angle = Angle.angleBetween(v, BETA.p0, BETA.p1);
+            if (angle < angleToBETA && angle > EPSILON) {
+                angleToBETA = angle;
+                tempBETA = v;
+            }
+        }
+
+        for (Vertex v : leftToALPHA) {
+            double angle = Angle.angleBetween(v, ALPHA.p0, ALPHA.p1);
+            if (angle < angleToALPHA && angle > 0) {
+                angleToALPHA = angle;
+                tempALFA = v;
+            }
+        }
+
+        if (angleToBETA < angleToALPHA) {
+            return tempBETA;
+        }
+        return tempALFA;
+    }
+
+    private LineSegment getParallelLine(Coordinate point) {
         Coordinate baseMirror = ALPHA.pointAlongOffset(0, ALPHA.distancePerpendicular(point));
         Coordinate endMirror = ALPHA.pointAlongOffset(1, ALPHA.distancePerpendicular(point));
 
         return new LineSegment(baseMirror, endMirror);
     }
 
-
     //Should give back the 4 coordinates. Those should be given to form the polygon and
     //to the viewController to render the view. In the view they should not cross the borders of pane
-    public void createStepFromBETA(Vertex vertex) {
+
+    private void createStepFromBETA(Vertex vertex) {
         CoordinateList streifenCoordinates = new CoordinateList();
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
@@ -308,7 +369,7 @@ public class Builder extends Initializer {
 
     }
 
-    public void createStepFromALPHA(Vertex vertex) {
+    private void createStepFromALPHA(Vertex vertex) {
         CoordinateList streifenCoordinates = new CoordinateList();
         System.out.println("ALPHA CALLED");
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
@@ -341,11 +402,18 @@ public class Builder extends Initializer {
     }
 
 
-    void setALPHA(Coordinate start, Coordinate end) {
+    private void setALPHA(Coordinate start, Coordinate end) {
         ALPHA = new LineSegment(start, end);
     }
 
-    void setBETA(Coordinate start, Coordinate end) {
+    private void setBETA(Coordinate start, Coordinate end) {
         BETA = new LineSegment(start, end);
+    }
+
+    private boolean isInsideActive(Vertex vertex) {
+        if (Objects.isNull(active)) {
+            return false;
+        }
+        return active.contains(vertex);
     }
 }

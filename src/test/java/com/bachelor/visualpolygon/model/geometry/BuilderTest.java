@@ -26,7 +26,7 @@ class BuilderTest {
         Vertex v2 = new Vertex(5, 7);
         Builder builder = new Builder();
 
-        Map parameter = builder.getParametersOfEquation(v1.getCoordinate(), v2.getCoordinate());
+        Map parameter = builder.getParametersOfEquation(v1, v2);
 
         assertEquals(-6.0,parameter.get("A"));
         assertEquals(3.0,parameter.get("B"));
