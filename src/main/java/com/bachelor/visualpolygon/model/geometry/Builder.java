@@ -8,16 +8,13 @@ import org.locationtech.jts.algorithm.Orientation;
 import org.locationtech.jts.geom.*;
 import org.locationtech.jts.math.Vector2D;
 import org.locationtech.jts.operation.overlay.validate.FuzzyPointLocator;
-import org.locationtech.jts.operation.overlayng.OverlayNG;
 import org.locationtech.jts.operation.overlayng.OverlayNGRobust;
-import org.locationtech.jts.precision.GeometryPrecisionReducer;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPOutputStream;
 
 
 @NoArgsConstructor
@@ -163,12 +160,14 @@ public class Builder extends Initializer {
     }
 
     public void addNewVertecies() {
-
+        System.out.println("SIZE OF VISIBLE === " + tempVisible.size());
         for (Vertex vertex : tempVisible) {
+
             LineSegment line = getParallelLine(vertex);
+            System.out.println("Visiting " + vertex + "CREATING Line  " + line);
             if (addNewVertex(vertex, line)) {
                 System.out.println("Nothing was added!");
-                return;
+
             }
         }
     }
@@ -179,11 +178,9 @@ public class Builder extends Initializer {
 
         Geometry pol = polygon.copy();
         System.out.println("===========POl==========================");
-        System.out.println();
         System.out.println(pol);
         System.out.println();
-        System.out.println("===========union==========================");
-        System.out.println();
+        System.out.println("===========union BEFRORE PRECISION==========================");
         Geometry union = OverlayNGRobust.overlay(pol, line.toGeometry(factory), 2);
         System.out.println(union);
         System.out.println();
@@ -191,6 +188,12 @@ public class Builder extends Initializer {
         while (iterator.hasNext()) {
             Geometry g = (Geometry) iterator.next();
             if (g.getGeometryType().equals("Polygon")) {
+                for (Coordinate c : g.getCoordinates()){
+                    precision.makePrecise(c);
+                }
+                System.out.println("===========union AFTER PRECISION==========================");
+                System.out.println(g);
+                System.out.println();
                 return (Polygon) g;
             }
         }
@@ -198,44 +201,52 @@ public class Builder extends Initializer {
     }
 
     private boolean addNewVertex(Vertex vertex, LineSegment line) {
-        Polygon polygon = null;
+        Polygon testPolygon = null;
         try {
-            polygon = addNew(line);
+            testPolygon = addNew(line);
         } catch (Exception e) {
             return true;
         }
-        Coordinate base = line.p0;
         System.out.println(" THE FULL LINE AS GEOMTRY " + line.toGeometry(factory));
-        Geometry intersections = polygon.getBoundary().intersection(line.toGeometry(factory));
-        //intersections = GeometryPrecisionReducer.reduce(intersections, precision);
+
+        Coordinate base = line.p0;
+        Geometry intersections = testPolygon.getBoundary().intersection(line.toGeometry(factory));
         Coordinate nearestIntersection = null;
         double minDistanceBaseToIntersection = 999999;
         for (Coordinate intersection : intersections.getCoordinates()) {
+            precision.makePrecise(intersection);
             if (vertex.equalCoordinate(intersection) || base.equals(intersection)) {
-                System.out.println("Skipped " + intersection);
+                System.out.println("Skipped INTERSEC.: " + intersection +"--- VERTEX: " +vertex);
                 continue;
             }
             if (base.distance(intersection) < minDistanceBaseToIntersection) {
                 minDistanceBaseToIntersection = base.distance(intersection);
+                if (minDistanceBaseToIntersection < base.distance(vertex)) {
+                    System.out.println("Intersection is before Vertex!!");
+                    continue;
+                }
                 nearestIntersection = intersection;
             }
         }
+
         if (nearestIntersection == null) {
             System.out.println("No Intersection found!!!");
             return true;
         }
 
-        if (minDistanceBaseToIntersection < base.distance(vertex)) {
-            System.out.println("Intersection is before Vertex!!");
-            return true;
-        }
+        System.out.println("FOUND FIRST INTERSECTION ----- " + nearestIntersection);
 
         LineSegment toTest = new LineSegment(vertex, nearestIntersection);
-        System.out.println(toTest.toGeometry(factory));
-        System.out.println("IS toTEST in ? " + polygon.covers(toTest.toGeometry(factory)));
+        LineString vertexToNearestIntersection = toTest.toGeometry(factory);
+        System.out.println("Vertex to Nearest Intersection ---- "+vertexToNearestIntersection);
+        if (vertexToNearestIntersection.getLength() == 0.0){
+            System.out.println(" BUG avoidance ");
+            return true;
+        }
+        System.out.println("IS toTEST in ? " + testPolygon.covers(vertexToNearestIntersection));
         addToBlackLine(toTest);
 
-        if (polygon.covers(toTest.toGeometry(factory)) || polygon.covers(toTest.toGeometry(factory).reverse())) {
+        if (testPolygon.covers(vertexToNearestIntersection) || testPolygon.covers(vertexToNearestIntersection.reverse())) {
             Vertex v = new Vertex(nearestIntersection);
             v.setIsVisible(1);
             vertices.add(v);

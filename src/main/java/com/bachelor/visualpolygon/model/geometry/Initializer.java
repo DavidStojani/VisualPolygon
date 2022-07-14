@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 public abstract class Initializer {
-    static final PrecisionModel precision = new PrecisionModel(10);
+    static final PrecisionModel precision = new PrecisionModel(100);
     static final GeometryFactory factory = new GeometryFactory();
     static final double EPSILON = 0.0000005;
     List<Vertex> polarSortedVertices;
