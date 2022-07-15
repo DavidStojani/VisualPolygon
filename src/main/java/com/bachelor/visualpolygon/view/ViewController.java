@@ -1,5 +1,7 @@
 package com.bachelor.visualpolygon.view;
 
+import com.bachelor.visualpolygon.info.Level;
+import com.bachelor.visualpolygon.info.Logger;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import com.bachelor.visualpolygon.view.shapes.Camera;
 import com.bachelor.visualpolygon.view.shapes.Point;
@@ -14,13 +16,10 @@ import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.Group;
-import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
@@ -28,7 +27,6 @@ import javafx.scene.shape.StrokeLineCap;
 
 import java.io.File;
 import java.util.Objects;
-
 
 public class ViewController {
 
@@ -40,8 +38,13 @@ public class ViewController {
     private Label statusText;
     @FXML
     private ListView<File> uploadList;
+    @FXML
+    VBox buttonBox;
 
     private ViewModel viewModel;
+
+    Logger logger = new Logger("controller");
+    LogView logView = new LogView(logger);
 
     private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
@@ -66,9 +69,37 @@ public class ViewController {
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(root);
+
         initList();
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
+        ChoiceBox<Level> filterLevel = new ChoiceBox<>(
+                FXCollections.observableArrayList(
+                        Level.values()
+                )
+        );
+        filterLevel.getSelectionModel().select(Level.DEBUG);
+        logView.filterLevelProperty().bind(
+                filterLevel.getSelectionModel().selectedItemProperty()
+        );
+
+        ToggleButton showTimestamp = new ToggleButton("Show Timestamp");
+        logView.showTimeStampProperty().bind(showTimestamp.selectedProperty());
+
+        ToggleButton tail = new ToggleButton("Tail");
+        logView.tailProperty().bind(tail.selectedProperty());
+
+        ToggleButton pause = new ToggleButton("Pause");
+        logView.pausedProperty().bind(pause.selectedProperty());
+
+        HBox controls = new HBox(10, filterLevel, showTimestamp, tail, pause);
+        controls.setMinHeight(HBox.USE_PREF_SIZE);
+
+        VBox layout = new VBox(10, controls, logView);
+        VBox.setVgrow(logView, Priority.ALWAYS);
+        border.setRight(layout);
+        layout.setPrefSize(370, 407);
+
     }
 
     public void initList() {
@@ -89,15 +120,18 @@ public class ViewController {
     }
 
     public void updatePolygon() {
+        logger.info("INFO POLYGON UPDATED");
         if (!isPolygonReady()) return;
         if (Objects.isNull(camera)) {
             viewModel.setLabelText("Polygon Updated! Click to add Camera");
         }
         viewModel.updatePolygon();
         refreshView();
+
     }
 
     public void nextStep() {
+        logger.error("TE QIFSHA MOTREN");
         if (viewModel.isScanDone()) {
             isScanDone = true;
             Polygon visPoly = viewModel.getVisPoly();
@@ -146,6 +180,7 @@ public class ViewController {
         resetApplication();
         viewModel.uploadFile(file);
         polygon = new PolygonModified();
+
         updatePolygon();
         refreshView();
         viewModel.setLabelText("Update was pressed");
@@ -181,6 +216,8 @@ public class ViewController {
                 Point point = (Point) mouseEvent.getTarget();
                 if (point.getCenterX() == polyline.getPoints().get(0) && point.getCenterY() == polyline.getPoints().get(1)) {
                     polygon = new PolygonModified();
+                    polygon.scaleXProperty().bind(pane.scaleXProperty());
+                    point.scaleYProperty().bind(pane.scaleYProperty());
                     updatePolygon();
                 }
             }

@@ -4,9 +4,15 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.Font?>
-<BorderPane fx:id="border" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="465.0" prefWidth="950.0" style="-fx-background-color: #604758" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
+<BorderPane fx:id="border" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="765.0" prefWidth="1650.0" style="-fx-background-color: #604758" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
+   <center>
+      <AnchorPane fx:id="pane" prefHeight="465.0" prefWidth="761.0" style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
+   </center>
+   <bottom>
+      <Label fx:id="author" prefHeight="16.0" prefWidth="1650.0" alignment="CENTER_LEFT" style="-fx-font-size: 12; -fx-background-color: #D2D2CF;" text="David Stojani, Uni Bonn, Bachelor Thesis >> Visual Polygon from a rotating camera"/>
+   </bottom>
    <left>
-      <VBox prefHeight="465.0" prefWidth="204.0" BorderPane.alignment="CENTER">
+      <VBox fx:id="buttonBox" prefHeight="407.0" prefWidth="169.0" spacing="1" BorderPane.alignment="CENTER">
          <children>
             <Button mnemonicParsing="false" onAction="#updatePolygon" prefHeight="63.0" prefWidth="204.0" text="Update" />
             <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0" prefWidth="204.0" text="Play Step" />
@@ -16,18 +22,15 @@
                   <Font size="15.0" />
                </font>
             </Label>
-            <ListView fx:id="uploadList" prefHeight="200.0" prefWidth="200.0" />
+            <ListView fx:id="uploadList" prefHeight="260.0" prefWidth="165.0" />
             <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#resetApplication" prefHeight="63.0" prefWidth="204.0" text="Reset" />
          </children>
       </VBox>
    </left>
-   <center>
-      <AnchorPane fx:id="pane" prefHeight="465.0" prefWidth="761.0" style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
-   </center>
-   <bottom>
-      <Label fx:id="statusText" alignment="CENTER" prefHeight="58.0" prefWidth="950.0" style="-fx-font-size: 18; -fx-background-color: #D2D2CF;" text="Status" BorderPane.alignment="BOTTOM_LEFT">
+   <top>
+      <Label fx:id="statusText" alignment="CENTER" prefHeight="58.0" prefWidth="923.0" style="-fx-font-size: 18; -fx-background-color: #D2D2CF;" text="Status" BorderPane.alignment="CENTER">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin></Label>
-   </bottom>
+   </top>
 </BorderPane>

@@ -21,10 +21,11 @@ public class ViewHandler {
         fxmlLoader.setLocation(getClass().getResource("view.fxml"));
         Parent root = fxmlLoader.load();
 
+
         ViewController viewController = fxmlLoader.getController();
         viewController.init(viewModelFactory.getViewModel());
 
-        Scene scene = new Scene(root, 1240, 800);
+        Scene scene = new Scene(root, 1640, 900);
         stage.setTitle("Polygon Visualisation");
 
         stage.setScene(scene);
