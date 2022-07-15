@@ -7,7 +7,10 @@ import com.bachelor.visualpolygon.info.Logger;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.property.*;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -32,7 +35,7 @@ public class LogView extends ListView<LogRecord> {
     private final ObjectProperty<Level> filterLevel = new SimpleObjectProperty<>(null);
     private final BooleanProperty tail = new SimpleBooleanProperty(false);
     private final BooleanProperty paused = new SimpleBooleanProperty(false);
-    private final DoubleProperty refreshRate = new SimpleDoubleProperty(60);
+
 
     private final ObservableList<LogRecord> logItems = FXCollections.observableArrayList();
 
@@ -52,13 +55,8 @@ public class LogView extends ListView<LogRecord> {
         return paused;
     }
 
-    public DoubleProperty refreshRateProperty() {
-        return refreshRate;
-    }
-
     public LogView(Logger logger) {
         getStyleClass().add("log-view");
-
 
         Timeline logTransfer = new Timeline(
                 new KeyFrame(Duration.seconds(1), event -> {
@@ -75,7 +73,7 @@ public class LogView extends ListView<LogRecord> {
                 )
         );
         logTransfer.setCycleCount(Timeline.INDEFINITE);
-        logTransfer.rateProperty().bind(refreshRateProperty());
+
 
         this.pausedProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue && logTransfer.getStatus() == Animation.Status.RUNNING) {
@@ -128,10 +126,7 @@ public class LogView extends ListView<LogRecord> {
                     return;
                 }
 
-                String context =
-                        (item.getContext() == null)
-                                ? ""
-                                : item.getContext() + " ";
+                String context = (item.getContext() == null) ? "" : item.getContext() + " ";
 
                 if (showTimestamp.get()) {
                     String timestamp =

@@ -28,7 +28,7 @@
       </VBox>
    </left>
    <top>
-      <Label fx:id="statusText" alignment="CENTER" prefHeight="58.0" prefWidth="923.0" style="-fx-font-size: 18; -fx-background-color: #D2D2CF;" text="Status" BorderPane.alignment="CENTER">
+      <Label fx:id="statusText" alignment="BASELINE_CENTER" prefHeight="58.0" prefWidth="930" style="-fx-font-size: 18; -fx-background-color: #D2D2CF;" text="Status" BorderPane.alignment="TOP_LEFT">
          <BorderPane.margin>
             <Insets />
          </BorderPane.margin></Label>

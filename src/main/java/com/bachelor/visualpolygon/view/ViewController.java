@@ -69,19 +69,16 @@ public class ViewController {
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(root);
-
         initList();
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
-        ChoiceBox<Level> filterLevel = new ChoiceBox<>(
-                FXCollections.observableArrayList(
-                        Level.values()
-                )
-        );
-        filterLevel.getSelectionModel().select(Level.DEBUG);
-        logView.filterLevelProperty().bind(
-                filterLevel.getSelectionModel().selectedItemProperty()
-        );
+        initLogView();
+    }
+
+    private void initLogView() {
+        ChoiceBox<Level> filterLevel = new ChoiceBox<>(FXCollections.observableArrayList(Level.values()));
+        filterLevel.getSelectionModel().select(Level.INFO);
+        logView.filterLevelProperty().bind(filterLevel.getSelectionModel().selectedItemProperty());
 
         ToggleButton showTimestamp = new ToggleButton("Show Timestamp");
         logView.showTimeStampProperty().bind(showTimestamp.selectedProperty());
@@ -92,14 +89,13 @@ public class ViewController {
         ToggleButton pause = new ToggleButton("Pause");
         logView.pausedProperty().bind(pause.selectedProperty());
 
-        HBox controls = new HBox(10, filterLevel, showTimestamp, tail, pause);
+        HBox controls = new HBox(7, filterLevel, showTimestamp, tail, pause);
         controls.setMinHeight(HBox.USE_PREF_SIZE);
 
-        VBox layout = new VBox(10, controls, logView);
+        VBox layout = new VBox(4, controls, logView);
         VBox.setVgrow(logView, Priority.ALWAYS);
         border.setRight(layout);
         layout.setPrefSize(370, 407);
-
     }
 
     public void initList() {
