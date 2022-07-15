@@ -1,5 +1,7 @@
 package com.bachelor.visualpolygon.model.geometry;
 
+
+import com.bachelor.visualpolygon.info.Logger;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -40,6 +42,9 @@ public class Builder extends Initializer {
     private List<Vertex> tempInvisible;
 
 
+    Logger logger = new Logger("builder");
+
+
     /**
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
      */
@@ -69,6 +74,8 @@ public class Builder extends Initializer {
         if (Objects.isNull(vertex)) {
             vertex = firstVertex;
         }
+
+        logger.info("createStep Was called!");
         System.out.println("========================= ON VERTEX ------- " + vertex);
 
         if (isInsideActive(vertex)) {

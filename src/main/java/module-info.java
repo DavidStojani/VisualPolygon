@@ -3,7 +3,8 @@ module com.bachelor.visualpolygon {
     requires javafx.fxml;
     requires org.locationtech.jts;
     requires lombok;
-
+    requires logback.core;
+    requires org.slf4j;
 
     opens com.bachelor.visualpolygon to javafx.fxml;
     exports com.bachelor.visualpolygon;
