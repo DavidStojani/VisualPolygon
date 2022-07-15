@@ -1,42 +1,54 @@
 package com.bachelor.visualpolygon.info;
 
+import lombok.Setter;
+
 import java.util.Collection;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 
-public class Logger {
 
-    private static String context;
+public class Logger {
+    private static Logger instace;
+    @Setter
+    private String context;
     private static final int MAX_LOG_ENTRIES = 1_000_000;
     private static final BlockingDeque<LogRecord> logCollection = new LinkedBlockingDeque<>(MAX_LOG_ENTRIES);
 
 
-    public Logger(String context) {
-        this.context = context;
+    private Logger() {
+        context = "START: ";
     }
 
-    public static void log(LogRecord record) {
-        logCollection.offer(record);
+    public static Logger getLogger() {
+        if (instace == null) {
+            return new Logger();
+        }
+        return instace;
     }
 
-    public static void debug(String msg) {
+
+    public void log(LogRecord logRecord) {
+        logCollection.offer(logRecord);
+    }
+
+    public void debug(String msg) {
         log(new LogRecord(Level.DEBUG, context, msg));
     }
 
-    public static void info(String msg) {
+    public  void info(String msg) {
         log(new LogRecord(Level.INFO, context, msg));
     }
 
-    public static void warn(String msg) {
+    public  void warn(String msg) {
         log(new LogRecord(Level.WARN, context, msg));
     }
 
-    public static void error(String msg) {
+    public  void error(String msg) {
         log(new LogRecord(Level.ERROR, context, msg));
     }
 
 
-    public static void drainTo(Collection<? super LogRecord> collection) {
+    public  void drainTo(Collection<? super LogRecord> collection) {
         logCollection.drainTo(collection);
     }
 

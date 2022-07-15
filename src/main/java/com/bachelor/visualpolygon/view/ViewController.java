@@ -43,7 +43,7 @@ public class ViewController {
 
     private ViewModel viewModel;
 
-    Logger logger = new Logger("controller");
+    private static final Logger logger = Logger.getLogger();
     LogView logView = new LogView(logger);
 
     private final Group root = new Group();
@@ -58,10 +58,12 @@ public class ViewController {
     private boolean isScanDone = false;
 
     public ViewController() {
+        logger.setContext("Controller: ");
         initMouseHandlerForPane();
         polyline = new Polyline();
         listPropertyForVertex = new SimpleListProperty<>(PolygonModified.vertices);
         listPropertyForCamera = new SimpleListProperty<>(cameraRequirements);
+
     }
 
     public void init(ViewModel viewModel) {
@@ -75,6 +77,9 @@ public class ViewController {
         initLogView();
     }
 
+    /**
+     * TODO: Add Elements in view.fxml
+     */
     private void initLogView() {
         ChoiceBox<Level> filterLevel = new ChoiceBox<>(FXCollections.observableArrayList(Level.values()));
         filterLevel.getSelectionModel().select(Level.INFO);
@@ -90,7 +95,7 @@ public class ViewController {
         logView.pausedProperty().bind(pause.selectedProperty());
 
         HBox controls = new HBox(7, filterLevel, showTimestamp, tail, pause);
-        controls.setMinHeight(HBox.USE_PREF_SIZE);
+        controls.setMinHeight(Region.USE_PREF_SIZE);
 
         VBox layout = new VBox(4, controls, logView);
         VBox.setVgrow(logView, Priority.ALWAYS);
@@ -115,6 +120,9 @@ public class ViewController {
         });
     }
 
+    /**
+     * TODO: When is this button actually used ? Camera location wont update even when is pressed>???
+     */
     public void updatePolygon() {
         logger.info("INFO POLYGON UPDATED");
         if (!isPolygonReady()) return;
@@ -127,7 +135,6 @@ public class ViewController {
     }
 
     public void nextStep() {
-        logger.error("TE QIFSHA MOTREN");
         if (viewModel.isScanDone()) {
             isScanDone = true;
             Polygon visPoly = viewModel.getVisPoly();
@@ -140,7 +147,7 @@ public class ViewController {
             return;
         }
         Polygon stepPoly = viewModel.getStepPolygon();
-        /**TODO Keep the stepPolygon inside the AnchorPane or change to another Pane ?*/
+        /**TODO Keep the Polygon always in the center*/
         viewModel.setStepInfo();
         if (stepPoly != null) {
             refreshView();
@@ -150,6 +157,9 @@ public class ViewController {
         }
     }
 
+    /**
+     * TODO: combine all in next Step and add checkBoxes to show/hide the different lines
+     */
     public void playStep() {
         if (!isPolygonReady()) return;
         if (Objects.isNull(camera)) {

@@ -17,6 +17,8 @@ public class Vertex extends Coordinate {
     private DoubleProperty yProperty;
     private int visited = 0;
 
+    /**TODO: Add grey COLOR FOR NEW Vertices*/
+
 
     public Vertex(Coordinate c) {
         super(c);
@@ -48,4 +50,8 @@ public class Vertex extends Coordinate {
         visited++;
     }
 
+    @Override
+    public String toString() {
+        return "Vertex {" + x + " ; " + y +'}';
+    }
 }

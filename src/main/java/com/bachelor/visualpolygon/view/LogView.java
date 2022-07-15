@@ -24,12 +24,12 @@ import java.text.SimpleDateFormat;
 public class LogView extends ListView<LogRecord> {
     private static final int MAX_ENTRIES = 10_000;
 
-    private final static PseudoClass debug = PseudoClass.getPseudoClass("debug");
-    private final static PseudoClass info = PseudoClass.getPseudoClass("info");
-    private final static PseudoClass warn = PseudoClass.getPseudoClass("warn");
-    private final static PseudoClass error = PseudoClass.getPseudoClass("error");
+    private static final PseudoClass debug = PseudoClass.getPseudoClass("debug");
+    private static final PseudoClass info = PseudoClass.getPseudoClass("info");
+    private static final PseudoClass warn = PseudoClass.getPseudoClass("warn");
+    private static final PseudoClass error = PseudoClass.getPseudoClass("error");
 
-    private final static SimpleDateFormat timestampFormatter = new SimpleDateFormat("HH:mm:ss.SSS");
+    private final SimpleDateFormat timestampFormatter = new SimpleDateFormat("HH:mm:ss.SSS");
 
     private final BooleanProperty showTimestamp = new SimpleBooleanProperty(false);
     private final ObjectProperty<Level> filterLevel = new SimpleObjectProperty<>(null);
@@ -72,15 +72,16 @@ public class LogView extends ListView<LogRecord> {
                 }
                 )
         );
-        logTransfer.setCycleCount(Timeline.INDEFINITE);
+        logTransfer.setCycleCount(Animation.INDEFINITE);
+        logTransfer.setRate(60);
 
 
         this.pausedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue && logTransfer.getStatus() == Animation.Status.RUNNING) {
+            if (Boolean.TRUE.equals(newValue) && logTransfer.getStatus() == Animation.Status.RUNNING) {
                 logTransfer.pause();
             }
 
-            if (!newValue && logTransfer.getStatus() == Animation.Status.PAUSED && getParent() != null) {
+            if (Boolean.TRUE.equals(!newValue && logTransfer.getStatus() == Animation.Status.PAUSED) && getParent() != null) {
                 logTransfer.play();
             }
         });
@@ -95,19 +96,12 @@ public class LogView extends ListView<LogRecord> {
             }
         });
 
-        filterLevel.addListener((observable, oldValue, newValue) -> {
-            setItems(
-                    new FilteredList<LogRecord>(
-                            logItems,
-                            logRecord ->
-                                    logRecord.getLevel().ordinal() >=
-                                            filterLevel.get().ordinal()
-                    )
-            );
-        });
+        filterLevel.addListener((observable, oldValue, newValue) -> setItems(new FilteredList<>(logItems, logRecord ->
+                logRecord.getLevel().ordinal() >= filterLevel.get().ordinal())
+        ));
         filterLevel.set(Level.DEBUG);
 
-        setCellFactory(param -> new ListCell<LogRecord>() {
+        setCellFactory(param -> new ListCell<>() {
             {
                 showTimestamp.addListener(observable -> updateItem(this.getItem(), this.isEmpty()));
             }

@@ -12,7 +12,7 @@ public class Point extends Circle {
 
     public Point(DoubleProperty x, DoubleProperty y, boolean movable) {
 
-        super(x.get(), y.get(), 6);
+        super(x.get(), y.get(), 5);
         setFill(Color.GOLD.deriveColor(1, 0.7, 1, 0.5));
         setStroke(Color.GOLD);
         setStrokeWidth(2);
@@ -25,7 +25,7 @@ public class Point extends Circle {
     }
 
     public Point(Double x, Double y){
-        super(x, y, 6);
+        super(x, y, 5);
         setFill(Color.BLUE.deriveColor(1, 0.7, 1, 0.3));
         setStroke(Color.BLUE);
         setStrokeWidth(2);

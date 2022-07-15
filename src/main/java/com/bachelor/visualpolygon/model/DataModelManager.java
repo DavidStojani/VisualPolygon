@@ -39,6 +39,7 @@ public class DataModelManager implements DataModel {
     }
 
 
+    /**TODO: Not needed any more */
     @Override
     public String getStepInfo() {
         if(Objects.isNull(builder.getActive())){
@@ -47,11 +48,13 @@ public class DataModelManager implements DataModel {
         return String.valueOf(builder.getActive().size());
     }
 
+    /**TODO: Not correct anymore*/
     @Override
     public boolean isScanReady() {
        return builder.isScanComplete();
     }
 
+    /**TODO: To be logged*/
     @Override
     public void createVisPolygon() {
         builder.createVisPolygon();
@@ -73,6 +76,7 @@ public class DataModelManager implements DataModel {
     }
 
 
+    /**TODO: Other solution insted of Stack*/
     @Override
     public Stack<Line> getTheParallels() {
         return builder.getLineStack();

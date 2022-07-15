@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 
 @Getter
@@ -36,8 +37,6 @@ public class ViewModel {
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
     private WKTWriter wktWriter = new WKTWriter(3);
     private ObservableList<File> fileObservableList = FXCollections.observableArrayList();
-
-
 
 
     public ViewModel(DataModel model) {
@@ -59,9 +58,17 @@ public class ViewModel {
         setLabelText("Reset Pressed! All Cleared Out!");
     }
 
+    /**
+     * TODO : prepare some good tests
+     */
+
     public void initListOfFiles() {
         File folder = new File("src/test/resources");
         File[] listOfFiles = folder.listFiles();
+        if (Objects.isNull(listOfFiles)){
+            setLabelText("NO FILE TO BE UPLOADED, CREATE A POLYGON BY CLICKING");
+            return;
+        }
 
         for (File listOfFile : listOfFiles) {
             if (listOfFile.isFile()) {
@@ -92,7 +99,7 @@ public class ViewModel {
         setLabelText("Step Created! " + "ACTIVE size: " + model.getStepInfo());
     }
 
-    public boolean isScanDone(){
+    public boolean isScanDone() {
         if (model.isScanReady()) {
             model.createVisPolygon();
             setLabelText("!!SCAN IS DONE!!");
@@ -102,10 +109,13 @@ public class ViewModel {
     }
 
 
-
     public Stack<Line> getParallels() {
         return model.getTheParallels();
     }
+
+    /**
+     * TODO: HANDLE when save interrupted
+     */
 
     public void save() {
         try {
@@ -150,7 +160,7 @@ public class ViewModel {
 
     public Polygon getVisPoly() {
         Polygon visPoly = new Polygon();
-        for (Coordinate coordinate : model.getVisualPolygon()){
+        for (Coordinate coordinate : model.getVisualPolygon()) {
             visPoly.getPoints().add(coordinate.getX());
             visPoly.getPoints().add(coordinate.getY());
         }
