@@ -65,14 +65,13 @@ public class Builder extends Initializer {
         polygon = createGeometryPolygon(vertices);
         calculatePolarCoordinates(vertices);
         polarSortedVertices = sortPolarCoordinate(vertices);
-        /**TODO problems when adding new vertices*/
-        firstVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
     }
 
 
     public void createStep(Vertex vertex) {
         if (Objects.isNull(vertex)) {
-            vertex = firstVertex;
+            vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
+            ;
         }
 
         logger.debug("createStep() Was called!");
@@ -91,7 +90,6 @@ public class Builder extends Initializer {
         setActive();
         logger.info("++++Setting tempsV und tempsU++++");
         setTemps();
-        logger.info("++++Double checking tempU++++");
         doubleChekInvisibles();
         logger.info("++++Add all Projections of tempVisible in Polygon++++");
         addNewVertecies();
@@ -216,7 +214,7 @@ public class Builder extends Initializer {
         /**TODO: Add another Test for Coordinates different only with +/- 0.1*/
         if (testPolygon.covers(vertexToNearestIntersection) || testPolygon.covers(vertexToNearestIntersection.reverse())) {
             Vertex v = new Vertex(nearestIntersection);
-            v.setIsVisible(1);
+            v.setIsVisible(2);
             vertices.add(v);
             extraVertices.add(v);
             logger.info("First intersection with Polygon " + v + " was added");
@@ -299,7 +297,6 @@ public class Builder extends Initializer {
                 Vertex invisible = tempInvisible.get(j);
                 LineSegment visibleToInvisible = new LineSegment(visible, invisible);
                 if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
-                    logger.info(visibleToInvisible + " is INSIDE Polygon and intersects with camera");
                     invisible.setIsVisible(1);
                     addToGreenLines(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)));
                     tempVisible.add(invisible);
@@ -375,9 +372,10 @@ public class Builder extends Initializer {
         stepCoordinates = streifenCoordinates;
         setAlpha(streifenCoordinates.get(3), streifenCoordinates.get(2));
         setBeta(streifenCoordinates.get(0), streifenCoordinates.get(1));
-        vertex.increaseVisited();
-
+        increaseCount();
     }
+
+
 
     private void createStepFromALPHA(Vertex vertex) {
         CoordinateList streifenCoordinates = new CoordinateList();
@@ -395,7 +393,7 @@ public class Builder extends Initializer {
         stepCoordinates = streifenCoordinates;
         setAlpha(streifenCoordinates.get(0), streifenCoordinates.get(1));
         setBeta(streifenCoordinates.get(3), streifenCoordinates.get(2));
-        vertex.increaseVisited();
+        increaseCount();
 
     }
 

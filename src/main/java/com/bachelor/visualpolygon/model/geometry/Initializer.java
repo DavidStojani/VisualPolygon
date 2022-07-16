@@ -3,6 +3,7 @@ package com.bachelor.visualpolygon.model.geometry;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import lombok.Getter;
+import lombok.Setter;
 import org.locationtech.jts.algorithm.Angle;
 import org.locationtech.jts.algorithm.Area;
 import org.locationtech.jts.geom.*;
@@ -11,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
+
 public abstract class Initializer {
     static final PrecisionModel precision = new PrecisionModel(100);
     static final GeometryFactory factory = new GeometryFactory();
@@ -18,6 +20,8 @@ public abstract class Initializer {
     List<Vertex> polarSortedVertices;
     Stack<Line> lineStack = new Stack<>();
     Vertex firstVertex;
+    @Setter
+    private int count = 0;
 
 
     void calculatePolarCoordinates(List<Vertex> vertexList) {
@@ -68,9 +72,7 @@ public abstract class Initializer {
 
     Polygon createGeometryPolygon(List<Vertex> vertices) {
         CoordinateList tempVertices = new CoordinateList();
-        for (Vertex vertex : vertices) {
-            tempVertices.add(vertex);
-        }
+        tempVertices.addAll(vertices);
         tempVertices.add(vertices.get(0));
         return factory.createPolygon(tempVertices.toCoordinateArray());
     }
@@ -97,30 +99,28 @@ public abstract class Initializer {
     }
 
     public boolean isScanComplete() {
-        return firstVertex.getVisited() == 4;
+        return count == (polarSortedVertices.size() * 2) + 3;
     }
 
-    public HashMap<String, Double> getParametersOfEquation(Coordinate v1, Coordinate v2) {
-        HashMap<String, Double> parameter = new HashMap<>();
-        double A = v1.getY() - v2.getY();
-        double B = v2.getX() - v1.getX();
-        double C = (v1.getX() * v2.getY()) - (v2.getX() * v1.getY());
+    public void increaseCount() {
+        count++;
+    }
 
-        parameter.put("A", A);
-        parameter.put("B", B);
-        parameter.put("C", C);
+    public Map<String, Double> getParametersOfEquation(Coordinate v1, Coordinate v2) {
+        HashMap<String, Double> parameter = new HashMap<>();
+        double a = v1.getY() - v2.getY();
+        double b = v2.getX() - v1.getX();
+        double c = (v1.getX() * v2.getY()) - (v2.getX() * v1.getY());
+
+        parameter.put("A", a);
+        parameter.put("B", b);
+        parameter.put("C", c);
         return parameter;
     }
 
     public boolean isInCollisionWithCamera(LineSegment segment) {
 
-        if (Builder.camera.getRadius() < segment.distancePerpendicular(Builder.camera.getCenter())) {
-            System.out.println("DOES NOT INTERSECT WITH CAMERA");
-            return false;
-        } else {
-            System.out.println("INTERSECTS WITH CAMERA");
-            return true;
-        }
+        return (Builder.camera.getRadius() >= segment.distancePerpendicular(Builder.camera.getCenter()));
     }
 
     public Coordinate getIntersectionPointWithCamera(LineSegment segment) {

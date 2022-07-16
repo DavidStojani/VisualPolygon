@@ -39,14 +39,7 @@ public class DataModelManager implements DataModel {
     }
 
 
-    /**TODO: Not needed any more */
-    @Override
-    public String getStepInfo() {
-        if(Objects.isNull(builder.getActive())){
-            return "Active is empty";
-        }
-        return String.valueOf(builder.getActive().size());
-    }
+
 
     /**TODO: Not correct anymore*/
     @Override
@@ -86,6 +79,7 @@ public class DataModelManager implements DataModel {
     public void reset() {
         builder.getLineStack().clear();
         builder.setNextVertex(null);
+        builder.setCount(0);
         if(Objects.nonNull(builder.getActive())){
             builder.getActive().clear();
             builder.getTempInvisible().clear();

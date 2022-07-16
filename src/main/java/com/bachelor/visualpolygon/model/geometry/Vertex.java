@@ -15,7 +15,7 @@ public class Vertex extends Coordinate {
     private double theta;
     private DoubleProperty xProperty;
     private DoubleProperty yProperty;
-    private int visited = 0;
+
 
     /**TODO: Add grey COLOR FOR NEW Vertices*/
 
@@ -44,10 +44,6 @@ public class Vertex extends Coordinate {
     }
     public double getYCoordinate() {
         return yProperty.doubleValue();
-    }
-
-    public void increaseVisited() {
-        visited++;
     }
 
     @Override

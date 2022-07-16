@@ -90,6 +90,10 @@ public class PolygonModified extends Polygon {
                 p.changeColorToRed();
             } else if (vertices.get(idx).getIsVisible() == 1) {
                 p.changeColorToGreen();
+            } else if (vertices.get(idx).getIsVisible() == 2) {
+                p.changeColorToGray();
+            } else if (vertices.get(idx).getIsVisible() == 3) {
+                p.changeColorToBlack();
             }
             points.add(p);
         }

@@ -11,6 +11,20 @@
    <bottom>
       <Label fx:id="author" prefHeight="16.0" prefWidth="1650.0" alignment="CENTER_LEFT" style="-fx-font-size: 12; -fx-background-color: #D2D2CF;" text="David Stojani, Uni Bonn, Bachelor Thesis >> Visual Polygon from a rotating camera"/>
    </bottom>
+   <right>
+      <VBox fx:id="logPanel" spacing="4" prefHeight="470" prefWidth="420" >
+         <children>
+            <HBox fx:id="logController" spacing="7">
+               <children>
+                  <ChoiceBox fx:id="filterLevel"/>
+                  <ToggleButton fx:id="showTS" text="Show Timetamp"/>
+                  <ToggleButton fx:id="tail" text="Tail"/>
+                  <ToggleButton fx:id="pause" text="Pause"/>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </right>
    <left>
       <VBox fx:id="buttonBox" prefHeight="407.0" prefWidth="169.0" spacing="1" BorderPane.alignment="CENTER">
          <children>

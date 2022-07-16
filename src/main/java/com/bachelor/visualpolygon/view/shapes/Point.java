@@ -42,14 +42,18 @@ public class Point extends Circle {
         setStroke(Color.GREEN);
     }
 
-    public void changeColorToBlue() {
-        setFill(Color.BLUE.deriveColor(1, 0.7, 1, 0.3));
-        setStroke(Color.BLUE);
+    public void changeColorToGray() {
+        setFill(Color.GRAY.deriveColor(2, 0.5, 1.5, 0.5));
+        setStroke(Color.GRAY);
+    }
+
+    public void changeColorToBlack() {
+        setFill(Color.BLACK.deriveColor(2, 0.5, 1.5, 0.5));
+        setStroke(Color.BLACK);
     }
 
 
     // make a node movable by dragging it around with the mouse.
-
 
     private void enableDragForGolden() {
         setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));

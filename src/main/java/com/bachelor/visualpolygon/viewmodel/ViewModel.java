@@ -95,9 +95,6 @@ public class ViewModel {
     }
 
 
-    public void setStepInfo() {
-        setLabelText("Step Created! " + "ACTIVE size: " + model.getStepInfo());
-    }
 
     public boolean isScanDone() {
         if (model.isScanReady()) {

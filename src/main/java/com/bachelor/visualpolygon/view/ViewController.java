@@ -40,11 +40,23 @@ public class ViewController {
     private ListView<File> uploadList;
     @FXML
     VBox buttonBox;
+    @FXML
+    VBox logPanel;
+    @FXML
+    HBox logController;
+    @FXML
+    private ChoiceBox<Level> filterLevel;
+    @FXML
+    private ToggleButton showTS;
+    @FXML
+    private ToggleButton tail;
+    @FXML
+    private ToggleButton pause;
 
     private ViewModel viewModel;
 
     private static final Logger logger = Logger.getLogger();
-    LogView logView = new LogView(logger);
+    private LogView logView = new LogView(logger);
 
     private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
@@ -63,7 +75,6 @@ public class ViewController {
         polyline = new Polyline();
         listPropertyForVertex = new SimpleListProperty<>(PolygonModified.vertices);
         listPropertyForCamera = new SimpleListProperty<>(cameraRequirements);
-
     }
 
     public void init(ViewModel viewModel) {
@@ -77,30 +88,15 @@ public class ViewController {
         initLogView();
     }
 
-    /**
-     * TODO: Add Elements in view.fxml
-     */
     private void initLogView() {
-        ChoiceBox<Level> filterLevel = new ChoiceBox<>(FXCollections.observableArrayList(Level.values()));
+        filterLevel.setItems(FXCollections.observableArrayList(Level.values()));
         filterLevel.getSelectionModel().select(Level.INFO);
         logView.filterLevelProperty().bind(filterLevel.getSelectionModel().selectedItemProperty());
-
-        ToggleButton showTimestamp = new ToggleButton("Show Timestamp");
-        logView.showTimeStampProperty().bind(showTimestamp.selectedProperty());
-
-        ToggleButton tail = new ToggleButton("Tail");
+        logView.showTimeStampProperty().bind(showTS.selectedProperty());
         logView.tailProperty().bind(tail.selectedProperty());
-
-        ToggleButton pause = new ToggleButton("Pause");
         logView.pausedProperty().bind(pause.selectedProperty());
-
-        HBox controls = new HBox(7, filterLevel, showTimestamp, tail, pause);
-        controls.setMinHeight(Region.USE_PREF_SIZE);
-
-        VBox layout = new VBox(4, controls, logView);
+        logPanel.getChildren().add(logView);
         VBox.setVgrow(logView, Priority.ALWAYS);
-        border.setRight(layout);
-        layout.setPrefSize(370, 407);
     }
 
     public void initList() {
@@ -148,7 +144,6 @@ public class ViewController {
         }
         Polygon stepPoly = viewModel.getStepPolygon();
         /**TODO Keep the Polygon always in the center*/
-        viewModel.setStepInfo();
         if (stepPoly != null) {
             refreshView();
             drawStepPolygon(stepPoly);
@@ -249,7 +244,13 @@ public class ViewController {
         if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
             cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
             camera = Camera.createCamera(cameraRequirements);
-            camera.setOnMouseReleased(mouseEvent1 -> updatePolygon());
+            camera.setOnMouseReleased(mouseEvent1 -> {
+                logger.warn("Posiotion of camera  on camDetails : " + cameraRequirements);
+                updatePolygon();
+
+            });
+
+            logger.warn("Posiotion of after move on camDetails : " + cameraRequirements);
             updatePolygon();
         }
     }

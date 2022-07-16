@@ -17,7 +17,6 @@ public interface DataModel {
 
     void updateBuilder(List<Vertex> vertices, List<Double> camera);
 
-    String getStepInfo();
 
     boolean isScanReady();
 
