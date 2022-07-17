@@ -158,7 +158,6 @@ public class ViewController {
             return;
         }
         Polygon stepPoly = viewModel.getStepPolygon();
-        /**TODO Keep the Polygon always in the center*/
         if (stepPoly != null) {
             refreshView();
             updateGroups();
