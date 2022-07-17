@@ -289,7 +289,6 @@ public class Builder extends Initializer {
         return verticesOnAB;
     }
 
-
     private void doubleCheckInvisible() {
         if (tempInvisible.isEmpty()) {
             return;
@@ -378,7 +377,6 @@ public class Builder extends Initializer {
         increaseCount();
     }
 
-
     private void createStepFromALPHA(Vertex vertex) {
         CoordinateList streifenCoordinates = new CoordinateList();
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
@@ -409,7 +407,6 @@ public class Builder extends Initializer {
         return new Coordinate(x, y);
 
     }
-
 
     private void setAlpha(Coordinate start, Coordinate end) {
         alpha = new LineSegment(start, end);

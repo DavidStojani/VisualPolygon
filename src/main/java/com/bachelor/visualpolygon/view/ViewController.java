@@ -97,7 +97,7 @@ public class ViewController {
         greenLines.visibleProperty().bindBidirectional(greenBox.selectedProperty());
         yellowLines.visibleProperty().bindBidirectional(yellowBox.selectedProperty());
 
-        initList();
+        initUploadList();
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
         initLogView();
@@ -114,7 +114,7 @@ public class ViewController {
         VBox.setVgrow(logView, Priority.ALWAYS);
     }
 
-    private void initList() {
+    private void initUploadList() {
         uploadList.setItems(viewModel.getFileObservableList());
         uploadList.setCellFactory(lv -> new ListCell<>() {
             @Override
