@@ -7,22 +7,21 @@ import org.locationtech.jts.geom.CoordinateList;
 import org.locationtech.jts.geom.Polygon;
 
 import java.util.List;
-import java.util.Stack;
+
 
 public interface DataModel {
 
     Polygon getPolygon();
 
-    List<Coordinate> getStreifenCoordinates();
+    List<Coordinate> getStepCoordinates();
 
     void updateBuilder(List<Vertex> vertices, List<Double> camera);
 
+    List<Line> getAllLines();
 
     boolean isScanReady();
 
     void createVisPolygon();
-
-    Stack<Line> getTheParallels();
 
     void reset();
 

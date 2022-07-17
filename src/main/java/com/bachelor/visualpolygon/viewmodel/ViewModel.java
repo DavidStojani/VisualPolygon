@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
 import java.util.Objects;
-import java.util.Stack;
 
 @Getter
 @Setter
@@ -87,14 +86,16 @@ public class ViewModel {
 
     public Polygon getStepPolygon() {
         Polygon stepPolygon = new Polygon();
-        for (Coordinate coordinate : model.getStreifenCoordinates()) {
+        for (Coordinate coordinate : model.getStepCoordinates()) {
             stepPolygon.getPoints().add(coordinate.getX());
             stepPolygon.getPoints().add(coordinate.getY());
         }
         return stepPolygon;
     }
 
-
+    public List<Line> getAllLines() {
+        return model.getAllLines();
+    }
 
     public boolean isScanDone() {
         if (model.isScanReady()) {
@@ -104,15 +105,6 @@ public class ViewModel {
         }
         return false;
     }
-
-
-    public Stack<Line> getParallels() {
-        return model.getTheParallels();
-    }
-
-    /**
-     * TODO: HANDLE when save interrupted
-     */
 
     public void save() {
         try {

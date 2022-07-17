@@ -2,6 +2,7 @@ package com.bachelor.visualpolygon.model.geometry;
 
 
 import com.bachelor.visualpolygon.info.Logger;
+import javafx.scene.paint.Color;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -47,7 +48,7 @@ public class Builder extends Initializer {
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
-        lineStack.clear();
+
         this.vertices = vertices;
         if (!cameraDetails.isEmpty()) {
             camera.setDetails(cameraDetails);
@@ -71,12 +72,13 @@ public class Builder extends Initializer {
     public void createStep(Vertex vertex) {
         if (Objects.isNull(vertex)) {
             vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
-            ;
         }
+
+        clearLines();
 
         logger.debug("createStep() Was called!");
         logger.info("===========NEXT STEP=========");
-        logger.info("Stoped on  " + vertex);
+        logger.info("Stopped on  " + vertex);
 
         if (isInsideActive(vertex)) {
             logger.info("Vertex was INSIDE Step");
@@ -90,13 +92,14 @@ public class Builder extends Initializer {
         setActive();
         logger.info("++++Setting tempsV und tempsU++++");
         setTemps();
-        doubleChekInvisibles();
+        doubleCheckInvisible();
         logger.info("++++Add all Projections of tempVisible in Polygon++++");
-        addNewVertecies();
+        addNewVertices();
         logger.info("++++Finding next Vertex to create the Step++++");
         nextVertex = findNextVertex();
         logger.info("==========Step CLOSED ========");
     }
+
 
 
     private void setActive() {
@@ -110,7 +113,7 @@ public class Builder extends Initializer {
         logger.info("ACTIVE filled with " + active.size() + " Vertices");
     }
 
-    //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
+    //for every point in active build a parallel to the Step and check if it intersects with the circle with no interruption
     private void setTemps() {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
@@ -120,7 +123,7 @@ public class Builder extends Initializer {
                 logger.info("Parallel Line from " + vertex + " to Camera is INSIDE Polygon");
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
-                addToGreenLines(parallelCameraToVertex);
+                addLine(parallelCameraToVertex, Color.GREEN);
                 logger.info(vertex + " added in tempVisible");
 
             } else {
@@ -130,14 +133,14 @@ public class Builder extends Initializer {
                 if (vertex.getIsVisible() != 1) {
                     vertex.setIsVisible(-1);
                 }
-                addToRedLines(parallelCameraToVertex);
+                addLine(parallelCameraToVertex, Color.RED);
                 logger.info(vertex + " added in tempInvisible");
 
             }
         }
     }
 
-    public void addNewVertecies() {
+    public void addNewVertices() {
         logger.info("Size of tempVisible == " + tempVisible.size());
         for (Vertex vertex : tempVisible) {
             LineSegment line = getParallelLine(vertex);
@@ -181,7 +184,7 @@ public class Builder extends Initializer {
         for (Coordinate intersection : intersections.getCoordinates()) {
             precision.makePrecise(intersection);
             if (vertex.equalCoordinate(intersection) || base.equals(intersection)) {
-                logger.debug("Skipped INTERSEC.: " + intersection + "--- VERTEX: " + vertex);
+                logger.debug("Skipped Intersection: " + intersection + "--- VERTEX: " + vertex);
                 continue;
             }
             if (base.distance(intersection) < minDistanceBaseToIntersection) {
@@ -208,8 +211,7 @@ public class Builder extends Initializer {
             logger.debug(" BUG avoidance ");
             return true;
         }
-        logger.debug("Check the black line if it will behave correctly");
-        addToBlackLine(toTest);
+
 
         /**TODO: Add another Test for Coordinates different only with +/- 0.1*/
         if (testPolygon.covers(vertexToNearestIntersection) || testPolygon.covers(vertexToNearestIntersection.reverse())) {
@@ -218,6 +220,7 @@ public class Builder extends Initializer {
             vertices.add(v);
             extraVertices.add(v);
             logger.info("First intersection with Polygon " + v + " was added");
+            addLine(toTest, Color.YELLOW);
         }
 
         return false;
@@ -287,7 +290,7 @@ public class Builder extends Initializer {
     }
 
 
-    private void doubleChekInvisibles() {
+    private void doubleCheckInvisible() {
         if (tempInvisible.isEmpty()) {
             return;
         }
@@ -298,7 +301,7 @@ public class Builder extends Initializer {
                 LineSegment visibleToInvisible = new LineSegment(visible, invisible);
                 if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
                     invisible.setIsVisible(1);
-                    addToGreenLines(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)));
+                    addLine(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)), Color.GREEN);
                     tempVisible.add(invisible);
                     LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
@@ -374,7 +377,6 @@ public class Builder extends Initializer {
         setBeta(streifenCoordinates.get(0), streifenCoordinates.get(1));
         increaseCount();
     }
-
 
 
     private void createStepFromALPHA(Vertex vertex) {

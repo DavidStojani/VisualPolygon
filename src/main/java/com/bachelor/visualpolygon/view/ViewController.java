@@ -21,6 +21,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
@@ -52,11 +53,21 @@ public class ViewController {
     private ToggleButton tail;
     @FXML
     private ToggleButton pause;
+    @FXML
+    private CheckBox redBox;
+    @FXML
+    private CheckBox greenBox;
+    @FXML
+    private CheckBox yellowBox;
+
+    private final Group redLines = new Group();
+    private final Group greenLines = new Group();
+    private final Group yellowLines = new Group();
 
     private ViewModel viewModel;
 
     private static final Logger logger = Logger.getLogger();
-    private LogView logView = new LogView(logger);
+    private final LogView logView = new LogView(logger);
 
     private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
@@ -82,6 +93,10 @@ public class ViewController {
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(root);
+        redLines.visibleProperty().bindBidirectional(redBox.selectedProperty());
+        greenLines.visibleProperty().bindBidirectional(greenBox.selectedProperty());
+        yellowLines.visibleProperty().bindBidirectional(yellowBox.selectedProperty());
+
         initList();
         listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
@@ -99,7 +114,7 @@ public class ViewController {
         VBox.setVgrow(logView, Priority.ALWAYS);
     }
 
-    public void initList() {
+    private void initList() {
         uploadList.setItems(viewModel.getFileObservableList());
         uploadList.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -110,8 +125,8 @@ public class ViewController {
         });
         uploadList.setOnMouseClicked(click -> {
             if (click.getClickCount() == 2) {
-                File f = uploadList.getSelectionModel().getSelectedItem();
-                uploadPolygon(f);
+                File file = uploadList.getSelectionModel().getSelectedItem();
+                uploadPolygon(file);
             }
         });
     }
@@ -146,28 +161,44 @@ public class ViewController {
         /**TODO Keep the Polygon always in the center*/
         if (stepPoly != null) {
             refreshView();
+            updateGroups();
             drawStepPolygon(stepPoly);
             root.getChildren().add(stepPoly);
-            root.getChildren().add(viewModel.getParallels().pop());
+            root.getChildren().add(redLines);
+            root.getChildren().add(greenLines);
+            root.getChildren().add(yellowLines);
         }
     }
 
-    /**
-     * TODO: combine all in next Step and add checkBoxes to show/hide the different lines
-     */
     public void playStep() {
         if (!isPolygonReady()) return;
         if (Objects.isNull(camera)) {
             viewModel.setLabelText("Camera not yet in Polygon!");
             return;
         }
+        nextStep();
+    }
 
-        if (viewModel.getParallels().empty()) {
-            nextStep();
-        } else {
-            root.getChildren().add(viewModel.getParallels().pop());
+    public void updateGroups() {
+        if (viewModel.getAllLines().isEmpty()) {
+            return;
         }
 
+        greenLines.getChildren().clear();
+        redLines.getChildren().clear();
+        yellowLines.getChildren().clear();
+
+        for (Line line : viewModel.getAllLines()) {
+            if (line.getStroke().equals(Color.GREEN)) {
+                greenLines.getChildren().add(line);
+            }
+            if (line.getStroke().equals(Color.RED)) {
+                redLines.getChildren().add(line);
+            }
+            if (line.getStroke().equals(Color.YELLOW)) {
+                yellowLines.getChildren().add(line);
+            }
+        }
     }
 
     public void savePolygon() {
@@ -245,12 +276,8 @@ public class ViewController {
             cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
             camera = Camera.createCamera(cameraRequirements);
             camera.setOnMouseReleased(mouseEvent1 -> {
-                logger.warn("Posiotion of camera  on camDetails : " + cameraRequirements);
                 updatePolygon();
-
             });
-
-            logger.warn("Posiotion of after move on camDetails : " + cameraRequirements);
             updatePolygon();
         }
     }
@@ -295,10 +322,10 @@ public class ViewController {
         stepPolygon.setFill(Color.RED.deriveColor(0, 1, 1, 0.3));
     }
 
-    private void drawPolygon(boolean movalbe) {
+    private void drawPolygon(boolean movable) {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
-        root.getChildren().addAll(polygon.createModeratePoints(movalbe));
+        root.getChildren().addAll(polygon.createModeratePoints(movable));
     }
 
     private Polyline drawPolyline() {

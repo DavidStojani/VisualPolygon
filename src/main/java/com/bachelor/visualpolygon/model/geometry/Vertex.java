@@ -13,11 +13,8 @@ import org.locationtech.jts.geom.Coordinate;
 public class Vertex extends Coordinate {
     private int isVisible = 0;
     private double theta;
-    private DoubleProperty xProperty;
-    private DoubleProperty yProperty;
-
-
-    /**TODO: Add grey COLOR FOR NEW Vertices*/
+    private transient DoubleProperty xProperty;
+    private transient DoubleProperty yProperty;
 
 
     public Vertex(Coordinate c) {

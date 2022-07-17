@@ -14,12 +14,11 @@ import java.util.stream.Collectors;
 @Getter
 
 public abstract class Initializer {
-    static final PrecisionModel precision = new PrecisionModel(100);
+    static final PrecisionModel precision = new PrecisionModel(10);
     static final GeometryFactory factory = new GeometryFactory();
     static final double EPSILON = 0.0000005;
     List<Vertex> polarSortedVertices;
-    Stack<Line> lineStack = new Stack<>();
-    Vertex firstVertex;
+    List<Line> allLines = new ArrayList<>();
     @Setter
     private int count = 0;
 
@@ -43,25 +42,17 @@ public abstract class Initializer {
                 .collect(Collectors.toList());
     }
 
-    void addToBlackLine(LineSegment greenLine) {
-        Line parallelLine = new Line(greenLine.p0.getX(), greenLine.p0.getY(), greenLine.p1.getX(), greenLine.p1.getY());
-        parallelLine.setStroke(Color.BLACK);
-        parallelLine.setStrokeWidth(1.9);
-        lineStack.push(parallelLine);
+    public void clearLines() {
+        allLines.clear();
     }
 
-    void addToGreenLines(LineSegment greenLine) {
-        Line parallelLine = new Line(greenLine.getCoordinate(0).getX(), greenLine.getCoordinate(0).getY(), greenLine.getCoordinate(1).getX(), greenLine.getCoordinate(1).getY());
-        parallelLine.setStroke(Color.GREEN);
+    void addLine(LineSegment line, Color color) {
+        Line parallelLine = new Line(
+                line.getCoordinate(0).getX(), line.getCoordinate(0).getY(),
+                line.getCoordinate(1).getX(), line.getCoordinate(1).getY());
+        parallelLine.setStroke(color);
         parallelLine.setStrokeWidth(1.9);
-        lineStack.push(parallelLine);
-    }
-
-    void addToRedLines(LineSegment redLine) {
-        Line parallelLine = new Line(redLine.getCoordinate(0).getX(), redLine.getCoordinate(0).getY(), redLine.getCoordinate(1).getX(), redLine.getCoordinate(1).getY());
-        parallelLine.setStroke(Color.RED);
-        parallelLine.setStrokeWidth(1.9);
-        lineStack.push(parallelLine);
+        allLines.add(parallelLine);
     }
 
 
