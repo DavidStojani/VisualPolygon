@@ -358,41 +358,41 @@ public class Builder extends Initializer {
     //to the viewController to render the view. In the view they should not cross the borders of pane
 
     private void createStepFromBETA(Vertex vertex) {
-        CoordinateList streifenCoordinates = new CoordinateList();
+        CoordinateList coordinates = new CoordinateList();
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
-        streifenCoordinates.add(rightPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinate(vertex, rightPointOnCircle));
+        coordinates.add(rightPointOnCircle);
+        coordinates.add(getExtentCoordinate(vertex, rightPointOnCircle));
         LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinate(vertex, rightPointOnCircle));
 
         Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0, -camera.getRadius() * 2);
         Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1, -camera.getRadius() * 2);
-        streifenCoordinates.add(mirrorOfExtent);
-        streifenCoordinates.add(leftPointOnCircle);
+        coordinates.add(mirrorOfExtent);
+        coordinates.add(leftPointOnCircle);
 
-        stepPolygon = createStepPolygon(streifenCoordinates);
-        stepCoordinates = streifenCoordinates;
-        setAlpha(streifenCoordinates.get(3), streifenCoordinates.get(2));
-        setBeta(streifenCoordinates.get(0), streifenCoordinates.get(1));
+        stepPolygon = createStepPolygon(coordinates);
+        this.stepCoordinates = coordinates;
+        setAlpha(coordinates.get(3), coordinates.get(2));
+        setBeta(coordinates.get(0), coordinates.get(1));
         increaseCount();
     }
 
     private void createStepFromALPHA(Vertex vertex) {
-        CoordinateList streifenCoordinates = new CoordinateList();
+        CoordinateList coordinates = new CoordinateList();
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
-        streifenCoordinates.add(leftPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinate(vertex, leftPointOnCircle));
+        coordinates.add(leftPointOnCircle);
+        coordinates.add(getExtentCoordinate(vertex, leftPointOnCircle));
         LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinate(vertex, leftPointOnCircle));
 
         Coordinate rightPointOnCircle = leftTangent.pointAlongOffset(0, camera.getRadius() * 2);
         Coordinate mirrorOfExtent = leftTangent.pointAlongOffset(1, camera.getRadius() * 2);
-        streifenCoordinates.add(mirrorOfExtent);
-        streifenCoordinates.add(rightPointOnCircle);
+        coordinates.add(mirrorOfExtent);
+        coordinates.add(rightPointOnCircle);
 
-        stepPolygon = createStepPolygon(streifenCoordinates);
-        stepCoordinates = streifenCoordinates;
-        setAlpha(streifenCoordinates.get(0), streifenCoordinates.get(1));
-        setBeta(streifenCoordinates.get(3), streifenCoordinates.get(2));
+        stepPolygon = createStepPolygon(coordinates);
+        this.stepCoordinates = coordinates;
+        setAlpha(coordinates.get(0), coordinates.get(1));
+        setBeta(coordinates.get(3), coordinates.get(2));
         increaseCount();
 
     }

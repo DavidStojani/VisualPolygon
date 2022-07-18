@@ -33,16 +33,4 @@ class PolarCoordinatesSortTest {
 
     }
 
-
-  /*  @Test
-    void test_Convert_To_Polar() {
-        System.out.println(vertices);
-        PolarCoordinatesSort.convertToPolar(vertices, camera);
-        System.out.println(vertices);
-
-    }
-*/
-  /*  @Test
-    void sortPolarCoordinate() {
-    }*/
 }

@@ -8,7 +8,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 
 public class Logger {
-    private static Logger instace;
+    private static Logger instance;
     @Setter
     private String context;
     private static final int MAX_LOG_ENTRIES = 1_000_000;
@@ -20,10 +20,10 @@ public class Logger {
     }
 
     public static Logger getLogger() {
-        if (instace == null) {
+        if (instance == null) {
             return new Logger();
         }
-        return instace;
+        return instance;
     }
 
 

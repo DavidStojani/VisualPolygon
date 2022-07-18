@@ -17,6 +17,7 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class PolygonModified extends Polygon {
 
+    @Getter
     public static final ObservableList<Vertex> vertices = FXCollections.observableArrayList();
 
     public PolygonModified() {
@@ -100,8 +101,4 @@ public class PolygonModified extends Polygon {
         return points;
     }
 
-
-    public ObservableList<Vertex> getVertices() {
-        return vertices;
-    }
 }

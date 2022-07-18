@@ -3,10 +3,10 @@ package com.bachelor.visualpolygon.info;
 import java.util.Date;
 
 public class LogRecord {
-    private Date timestamp;
-    private Level level;
-    private String context;
-    private String message;
+    private final Date timestamp;
+    private final Level level;
+    private final String context;
+    private final String message;
 
     public LogRecord(Level level, String context, String message) {
         this.timestamp = new Date();

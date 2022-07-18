@@ -57,10 +57,6 @@ public class ViewModel {
         setLabelText("Reset Pressed! All Cleared Out!");
     }
 
-    /**
-     * TODO : prepare some good tests
-     */
-
     public void initListOfFiles() {
         File folder = new File("src/test/resources");
         File[] listOfFiles = folder.listFiles();

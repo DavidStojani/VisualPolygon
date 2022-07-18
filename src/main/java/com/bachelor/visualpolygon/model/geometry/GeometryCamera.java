@@ -33,7 +33,7 @@ public class GeometryCamera {
     // Due to double rounding precision the value passed into the asin
     // function may be outside its domain of [-1, +1] which would return
     // the value Double.NaN which we do not want.
-    private static double arcsinSafe(double x) {
+    private static double arcSinSafe(double x) {
         if (x <= -1.0) return -PI / 2.0;
         if (x >= 1.0) return PI / 2.0;
         return asin(x);
@@ -65,7 +65,7 @@ public class GeometryCamera {
         double angle1;
         double angle2;
 
-        angle1 = arcsinSafe(radius / dist);
+        angle1 = arcSinSafe(radius / dist);
         angle2 = atan2(dy, dx);
 
         angle = angle2 - angle1;
