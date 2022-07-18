@@ -79,7 +79,8 @@ public class PolygonModified extends Polygon {
 
             Point p = new Point(xProperty, yProperty, movable);
             p.setOnMouseClicked(mouseEvent -> {
-                Label labelText = (Label) this.getParent().getParent().getParent().getChildrenUnmodifiable().get(3);
+
+                Label labelText = (Label) this.getParent().getParent().getParent().getChildrenUnmodifiable().get(4);
                 labelText.setText("VERTEX { "
                         + vertices.get(idx).getXProperty().get() +
                         " ; "
