@@ -52,7 +52,7 @@ public class ViewModel {
         setLabelText("Model Updated");
     }
 
-    public void resetView() {
+    public void reset() {
         model.reset();
         setLabelText("Reset Pressed! All Cleared Out!");
     }

@@ -28,7 +28,7 @@
    <left>
       <VBox fx:id="buttonBox" prefHeight="407.0" prefWidth="169.0" spacing="1" BorderPane.alignment="CENTER">
          <children>
-            <Button mnemonicParsing="false" onAction="#playAll" prefHeight="63.0" prefWidth="204.0" text="Play All" />
+            <Button fx:id="playAllButton" mnemonicParsing="false" onAction="#playAll" prefHeight="63.0" prefWidth="204.0" text="Play All" />
             <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0" prefWidth="204.0" text="Play Step" />
             <Button layoutX="10.0" layoutY="136.0" mnemonicParsing="false" onAction="#savePolygon" prefHeight="63.0" prefWidth="204.0" text="Save" />
             <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="55.0" prefWidth="204.0" style="-fx-background-color: #D2D2CF;" text="Upload Files">
