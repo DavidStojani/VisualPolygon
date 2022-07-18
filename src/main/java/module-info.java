@@ -4,7 +4,6 @@ module com.bachelor.visualpolygon {
     requires org.locationtech.jts;
     requires lombok;
 
-
     opens com.bachelor.visualpolygon to javafx.fxml;
     exports com.bachelor.visualpolygon;
     exports com.bachelor.visualpolygon.view;

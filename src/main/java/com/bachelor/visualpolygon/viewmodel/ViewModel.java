@@ -24,7 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
-import java.util.Stack;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -36,8 +36,6 @@ public class ViewModel {
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
     private WKTWriter wktWriter = new WKTWriter(3);
     private ObservableList<File> fileObservableList = FXCollections.observableArrayList();
-
-
 
 
     public ViewModel(DataModel model) {
@@ -54,7 +52,7 @@ public class ViewModel {
         setLabelText("Model Updated");
     }
 
-    public void resetView() {
+    public void reset() {
         model.reset();
         setLabelText("Reset Pressed! All Cleared Out!");
     }
@@ -62,6 +60,10 @@ public class ViewModel {
     public void initListOfFiles() {
         File folder = new File("src/test/resources");
         File[] listOfFiles = folder.listFiles();
+        if (Objects.isNull(listOfFiles)){
+            setLabelText("NO FILE TO BE UPLOADED, CREATE A POLYGON BY CLICKING");
+            return;
+        }
 
         for (File listOfFile : listOfFiles) {
             if (listOfFile.isFile()) {
@@ -80,31 +82,24 @@ public class ViewModel {
 
     public Polygon getStepPolygon() {
         Polygon stepPolygon = new Polygon();
-        for (Coordinate coordinate : model.getStreifenCoordinates()) {
+        for (Coordinate coordinate : model.getStepCoordinates()) {
             stepPolygon.getPoints().add(coordinate.getX());
             stepPolygon.getPoints().add(coordinate.getY());
         }
         return stepPolygon;
     }
 
-
-    public void setStepInfo() {
-        setLabelText("Step Created! " + "ACTIVE size: " + model.getStepInfo());
+    public List<Line> getAllLines() {
+        return model.getAllLines();
     }
 
-    public boolean isScanDone(){
+    public boolean isScanDone() {
         if (model.isScanReady()) {
             model.createVisPolygon();
             setLabelText("!!SCAN IS DONE!!");
             return true;
         }
         return false;
-    }
-
-
-
-    public Stack<Line> getParallels() {
-        return model.getTheParallels();
     }
 
     public void save() {
@@ -150,7 +145,7 @@ public class ViewModel {
 
     public Polygon getVisPoly() {
         Polygon visPoly = new Polygon();
-        for (Coordinate coordinate : model.getVisualPolygon()){
+        for (Coordinate coordinate : model.getVisualPolygon()) {
             visPoly.getPoints().add(coordinate.getX());
             visPoly.getPoints().add(coordinate.getY());
         }

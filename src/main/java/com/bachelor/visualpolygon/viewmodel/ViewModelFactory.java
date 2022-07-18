@@ -4,7 +4,8 @@ import com.bachelor.visualpolygon.model.ModelFactory;
 
 public class ViewModelFactory {
 
-    private ViewModel viewModel;
+    private final ViewModel viewModel;
+
 
     public ViewModelFactory (ModelFactory modelFactory) {
         viewModel = new ViewModel(modelFactory.getDataModel());

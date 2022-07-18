@@ -1,5 +1,8 @@
 package com.bachelor.visualpolygon.model.geometry;
 
+
+import com.bachelor.visualpolygon.info.Logger;
+import javafx.scene.paint.Color;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -33,18 +36,19 @@ public class Builder extends Initializer {
     List<Coordinate> stepCoordinates = new ArrayList<>();
     @Setter
     Vertex nextVertex;
-    private LineSegment ALPHA;
-    private LineSegment BETA;
+    private LineSegment alpha;
+    private LineSegment beta;
     private List<Vertex> active;
     private List<Vertex> tempVisible;
     private List<Vertex> tempInvisible;
+    private final Logger logger = Logger.getLogger();
 
 
     /**
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
-        lineStack.clear();
+
         this.vertices = vertices;
         if (!cameraDetails.isEmpty()) {
             camera.setDetails(cameraDetails);
@@ -58,33 +62,44 @@ public class Builder extends Initializer {
      * After every update from View initializes the vertices
      */
     public void init() {
+        logger.setContext("Builder: ");
         polygon = createGeometryPolygon(vertices);
         calculatePolarCoordinates(vertices);
         polarSortedVertices = sortPolarCoordinate(vertices);
-        firstVertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
     }
 
 
     public void createStep(Vertex vertex) {
         if (Objects.isNull(vertex)) {
-            vertex = firstVertex;
+            vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
         }
-        System.out.println("========================= ON VERTEX ------- " + vertex);
+
+        clearLines();
+
+        logger.debug("createStep() Was called!");
+        logger.info("===========NEXT STEP=========");
+        logger.info("Stopped on  " + vertex);
 
         if (isInsideActive(vertex)) {
-            System.out.println("+++++++WAS INSIDE STEP+++++++++++");
+            logger.info("Vertex was INSIDE Step");
             createStepFromBETA(vertex);
 
         } else {
-            System.out.println("-------WAS OUTSIDE STEP-----------");
+            logger.info("Vertex was OUTSIDE Step");
             createStepFromALPHA(vertex);
         }
+        logger.info("++++Setting ACTIVE++++");
         setActive();
+        logger.info("++++Setting tempsV und tempsU++++");
         setTemps();
-        doubleChekInvisibles();
-        addNewVertecies();
+        doubleCheckInvisible();
+        logger.info("++++Add all Projections of tempVisible in Polygon++++");
+        addNewVertices();
+        logger.info("++++Finding next Vertex to create the Step++++");
         nextVertex = findNextVertex();
+        logger.info("==========Step CLOSED ========");
     }
+
 
 
     private void setActive() {
@@ -95,52 +110,51 @@ public class Builder extends Initializer {
                 active.add(vertex);
             }
         }
+        logger.info("ACTIVE filled with " + active.size() + " Vertices");
     }
 
-
-    //for every point in active build a parallel to the Streifen and check if it intersects with the circle with no interruption
+    //for every point in active build a parallel to the Step and check if it intersects with the circle with no interruption
     private void setTemps() {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
         for (Vertex vertex : active) {
             LineSegment parallelCameraToVertex = new LineSegment(getParallelLine(vertex).p0, vertex);
             if (parallelCameraToVertex.toGeometry(factory).within(polygon)) {
+                logger.info("Parallel Line from " + vertex + " to Camera is INSIDE Polygon");
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
-                addToGreenLines(parallelCameraToVertex);
+                addLine(parallelCameraToVertex, Color.GREEN);
+                logger.info(vertex + " added in tempVisible");
 
             } else {
+                logger.info("Parallel Line from " + vertex + " to Camera is OUTSIDE Polygon");
+
                 tempInvisible.add(vertex);
                 if (vertex.getIsVisible() != 1) {
                     vertex.setIsVisible(-1);
                 }
-                addToRedLines(parallelCameraToVertex);
+                addLine(parallelCameraToVertex, Color.RED);
+                logger.info(vertex + " added in tempInvisible");
+
             }
         }
     }
 
-    public void addNewVertecies() {
-        System.out.println("SIZE OF VISIBLE === " + tempVisible.size());
+    public void addNewVertices() {
+        logger.info("Size of tempVisible == " + tempVisible.size());
         for (Vertex vertex : tempVisible) {
-
             LineSegment line = getParallelLine(vertex);
-            System.out.println("Visiting " + vertex + "CREATING Line  " + line);
+            logger.info("Visiting " + vertex + " and CREATING Line  " + line);
             if (addNewVertex(vertex, line)) {
-                System.out.println("Nothing was added!");
-
+                logger.info("Nothing was added!");
             }
         }
     }
 
-    /***TODO: Precision should be added*/
-
-    private Polygon addNew(LineSegment line) throws Exception {
+    private Polygon addIntersectionsToTestPolygon(LineSegment line) throws Exception {
 
         Geometry pol = polygon.copy();
-        System.out.println("===========union BEFRORE PRECISION==========================");
         Geometry union = OverlayNGRobust.overlay(pol, line.toGeometry(factory), 2);
-        System.out.println(union);
-        System.out.println();
         GeometryCollectionIterator iterator = new GeometryCollectionIterator(union);
         while (iterator.hasNext()) {
             Geometry g = (Geometry) iterator.next();
@@ -148,9 +162,6 @@ public class Builder extends Initializer {
                 for (Coordinate c : g.getCoordinates()) {
                     precision.makePrecise(c);
                 }
-                System.out.println("===========union AFTER PRECISION==========================");
-                System.out.println(g);
-                System.out.println();
                 return (Polygon) g;
             }
         }
@@ -158,13 +169,13 @@ public class Builder extends Initializer {
     }
 
     private boolean addNewVertex(Vertex vertex, LineSegment line) {
-        Polygon testPolygon = null;
+        Polygon testPolygon;
         try {
-            testPolygon = addNew(line);
+            testPolygon = addIntersectionsToTestPolygon(line);
         } catch (Exception e) {
             return true;
         }
-        System.out.println(" THE FULL LINE AS GEOMTRY " + line.toGeometry(factory));
+        logger.debug("From Camera to Extension " + line.toGeometry(factory));
 
         Coordinate base = line.p0;
         Geometry intersections = testPolygon.getBoundary().intersection(line.toGeometry(factory));
@@ -173,13 +184,13 @@ public class Builder extends Initializer {
         for (Coordinate intersection : intersections.getCoordinates()) {
             precision.makePrecise(intersection);
             if (vertex.equalCoordinate(intersection) || base.equals(intersection)) {
-                System.out.println("Skipped INTERSEC.: " + intersection + "--- VERTEX: " + vertex);
+                logger.debug("Skipped Intersection: " + intersection + "--- VERTEX: " + vertex);
                 continue;
             }
             if (base.distance(intersection) < minDistanceBaseToIntersection) {
                 minDistanceBaseToIntersection = base.distance(intersection);
                 if (minDistanceBaseToIntersection < base.distance(vertex)) {
-                    System.out.println("Intersection is before Vertex!!");
+                    logger.debug("Intersection is before Vertex!!");
                     continue;
                 }
                 nearestIntersection = intersection;
@@ -187,61 +198,60 @@ public class Builder extends Initializer {
         }
 
         if (nearestIntersection == null) {
-            System.out.println("No Intersection found!!!");
+            logger.warn("No Intersection found!!!");
             return true;
         }
 
-        System.out.println("FOUND FIRST INTERSECTION ----- " + nearestIntersection);
+        logger.debug("FOUND FIRST INTERSECTION --- " + nearestIntersection);
 
         LineSegment toTest = new LineSegment(vertex, nearestIntersection);
         LineString vertexToNearestIntersection = toTest.toGeometry(factory);
-        System.out.println("Vertex to Nearest Intersection ---- " + vertexToNearestIntersection);
+        logger.debug("Line from: Vertex to nearestIntersection ---- " + vertexToNearestIntersection);
         if (vertexToNearestIntersection.getLength() == 0.0) {
-            System.out.println(" BUG avoidance ");
+            logger.debug(" BUG avoidance ");
             return true;
         }
-        System.out.println("IS toTEST in ? " + testPolygon.covers(vertexToNearestIntersection));
-        addToBlackLine(toTest);
 
+
+        /**TODO: Add another Test for Coordinates different only with +/- 0.1*/
         if (testPolygon.covers(vertexToNearestIntersection) || testPolygon.covers(vertexToNearestIntersection.reverse())) {
             Vertex v = new Vertex(nearestIntersection);
-            v.setIsVisible(1);
+            v.setIsVisible(2);
             vertices.add(v);
             extraVertices.add(v);
-            System.out.println(v + " was added!!");
-            System.out.println("========= VERTECIES=========");
-            System.out.println(vertices);
+            logger.info("First intersection with Polygon " + v + " was added");
+            addLine(toTest, Color.YELLOW);
         }
 
         return false;
     }
 
     public void createVisPolygon() {
-        List<Vertex> verticesOnAB = null;
+        List<Vertex> verticesOnAB;
         coordinateList.clear();
 
         for (int i = 0; i < polygon.getCoordinates().length - 1; i++) {
-            Vertex A = (Vertex) polygon.getCoordinates()[i];
-            Vertex B = (Vertex) polygon.getCoordinates()[i + 1];
-            verticesOnAB = findVerticesOnAB(A, B);
+            Vertex a = (Vertex) polygon.getCoordinates()[i];
+            Vertex b = (Vertex) polygon.getCoordinates()[i + 1];
+            verticesOnAB = findVerticesOnAB(a, b);
 
-            if (A.getIsVisible() == 1 && B.getIsVisible() == 1) {
-                coordinateList.add(A);
-                coordinateList.add(B);
+            if (a.getIsVisible() == 1 && b.getIsVisible() == 1) {
+                coordinateList.add(a);
+                coordinateList.add(b);
             }
 
-            if (A.getIsVisible() == 1 && B.getIsVisible() == -1) {
-                coordinateList.add(A);
-                addClosestToEndpoint(verticesOnAB, B);
+            if (a.getIsVisible() == 1 && b.getIsVisible() == -1) {
+                coordinateList.add(a);
+                addClosestToEndpoint(verticesOnAB, b);
             }
 
-            if (A.getIsVisible() == -1 && B.getIsVisible() == 1) {
-                addClosestToEndpoint(verticesOnAB, A);
-                coordinateList.add(B);
+            if (a.getIsVisible() == -1 && b.getIsVisible() == 1) {
+                addClosestToEndpoint(verticesOnAB, a);
+                coordinateList.add(b);
             }
-            if (A.getIsVisible() == -1 && B.getIsVisible() == -1) {
-                addClosestToEndpoint(verticesOnAB, A);
-                addClosestToEndpoint(verticesOnAB, B);
+            if (a.getIsVisible() == -1 && b.getIsVisible() == -1) {
+                addClosestToEndpoint(verticesOnAB, a);
+                addClosestToEndpoint(verticesOnAB, b);
             }
         }
 
@@ -279,8 +289,7 @@ public class Builder extends Initializer {
         return verticesOnAB;
     }
 
-
-    private void doubleChekInvisibles() {
+    private void doubleCheckInvisible() {
         if (tempInvisible.isEmpty()) {
             return;
         }
@@ -291,7 +300,7 @@ public class Builder extends Initializer {
                 LineSegment visibleToInvisible = new LineSegment(visible, invisible);
                 if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
                     invisible.setIsVisible(1);
-                    addToGreenLines(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)));
+                    addLine(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)), Color.GREEN);
                     tempVisible.add(invisible);
                     LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
@@ -311,13 +320,13 @@ public class Builder extends Initializer {
         double angleToBETA = 99999;
 
         List<Vertex> leftToALPHA = polarSortedVertices.stream()
-                .filter(vertex -> ALPHA.orientationIndex(vertex) == Orientation.CLOCKWISE)
+                .filter(vertex -> alpha.orientationIndex(vertex) == Orientation.CLOCKWISE)
                 .filter(vertex -> !active.contains(vertex))
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
 
         for (Vertex v : active) {
-            double angle = Angle.angleBetween(v, BETA.p0, BETA.p1);
+            double angle = Angle.angleBetween(v, beta.p0, beta.p1);
             if (angle < angleToBETA && angle > EPSILON) {
                 angleToBETA = angle;
                 tempBETA = v;
@@ -325,7 +334,7 @@ public class Builder extends Initializer {
         }
 
         for (Vertex v : leftToALPHA) {
-            double angle = Angle.angleBetween(v, ALPHA.p0, ALPHA.p1);
+            double angle = Angle.angleBetween(v, alpha.p0, alpha.p1);
             if (angle < angleToALPHA && angle > 0) {
                 angleToALPHA = angle;
                 tempALFA = v;
@@ -339,8 +348,8 @@ public class Builder extends Initializer {
     }
 
     private LineSegment getParallelLine(Coordinate point) {
-        Coordinate baseMirror = ALPHA.pointAlongOffset(0, ALPHA.distancePerpendicular(point));
-        Coordinate endMirror = ALPHA.pointAlongOffset(1, ALPHA.distancePerpendicular(point));
+        Coordinate baseMirror = alpha.pointAlongOffset(0, alpha.distancePerpendicular(point));
+        Coordinate endMirror = alpha.pointAlongOffset(1, alpha.distancePerpendicular(point));
 
         return new LineSegment(baseMirror, endMirror);
     }
@@ -349,44 +358,42 @@ public class Builder extends Initializer {
     //to the viewController to render the view. In the view they should not cross the borders of pane
 
     private void createStepFromBETA(Vertex vertex) {
-        CoordinateList streifenCoordinates = new CoordinateList();
+        CoordinateList coordinates = new CoordinateList();
 
         Coordinate rightPointOnCircle = camera.getRightTangentPoint(vertex);
-        streifenCoordinates.add(rightPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinate(vertex, rightPointOnCircle));
+        coordinates.add(rightPointOnCircle);
+        coordinates.add(getExtentCoordinate(vertex, rightPointOnCircle));
         LineSegment rightTangent = new LineSegment(rightPointOnCircle, getExtentCoordinate(vertex, rightPointOnCircle));
 
         Coordinate leftPointOnCircle = rightTangent.pointAlongOffset(0, -camera.getRadius() * 2);
         Coordinate mirrorOfExtent = rightTangent.pointAlongOffset(1, -camera.getRadius() * 2);
-        streifenCoordinates.add(mirrorOfExtent);
-        streifenCoordinates.add(leftPointOnCircle);
+        coordinates.add(mirrorOfExtent);
+        coordinates.add(leftPointOnCircle);
 
-        stepPolygon = createStepPolygon(streifenCoordinates);
-        stepCoordinates = streifenCoordinates;
-        setALPHA(streifenCoordinates.get(3), streifenCoordinates.get(2));
-        setBETA(streifenCoordinates.get(0), streifenCoordinates.get(1));
-        vertex.increaseVisited();
-
+        stepPolygon = createStepPolygon(coordinates);
+        this.stepCoordinates = coordinates;
+        setAlpha(coordinates.get(3), coordinates.get(2));
+        setBeta(coordinates.get(0), coordinates.get(1));
+        increaseCount();
     }
 
     private void createStepFromALPHA(Vertex vertex) {
-        CoordinateList streifenCoordinates = new CoordinateList();
-        System.out.println("ALPHA CALLED");
+        CoordinateList coordinates = new CoordinateList();
         Coordinate leftPointOnCircle = camera.getLeftTangentPoint(vertex);
-        streifenCoordinates.add(leftPointOnCircle);
-        streifenCoordinates.add(getExtentCoordinate(vertex, leftPointOnCircle));
+        coordinates.add(leftPointOnCircle);
+        coordinates.add(getExtentCoordinate(vertex, leftPointOnCircle));
         LineSegment leftTangent = new LineSegment(leftPointOnCircle, getExtentCoordinate(vertex, leftPointOnCircle));
 
         Coordinate rightPointOnCircle = leftTangent.pointAlongOffset(0, camera.getRadius() * 2);
         Coordinate mirrorOfExtent = leftTangent.pointAlongOffset(1, camera.getRadius() * 2);
-        streifenCoordinates.add(mirrorOfExtent);
-        streifenCoordinates.add(rightPointOnCircle);
+        coordinates.add(mirrorOfExtent);
+        coordinates.add(rightPointOnCircle);
 
-        stepPolygon = createStepPolygon(streifenCoordinates);
-        stepCoordinates = streifenCoordinates;
-        setALPHA(streifenCoordinates.get(0), streifenCoordinates.get(1));
-        setBETA(streifenCoordinates.get(3), streifenCoordinates.get(2));
-        vertex.increaseVisited();
+        stepPolygon = createStepPolygon(coordinates);
+        this.stepCoordinates = coordinates;
+        setAlpha(coordinates.get(0), coordinates.get(1));
+        setBeta(coordinates.get(3), coordinates.get(2));
+        increaseCount();
 
     }
 
@@ -401,13 +408,12 @@ public class Builder extends Initializer {
 
     }
 
-
-    private void setALPHA(Coordinate start, Coordinate end) {
-        ALPHA = new LineSegment(start, end);
+    private void setAlpha(Coordinate start, Coordinate end) {
+        alpha = new LineSegment(start, end);
     }
 
-    private void setBETA(Coordinate start, Coordinate end) {
-        BETA = new LineSegment(start, end);
+    private void setBeta(Coordinate start, Coordinate end) {
+        beta = new LineSegment(start, end);
     }
 
     private boolean isInsideActive(Vertex vertex) {

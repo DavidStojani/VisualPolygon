@@ -12,7 +12,7 @@ public class Point extends Circle {
 
     public Point(DoubleProperty x, DoubleProperty y, boolean movable) {
 
-        super(x.get(), y.get(), 6);
+        super(x.get(), y.get(), 5);
         setFill(Color.GOLD.deriveColor(1, 0.7, 1, 0.5));
         setStroke(Color.GOLD);
         setStrokeWidth(2);
@@ -25,7 +25,7 @@ public class Point extends Circle {
     }
 
     public Point(Double x, Double y){
-        super(x, y, 6);
+        super(x, y, 5);
         setFill(Color.BLUE.deriveColor(1, 0.7, 1, 0.3));
         setStroke(Color.BLUE);
         setStrokeWidth(2);
@@ -42,14 +42,18 @@ public class Point extends Circle {
         setStroke(Color.GREEN);
     }
 
-    public void changeColorToBlue() {
-        setFill(Color.BLUE.deriveColor(1, 0.7, 1, 0.3));
-        setStroke(Color.BLUE);
+    public void changeColorToGray() {
+        setFill(Color.GRAY.deriveColor(2, 0.5, 1.5, 0.5));
+        setStroke(Color.GRAY);
+    }
+
+    public void changeColorToBlack() {
+        setFill(Color.BLACK.deriveColor(2, 0.5, 1.5, 0.5));
+        setStroke(Color.BLACK);
     }
 
 
     // make a node movable by dragging it around with the mouse.
-
 
     private void enableDragForGolden() {
         setOnMousePressed(mouseEvent -> this.getScene().setCursor(javafx.scene.Cursor.MOVE));

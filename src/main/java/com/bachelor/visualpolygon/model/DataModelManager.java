@@ -13,8 +13,6 @@ import org.locationtech.jts.geom.Polygon;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Stack;
-
 
 @Getter
 public class DataModelManager implements DataModel {
@@ -38,15 +36,6 @@ public class DataModelManager implements DataModel {
         builder.updateBuilder(vertices, camera);
     }
 
-
-    @Override
-    public String getStepInfo() {
-        if(Objects.isNull(builder.getActive())){
-            return "Active is empty";
-        }
-        return String.valueOf(builder.getActive().size());
-    }
-
     @Override
     public boolean isScanReady() {
        return builder.isScanComplete();
@@ -57,14 +46,13 @@ public class DataModelManager implements DataModel {
         builder.createVisPolygon();
     }
 
-
     @Override
     public Polygon getPolygon() {
         return builder.getPolygon();
     }
 
     @Override
-    public List<Coordinate> getStreifenCoordinates() {
+    public List<Coordinate> getStepCoordinates() {
         if (builder.getVertices().isEmpty()) {
             return Collections.emptyList();
         }
@@ -72,16 +60,16 @@ public class DataModelManager implements DataModel {
         return builder.getStepCoordinates();
     }
 
-
     @Override
-    public Stack<Line> getTheParallels() {
-        return builder.getLineStack();
+    public List<Line> getAllLines() {
+        return builder.getAllLines();
     }
 
     @Override
     public void reset() {
-        builder.getLineStack().clear();
+        builder.clearLines();
         builder.setNextVertex(null);
+        builder.setCount(0);
         if(Objects.nonNull(builder.getActive())){
             builder.getActive().clear();
             builder.getTempInvisible().clear();

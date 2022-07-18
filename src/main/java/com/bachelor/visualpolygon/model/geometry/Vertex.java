@@ -13,9 +13,8 @@ import org.locationtech.jts.geom.Coordinate;
 public class Vertex extends Coordinate {
     private int isVisible = 0;
     private double theta;
-    private DoubleProperty xProperty;
-    private DoubleProperty yProperty;
-    private int visited = 0;
+    private transient DoubleProperty xProperty;
+    private transient DoubleProperty yProperty;
 
 
     public Vertex(Coordinate c) {
@@ -44,8 +43,8 @@ public class Vertex extends Coordinate {
         return yProperty.doubleValue();
     }
 
-    public void increaseVisited() {
-        visited++;
+    @Override
+    public String toString() {
+        return "Vertex {" + x + " ; " + y +'}';
     }
-
 }

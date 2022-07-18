@@ -4,6 +4,7 @@ import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.StrokeLineCap;
@@ -16,6 +17,7 @@ import lombok.Setter;
 @EqualsAndHashCode
 public class PolygonModified extends Polygon {
 
+    @Getter
     public static final ObservableList<Vertex> vertices = FXCollections.observableArrayList();
 
     public PolygonModified() {
@@ -75,25 +77,28 @@ public class PolygonModified extends Polygon {
                 updatePoints();
             });
 
-            Point p = new Point(xProperty, yProperty,movable);
+            Point p = new Point(xProperty, yProperty, movable);
             p.setOnMouseClicked(mouseEvent -> {
-                System.out.println("==VERTEX PROPERTY===");
-                System.out.println("X -- " + vertices.get(idx).getXProperty().get());
-                System.out.println("Y -- " + vertices.get(idx).getYProperty().get());
+                Label labelText = (Label) this.getParent().getParent().getParent().getChildrenUnmodifiable().get(3);
+                labelText.setText("VERTEX { "
+                        + vertices.get(idx).getXProperty().get() +
+                        " ; "
+                        + vertices.get(idx).getYProperty().get() +
+                        " }");
             });
 
             if (vertices.get(idx).getIsVisible() == -1) {
                 p.changeColorToRed();
             } else if (vertices.get(idx).getIsVisible() == 1) {
                 p.changeColorToGreen();
+            } else if (vertices.get(idx).getIsVisible() == 2) {
+                p.changeColorToGray();
+            } else if (vertices.get(idx).getIsVisible() == 3) {
+                p.changeColorToBlack();
             }
             points.add(p);
         }
         return points;
     }
 
-
-    public ObservableList<Vertex> getVertices() {
-        return vertices;
-    }
 }
