@@ -1,5 +1,5 @@
 package com.bachelor.visualpolygon.model;
-/**TODO: RENAME THIS */
+
 public class ModelFactory {
 
     private DataModel dataModel;

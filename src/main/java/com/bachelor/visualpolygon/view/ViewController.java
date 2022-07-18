@@ -7,6 +7,7 @@ import com.bachelor.visualpolygon.view.shapes.Camera;
 import com.bachelor.visualpolygon.view.shapes.Point;
 import com.bachelor.visualpolygon.view.shapes.PolygonModified;
 import com.bachelor.visualpolygon.viewmodel.ViewModel;
+import javafx.animation.AnimationTimer;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.SimpleDoubleProperty;
@@ -59,6 +60,7 @@ public class ViewController {
     private CheckBox greenBox;
     @FXML
     private CheckBox yellowBox;
+
 
     private final Group redLines = new Group();
     private final Group greenLines = new Group();
@@ -135,6 +137,7 @@ public class ViewController {
      * TODO: When is this button actually used ? Camera location wont update even when is pressed>???
      */
     public void updatePolygon() {
+
         logger.info("INFO POLYGON UPDATED");
         if (!isPolygonReady()) return;
         if (Objects.isNull(camera)) {
@@ -143,6 +146,22 @@ public class ViewController {
         viewModel.updatePolygon();
         refreshView();
 
+    }
+
+    public void playAll() {
+
+        AnimationTimer timer = new AnimationTimer() {
+            @Override
+            public void handle(long now) {
+                playStep();
+            }
+        };
+        timer.start();
+
+        if (viewModel.isScanDone()) {
+            timer.stop();
+
+        }
     }
 
     public void nextStep() {
