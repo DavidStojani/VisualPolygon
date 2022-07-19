@@ -14,6 +14,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Camera extends Circle {
 
+    final double SCALE_DELTA = 1.1;
+
     private static Camera camera;
 
     public Camera(DoubleProperty x, DoubleProperty y, DoubleProperty r) {
@@ -28,7 +30,7 @@ public class Camera extends Circle {
 
     private void drawCamera() {
         this.setFill(Color.CADETBLUE.deriveColor(1, 0.9, 0.9, 0.7));
-        this.setStrokeType(StrokeType.OUTSIDE);
+        this.setStrokeType(StrokeType.INSIDE);
         this.setStrokeWidth(3);
         this.setStroke(Color.CADETBLUE);
     }
@@ -82,25 +84,18 @@ public class Camera extends Circle {
 
         });
         this.setOnScroll(scrollEvent -> {
-            double zoomFactor = 1.05;
-            double deltaY = scrollEvent.getDeltaY();
-            /***TODO: Radius scrolling makes problem*/
-            if (deltaY > 0) {
-                zoomFactor = 2.0 - zoomFactor;
-                setScaleX(getScaleX() * zoomFactor);
-                setScaleY(getScaleY() * zoomFactor);
-                setRadius(getRadius() * zoomFactor);
-                setStrokeWidth(getStrokeWidth() * zoomFactor);
+            scrollEvent.consume();
 
-
-            } else if (deltaY < 0) {
-                zoomFactor = 0.1 + zoomFactor;
-                setScaleX(getScaleX() * zoomFactor);
-                setScaleY(getScaleY() * zoomFactor);
-                setRadius(getRadius() * zoomFactor);
-                setStrokeWidth(getStrokeWidth() * zoomFactor);
-
+            if (scrollEvent.getDeltaY() == 0) {
+                return;
             }
+
+            double scaleFactor = (scrollEvent.getDeltaY() > 0)
+                    ? SCALE_DELTA
+                    : 1 / SCALE_DELTA;
+            setScaleX(getScaleX() * scaleFactor);
+            setScaleY(getScaleY() * scaleFactor);
+            setRadius((getRadius() * 2));
         });
     }
 

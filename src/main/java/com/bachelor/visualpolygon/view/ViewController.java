@@ -20,6 +20,7 @@ import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
@@ -36,7 +37,7 @@ public class ViewController {
     @FXML
     BorderPane border;
     @FXML
-    public AnchorPane pane;
+    public Pane pane;
     @FXML
     private Label statusText;
     @FXML
@@ -65,6 +66,7 @@ public class ViewController {
     private final Group redLines = new Group();
     private final Group greenLines = new Group();
     private final Group yellowLines = new Group();
+    Group mainGroup = new Group();
 
     private ViewModel viewModel;
 
@@ -83,6 +85,7 @@ public class ViewController {
     private final ListProperty<Double> listPropertyForCamera;
     private boolean isScanDone = false;
     AnimationTimer scannerAnimator;
+    final double SCALE_DELTA = 1.1;
 
     public ViewController() {
         logger.setContext("Controller: ");
@@ -108,9 +111,12 @@ public class ViewController {
         initBindings(viewModel);
         initUploadList();
         initLogView();
+        mainGroup.getChildren().addAll(root,redLines,greenLines,yellowLines);
         pane.setOnMouseClicked(mouseHandlerForPane);
-        pane.getChildren().add(root);
-        pane.getChildren().addAll(redLines, greenLines, yellowLines);
+        pane.getChildren().add(mainGroup);
+
+        pane.setOnScroll(this::handleScroll);
+
     }
 
     public void playAll() {
@@ -162,6 +168,7 @@ public class ViewController {
         updatePolygon();
         refreshView();
         viewModel.setLabelText("Polygon Uploaded");
+
     }
 
     public void resetApplication() {
@@ -188,6 +195,8 @@ public class ViewController {
         }
         viewModel.updatePolygon();
         refreshView();
+        logger.warn("SCALE OF PANE X " + pane.getScaleX() + " Y " + pane.getScaleY());
+        logger.warn("SCALE OF ROOT GRROUP X " + root.getScaleX() + " Y " + root.getScaleY());
     }
 
     private void updateLineGroups() {
@@ -390,7 +399,7 @@ public class ViewController {
     }
 
     private boolean isPrimaryOnPaneAndEmptyPolygon(MouseEvent mouseEvent) {
-        return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof AnchorPane);
+        return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof Pane);
     }
 
     private boolean isPrimaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {
@@ -398,7 +407,7 @@ public class ViewController {
     }
 
     private boolean isPrimaryOnPaneAndFullPolygonAndScanNotDone(MouseEvent mouseEvent) {
-        return (!isScanDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof AnchorPane);
+        return (!isScanDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof Pane);
     }
 
     private boolean isSecondaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {
@@ -407,6 +416,23 @@ public class ViewController {
 
     private boolean isSecondaryOnPointAndFullPolygon(MouseEvent mouseEvent) {
         return mouseEvent.getButton().equals(MouseButton.SECONDARY) && Objects.nonNull(polygon) && mouseEvent.getTarget() instanceof Point;
+    }
+
+    private void handleScroll(ScrollEvent scrollEvent) {
+        scrollEvent.consume();
+
+        if (scrollEvent.getDeltaY() == 0) {
+            return;
+        }
+
+        double scaleFactor =
+                (scrollEvent.getDeltaY() > 0)
+                        ? SCALE_DELTA
+                        : 1 / SCALE_DELTA;
+
+        mainGroup.setScaleX(mainGroup.getScaleX() * scaleFactor);
+        mainGroup.setScaleY(mainGroup.getScaleY() * scaleFactor);
+
     }
 }
 

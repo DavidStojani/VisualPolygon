@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 <BorderPane fx:id="border" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="765.0" prefWidth="1650.0" style="-fx-background-color: #604758" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
    <center>
-      <AnchorPane fx:id="pane" maxHeight="761.0" maxWidth="1200.0" minHeight="761.0" minWidth="761.0"  style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
+      <Pane fx:id="pane"   style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
       <Label prefHeight="16.0" prefWidth="1650.0" style="-fx-font-size: 12; -fx-background-color: #D2D2CF;" text="David Stojani, Uni Bonn, Bachelor Thesis &gt;&gt; Visual Polygon from a rotating camera" />
