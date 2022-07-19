@@ -24,7 +24,7 @@ public class Camera extends Circle {
         drawCamera();
         x.bind(centerXProperty());
         y.bind(centerYProperty());
-        r.bindBidirectional(radiusProperty());
+        r.bind(radiusProperty());
         enableDrag();
     }
 

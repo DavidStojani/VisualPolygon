@@ -64,30 +64,31 @@ public class ViewController {
     @FXML
     private CheckBox yellowBox;
 
+    @Getter
+    Group mainGroup = new Group();
+    private final Group root = new Group();
     private final Group redLines = new Group();
     private final Group greenLines = new Group();
     private final Group yellowLines = new Group();
-    @Getter
-    Group mainGroup = new Group();
+
+    private final Polyline polyline;
+    private PolygonModified polygon;
+    private Polygon visPoly;
+    private Camera camera;
+    private final ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
+    private final ListProperty<Vertex> listPropertyForVertex;
+    private final ListProperty<Double> listPropertyForCamera;
 
     private ViewModel viewModel;
 
     private static final Logger logger = Logger.getLogger();
     private final LogView logView = new LogView(logger);
 
-    private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
 
-    private final ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
-    private PolygonModified polygon;
-    private Polygon visPoly;
-    private final Polyline polyline;
-    private Camera camera;
-    private final ListProperty<Vertex> listPropertyForVertex;
-    private final ListProperty<Double> listPropertyForCamera;
-    private boolean isScanDone = false;
+    private boolean isScanStartedOrDone = false;
     AnimationTimer scannerAnimator;
-    final double SCALE_DELTA = 1.1;
+    private static final double SCALE_DELTA = 1.1;
 
 
     public ViewController() {
@@ -124,13 +125,13 @@ public class ViewController {
 
     public void playAll() {
 
-        if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Paused")) {
+        if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Continue")) {
             scannerAnimator.start();
-            playAllButton.setText("Scanning");
+            playAllButton.setText("Pause");
             viewModel.setLabelText("Scanning Polygon");
-        } else if (playAllButton.getText().equals("Scanning")) {
+        } else if (playAllButton.getText().equals("Pause")) {
             scannerAnimator.stop();
-            playAllButton.setText("Paused");
+            playAllButton.setText("Continue");
             viewModel.setLabelText("Scanning Paused");
         }
     }
@@ -141,8 +142,8 @@ public class ViewController {
             viewModel.setLabelText("Camera not yet in Polygon!");
             return;
         }
+        isScanStartedOrDone = true;
         if (viewModel.isScanDone()) {
-            isScanDone = true;
             visPoly = viewModel.getVisPoly();
             addVisiblePolygonToView();
             playAllButton.setText("Restart Scan");
@@ -181,7 +182,7 @@ public class ViewController {
         if (Objects.nonNull(polygon)) {
             polygon.getPoints().clear();
             polygon.getPoints().clear();
-            polygon.getVertices().clear();
+            PolygonModified.vertices.clear();
         }
         camera = null;
         visPoly = null;
@@ -238,10 +239,6 @@ public class ViewController {
         root.getChildren().clear();
         root.getChildren().add(drawPolyline());
         root.getChildren().addAll(createControlPointsFor(polyline.getPoints()));
-    }
-
-    private void refreshView() {
-
     }
 
     private void addVisiblePolygonToView() {
@@ -367,6 +364,7 @@ public class ViewController {
                 refreshLine();
             } else if (isPrimaryOnPaneAndFullPolygonAndScanNotDone(mouseEvent)) {
                 polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
+                updatePolygon();
             }
 
             if (isPrimaryOnPointAndEmptyPolygon(mouseEvent)) {
@@ -424,7 +422,7 @@ public class ViewController {
     }
 
     private boolean isPrimaryOnPaneAndFullPolygonAndScanNotDone(MouseEvent mouseEvent) {
-        return (!isScanDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof Pane);
+        return (!isScanStartedOrDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof Pane);
     }
 
     private boolean isSecondaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {

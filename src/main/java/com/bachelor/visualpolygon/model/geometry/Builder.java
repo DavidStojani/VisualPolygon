@@ -48,7 +48,6 @@ public class Builder extends Initializer {
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
-
         this.vertices = vertices;
         if (!cameraDetails.isEmpty()) {
             camera.setDetails(cameraDetails);
@@ -75,31 +74,22 @@ public class Builder extends Initializer {
         }
 
         clearLines();
-
-        logger.debug("createStep() Was called!");
         logger.info("===========NEXT STEP=========");
-        logger.info("Stopped on  " + vertex);
 
         if (isInsideActive(vertex)) {
-            logger.info("Vertex was INSIDE Step");
+            logger.info("Stopped on  " + vertex + " INSIDE Step");
             createStepFromBETA(vertex);
 
         } else {
-            logger.info("Vertex was OUTSIDE Step");
+            logger.info("Stopped on  " + vertex + " was OUTSIDE Step");
             createStepFromALPHA(vertex);
         }
-        logger.info("++++Setting ACTIVE++++");
         setActive();
-        logger.info("++++Setting tempsV und tempsU++++");
         setTemps();
         doubleCheckInvisible();
-        logger.info("++++Add all Projections of tempVisible in Polygon++++");
         addNewVertices();
-        logger.info("++++Finding next Vertex to create the Step++++");
         nextVertex = findNextVertex();
-        logger.info("==========Step CLOSED ========");
     }
-
 
 
     private void setActive() {
@@ -120,33 +110,26 @@ public class Builder extends Initializer {
         for (Vertex vertex : active) {
             LineSegment parallelCameraToVertex = new LineSegment(getParallelLine(vertex).p0, vertex);
             if (parallelCameraToVertex.toGeometry(factory).within(polygon)) {
-                logger.info("Parallel Line from " + vertex + " to Camera is INSIDE Polygon");
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
                 addLine(parallelCameraToVertex, Color.GREEN);
-                logger.info(vertex + " added in tempVisible");
-
             } else {
-                logger.info("Parallel Line from " + vertex + " to Camera is OUTSIDE Polygon");
 
                 tempInvisible.add(vertex);
                 if (vertex.getIsVisible() != 1) {
                     vertex.setIsVisible(-1);
                 }
                 addLine(parallelCameraToVertex, Color.RED);
-                logger.info(vertex + " added in tempInvisible");
-
             }
+            logger.info("TempVisible Size: " + tempVisible.size() + "TempInvisible Size: " + tempInvisible.size());
         }
     }
 
     public void addNewVertices() {
-        logger.info("Size of tempVisible == " + tempVisible.size());
         for (Vertex vertex : tempVisible) {
             LineSegment line = getParallelLine(vertex);
-            logger.info("Visiting " + vertex + " and CREATING Line  " + line);
             if (addNewVertex(vertex, line)) {
-                logger.info("Nothing was added!");
+
             }
         }
     }
@@ -293,6 +276,7 @@ public class Builder extends Initializer {
         if (tempInvisible.isEmpty()) {
             return;
         }
+        int count =0;
         for (int i = 0; i < tempVisible.size(); i++) {
             Vertex visible = tempVisible.get(i);
             for (int j = 0; j < tempInvisible.size(); j++) {
@@ -305,9 +289,11 @@ public class Builder extends Initializer {
                     LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
                     tempInvisible.remove(invisible);
+                    count++;
                 }
             }
         }
+        logger.info("Moved from TempInvisible to TempVisible: " + count);
     }
 
     private Vertex findNextVertex() {
