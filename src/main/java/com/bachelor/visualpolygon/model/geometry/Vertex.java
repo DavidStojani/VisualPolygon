@@ -27,8 +27,15 @@ public class Vertex extends Coordinate {
         super(xCoordinate,yCoordinate);
         xProperty = new SimpleDoubleProperty(xCoordinate);
         yProperty = new SimpleDoubleProperty(yCoordinate);
-        xProperty.addListener((observableValue, number, t1) -> xProperty.set(t1.doubleValue()));
-        yProperty.addListener((observableValue, number, t1) -> yProperty.set(t1.doubleValue()));
+        xProperty.addListener((observableValue, number, t1) -> {
+            xProperty.set(t1.doubleValue());
+            this.setX(t1.doubleValue());
+        });
+        yProperty.addListener((observableValue, number, t1) -> {
+            System.out.println("smth canged");
+            yProperty.set(t1.doubleValue());
+            this.setY(t1.doubleValue());
+        });
     }
 
 

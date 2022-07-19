@@ -27,6 +27,7 @@ import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
+import lombok.Getter;
 
 import java.io.File;
 import java.util.Objects;
@@ -66,6 +67,7 @@ public class ViewController {
     private final Group redLines = new Group();
     private final Group greenLines = new Group();
     private final Group yellowLines = new Group();
+    @Getter
     Group mainGroup = new Group();
 
     private ViewModel viewModel;
@@ -86,6 +88,7 @@ public class ViewController {
     private boolean isScanDone = false;
     AnimationTimer scannerAnimator;
     final double SCALE_DELTA = 1.1;
+
 
     public ViewController() {
         logger.setContext("Controller: ");
@@ -111,11 +114,11 @@ public class ViewController {
         initBindings(viewModel);
         initUploadList();
         initLogView();
-        mainGroup.getChildren().addAll(root,redLines,greenLines,yellowLines);
+        mainGroup.getChildren().addAll(root, redLines, greenLines, yellowLines);
+        makePaneDraggable();
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(mainGroup);
 
-        pane.setOnScroll(this::handleScroll);
 
     }
 
@@ -148,7 +151,9 @@ public class ViewController {
         }
         Polygon stepPoly = viewModel.getStepPolygon();
         if (stepPoly != null) {
-            refreshView();
+            drawPolygon(false);
+            root.getChildren().add(camera);
+
             updateLineGroups();
             drawStepPolygon(stepPoly);
         }
@@ -166,7 +171,6 @@ public class ViewController {
         viewModel.uploadFile(file);
         polygon = new PolygonModified();
         updatePolygon();
-        refreshView();
         viewModel.setLabelText("Polygon Uploaded");
 
     }
@@ -176,27 +180,36 @@ public class ViewController {
         polyline.getPoints().clear();
         if (Objects.nonNull(polygon)) {
             polygon.getPoints().clear();
+            polygon.getPoints().clear();
             polygon.getVertices().clear();
         }
         camera = null;
         visPoly = null;
         polygon = null;
+        scannerAnimator.stop();
         listPropertyForVertex.clear();
         cameraRequirements.clear();
         viewModel.reset();
         playAllButton.setText("Play All");
+        resetMainGroup();
+    }
+
+    private void resetMainGroup() {
+        mainGroup.setScaleX(1.0);
+        mainGroup.setScaleY(1.0);
+        mainGroup.setTranslateX(0.0);
+        mainGroup.setTranslateY(0.0);
     }
 
     private void updatePolygon() {
-        logger.info("POLYGON UPDATED");
         if (!isPolygonReady()) return;
+        viewModel.updatePolygon();
+        drawPolygon(true);
         if (Objects.isNull(camera)) {
             viewModel.setLabelText("Polygon Updated! Click to add Camera");
+        } else {
+            root.getChildren().add(camera);
         }
-        viewModel.updatePolygon();
-        refreshView();
-        logger.warn("SCALE OF PANE X " + pane.getScaleX() + " Y " + pane.getScaleY());
-        logger.warn("SCALE OF ROOT GRROUP X " + root.getScaleX() + " Y " + root.getScaleY());
     }
 
     private void updateLineGroups() {
@@ -228,10 +241,7 @@ public class ViewController {
     }
 
     private void refreshView() {
-        drawPolygon(true);
-        if (Objects.nonNull(camera)) {
-            root.getChildren().add(camera);
-        }
+
     }
 
     private void addVisiblePolygonToView() {
@@ -261,7 +271,10 @@ public class ViewController {
     private void drawPolygon(boolean movable) {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
-        root.getChildren().addAll(polygon.createModeratePoints(movable));
+        ObservableList<Point> points = polygon.createModeratePoints(movable);
+        points.forEach(point -> point.setOnMouseClicked(mouseEvent ->
+                viewModel.setLabelText("VERTEX { " + point.getCenterX() + " ; " + point.getCenterY() + " }")));
+        root.getChildren().addAll(points);
     }
 
     private Polyline drawPolyline() {
@@ -300,6 +313,13 @@ public class ViewController {
             points.add(new Point(xProperty, yProperty, true));
         }
         return points;
+    }
+
+    void makePaneDraggable() {
+        SceneGestures sceneGestures = new SceneGestures(mainGroup);
+        mainGroup.addEventFilter(MouseEvent.MOUSE_PRESSED, sceneGestures.getOnMousePressedEventHandler());
+        mainGroup.addEventFilter(MouseEvent.MOUSE_DRAGGED, sceneGestures.getOnMouseDraggedEventHandler());
+        mainGroup.setOnScroll(this::handleScroll);
     }
 
     private void initBindings(ViewModel viewModel) {
@@ -347,15 +367,12 @@ public class ViewController {
                 refreshLine();
             } else if (isPrimaryOnPaneAndFullPolygonAndScanNotDone(mouseEvent)) {
                 polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
-                updatePolygon();
             }
 
             if (isPrimaryOnPointAndEmptyPolygon(mouseEvent)) {
                 Point point = (Point) mouseEvent.getTarget();
                 if (point.getCenterX() == polyline.getPoints().get(0) && point.getCenterY() == polyline.getPoints().get(1)) {
                     polygon = new PolygonModified();
-                    polygon.scaleXProperty().bind(pane.scaleXProperty());
-                    point.scaleYProperty().bind(pane.scaleYProperty());
                     updatePolygon();
                 }
             }

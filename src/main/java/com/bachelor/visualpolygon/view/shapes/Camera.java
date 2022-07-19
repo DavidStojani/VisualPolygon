@@ -95,7 +95,7 @@ public class Camera extends Circle {
                     : 1 / SCALE_DELTA;
             setScaleX(getScaleX() * scaleFactor);
             setScaleY(getScaleY() * scaleFactor);
-            setRadius((getRadius() * 2));
+            setRadius((getRadius() * scaleFactor));
         });
     }
 

@@ -4,6 +4,7 @@ import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.DoubleProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
@@ -70,22 +71,16 @@ public class PolygonModified extends Polygon {
 
             xProperty.addListener((observableValue, number, t1) -> {
                 vertices.get(idx).getXProperty().set(t1.doubleValue());
+                vertices.get(idx).setX(t1.doubleValue());
                 updatePoints();
             });
             yProperty.addListener((observableValue, number, t1) -> {
                 vertices.get(idx).getYProperty().set(t1.doubleValue());
+                vertices.get(idx).setY(t1.doubleValue());
                 updatePoints();
             });
 
             Point p = new Point(xProperty, yProperty, movable);
-            p.setOnMouseClicked(mouseEvent -> {
-                Label labelText = (Label) this.getParent().getParent().getParent().getChildrenUnmodifiable().get(3);
-                labelText.setText("VERTEX { "
-                        + vertices.get(idx).getXProperty().get() +
-                        " ; "
-                        + vertices.get(idx).getYProperty().get() +
-                        " }");
-            });
 
             if (vertices.get(idx).getIsVisible() == -1) {
                 p.changeColorToRed();
