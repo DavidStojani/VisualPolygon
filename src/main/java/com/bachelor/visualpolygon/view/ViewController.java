@@ -35,6 +35,7 @@ import java.util.Objects;
 public class ViewController {
     @FXML
     public Button playAllButton;
+    public Button visPolyButton;
     @FXML
     BorderPane border;
     @FXML
@@ -123,6 +124,12 @@ public class ViewController {
 
     }
 
+    public void calculateAll() {
+
+        visPoly = viewModel.getInstantVisPoly();
+        addVisiblePolygonToView();
+    }
+
     public void playAll() {
 
         if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Continue")) {
@@ -178,6 +185,7 @@ public class ViewController {
 
     public void resetApplication() {
         root.getChildren().clear();
+        clearLines();
         polyline.getPoints().clear();
         if (Objects.nonNull(polygon)) {
             polygon.getPoints().clear();
@@ -213,14 +221,19 @@ public class ViewController {
         }
     }
 
+    private void updateCamera() {
+        drawPolygon(false);
+
+        root.getChildren().remove(camera);
+        root.getChildren().add(camera);
+    }
+
     private void updateLineGroups() {
         if (viewModel.getAllLines().isEmpty()) {
             return;
         }
 
-        greenLines.getChildren().clear();
-        redLines.getChildren().clear();
-        yellowLines.getChildren().clear();
+        clearLines();
 
         for (Line line : viewModel.getAllLines()) {
             if (line.getStroke().equals(Color.GREEN)) {
@@ -235,6 +248,12 @@ public class ViewController {
         }
     }
 
+    private void clearLines() {
+        greenLines.getChildren().clear();
+        redLines.getChildren().clear();
+        yellowLines.getChildren().clear();
+    }
+
     private void refreshLine() {
         root.getChildren().clear();
         root.getChildren().add(drawPolyline());
@@ -244,8 +263,8 @@ public class ViewController {
     private void addVisiblePolygonToView() {
         root.getChildren().clear();
         drawPolygon(false);
-        root.getChildren().add(camera);
         drawVisPolygon(visPoly);
+        root.getChildren().add(camera);
         root.getChildren().addAll(visPolyPoints(visPoly.getPoints()));
     }
 
@@ -396,7 +415,14 @@ public class ViewController {
         if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
             cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
             camera = Camera.createCamera(cameraRequirements);
-            camera.setOnMouseReleased(mouseEvent1 -> updatePolygon());
+            camera.setOnMouseReleased(mouseEvent1 -> {
+                isScanStartedOrDone = false;
+                viewModel.updatePolygon();
+                updateCamera();
+                visPoly =(viewModel.getInstantVisPoly());
+                addVisiblePolygonToView();
+            });
+
             updatePolygon();
         }
     }

@@ -151,4 +151,15 @@ public class ViewModel {
         }
         return visPoly;
     }
+
+    public Polygon getInstantVisPoly() {
+        Polygon visPoly = new Polygon();
+        for (Coordinate coordinate : model.getInstantVisualPolygon(cameraDetails)) {
+            visPoly.getPoints().add(coordinate.getX());
+            visPoly.getPoints().add(coordinate.getY());
+        }
+        return visPoly;
+    }
+
+
 }

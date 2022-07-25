@@ -6,7 +6,7 @@
 <?import javafx.scene.text.Font?>
 <BorderPane fx:id="border" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="765.0" prefWidth="1650.0" style="-fx-background-color: #604758" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.bachelor.visualpolygon.view.ViewController">
    <center>
-      <Pane fx:id="pane"   style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
+      <Pane fx:id="pane" style="-fx-background-color: #b9cdff;" BorderPane.alignment="CENTER" />
    </center>
    <bottom>
       <Label prefHeight="16.0" prefWidth="1650.0" style="-fx-font-size: 12; -fx-background-color: #D2D2CF;" text="David Stojani, Uni Bonn, Bachelor Thesis &gt;&gt; Visual Polygon from a rotating camera" />
@@ -15,54 +15,47 @@
       <VBox fx:id="logPanel" prefHeight="470" prefWidth="420" spacing="4">
          <HBox fx:id="logController" spacing="7">
             <children>
-               <ChoiceBox fx:id="filterLevel"/>
-               <ToggleButton fx:id="showTS" text="Show Timetamp"/>
-               <ToggleButton fx:id="tail" text="Tail"/>
-               <ToggleButton fx:id="pause" text="Pause"/>
+               <ChoiceBox fx:id="filterLevel" />
+               <ToggleButton fx:id="showTS" text="Show Timetamp" />
+               <ToggleButton fx:id="tail" text="Tail" />
+               <ToggleButton fx:id="pause" text="Pause" />
             </children>
          </HBox>
       </VBox>
    </right>
    <left>
       <VBox fx:id="buttonBox" prefHeight="407.0" prefWidth="169.0" spacing="1" BorderPane.alignment="CENTER">
-         <Button fx:id="playAllButton" mnemonicParsing="false" onAction="#playAll" prefHeight="63.0" prefWidth="204.0"
-                 text="Play All"/>
-         <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0"
-                 prefWidth="204.0" text="Play Step"/>
-         <Button layoutX="10.0" layoutY="136.0" mnemonicParsing="false" onAction="#savePolygon" prefHeight="63.0"
-                 prefWidth="204.0" text="Save"/>
-         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="55.0" prefWidth="204.0"
-                style="-fx-background-color: #D2D2CF;" text="Upload Files">
+         <Button fx:id="visPolyButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#calculateAll" prefHeight="63.0" prefWidth="204.0" text="Visibility Polygon" />
+         <Button fx:id="playAllButton" mnemonicParsing="false" onAction="#playAll" prefHeight="63.0" prefWidth="204.0" text="Play All" />
+         <Button layoutX="10.0" layoutY="73.0" mnemonicParsing="false" onAction="#playStep" prefHeight="63.0" prefWidth="204.0" text="Play Step" />
+         <Button layoutX="10.0" layoutY="136.0" mnemonicParsing="false" onAction="#savePolygon" prefHeight="63.0" prefWidth="204.0" text="Save" />
+         <Label alignment="CENTER" contentDisplay="CENTER" prefHeight="55.0" prefWidth="204.0" style="-fx-background-color: #D2D2CF;" text="Upload Files">
             <font>
-               <Font size="15.0"/>
+               <Font size="15.0" />
             </font>
          </Label>
-         <ListView fx:id="uploadList" prefHeight="260.0" prefWidth="165.0"/>
-         <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#resetApplication" prefHeight="63.0"
-                 prefWidth="204.0" text="Reset"/>
+         <ListView fx:id="uploadList" prefHeight="260.0" prefWidth="165.0" />
+         <Button layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#resetApplication" prefHeight="63.0" prefWidth="204.0" text="Reset" />
          <VBox alignment="CENTER_LEFT" prefHeight="200.0" prefWidth="100.0" spacing="10.0">
             <children>
-               <CheckBox fx:id="greenBox" mnemonicParsing="false" text="Green Lines" textAlignment="CENTER"
-                         textFill="#34ed26">
+               <CheckBox fx:id="greenBox" mnemonicParsing="false" text="Green Lines" textAlignment="CENTER" textFill="#34ed26">
                   <font>
-                     <Font size="15.0"/>
+                     <Font size="15.0" />
                   </font>
                </CheckBox>
-               <CheckBox fx:id="redBox" mnemonicParsing="false" text="Red Lines" textAlignment="CENTER"
-                         textFill="#ff351a">
+               <CheckBox fx:id="redBox" mnemonicParsing="false" text="Red Lines" textAlignment="CENTER" textFill="#ff351a">
                   <font>
-                     <Font size="15.0"/>
+                     <Font size="15.0" />
                   </font>
                </CheckBox>
-               <CheckBox fx:id="yellowBox" mnemonicParsing="false" text="Yellow Lines" textAlignment="CENTER"
-                         textFill="#ffe521">
+               <CheckBox fx:id="yellowBox" mnemonicParsing="false" text="Yellow Lines" textAlignment="CENTER" textFill="#ffe521">
                   <font>
-                     <Font size="15.0"/>
+                     <Font size="15.0" />
                   </font>
                </CheckBox>
             </children>
             <VBox.margin>
-               <Insets left="10.0"/>
+               <Insets left="10.0" />
             </VBox.margin>
          </VBox>
       </VBox>
