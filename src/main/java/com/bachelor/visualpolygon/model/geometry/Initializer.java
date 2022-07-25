@@ -90,12 +90,20 @@ public abstract class Initializer {
     }
 
     public boolean isScanComplete() {
-        return count == (polarSortedVertices.size() * 2) + 3;
+        return count == (polarSortedVertices.size() * 2) + 2;
     }
 
     public void increaseCount() {
         count++;
     }
+
+    public void resetVertices(List<Vertex> vertices) {
+        vertices.forEach(vertex -> {
+            vertex.setIsVisible(0);
+            vertex.setTheta(0);
+        });
+    }
+
 
     public Map<String, Double> getParametersOfEquation(Coordinate v1, Coordinate v2) {
         HashMap<String, Double> parameter = new HashMap<>();

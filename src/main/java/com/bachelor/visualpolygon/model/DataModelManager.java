@@ -32,7 +32,7 @@ public class DataModelManager implements DataModel {
 
     @Override
     public void updateBuilder(List<Vertex> vertices, List<Double> camera) {
-
+        System.out.println("CAMERA incoming " + camera);
         builder.updateBuilder(vertices, camera);
     }
 
@@ -81,4 +81,11 @@ public class DataModelManager implements DataModel {
     public CoordinateList getVisualPolygon() {
         return builder.getVisPolygonVertices();
     }
+
+    @Override
+    public CoordinateList getInstantVisualPolygon(List<Double> camera) {
+        return builder.getInstantVisualPolygon(camera);
+    }
+
+
 }

@@ -3,7 +3,6 @@ package com.bachelor.visualpolygon.model.geometry;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.GeometryFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +18,7 @@ public class GeometryCamera {
     private double centerX;
     private double centerY;
     private Coordinate center = new Coordinate();
-    private static final GeometryFactory factory = new GeometryFactory();
+
 
 
     public void setDetails(List<Double> cameraDetails) {
