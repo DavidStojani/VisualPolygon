@@ -53,9 +53,10 @@ public class GeometryCamera {
         double cx = centerX;
         double cy = centerY;
         // Compute the distance to the circle center
+
         double dx = cx - px;
         double dy = cy - py;
-        double dist = sqrt(dx * dx + dy * dy);
+        double dist  = center.distance(pt);
 
         // Point is strictly contained within the circle
         if (dist < radius) throw new RuntimeException("Vertex within Camera");

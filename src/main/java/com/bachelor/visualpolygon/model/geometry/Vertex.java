@@ -15,6 +15,7 @@ public class Vertex extends Coordinate {
     private double theta;
     private transient DoubleProperty xProperty;
     private transient DoubleProperty yProperty;
+    boolean forVisualPolygon;
 
 
     public Vertex(Coordinate c) {

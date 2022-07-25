@@ -16,6 +16,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
@@ -30,6 +31,8 @@ import javafx.scene.shape.StrokeLineCap;
 import lombok.Getter;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class ViewController {
@@ -125,14 +128,14 @@ public class ViewController {
     }
 
     public void calculateAll() {
-
+        visPoly = null;
         visPoly = viewModel.getInstantVisPoly();
         addVisiblePolygonToView();
     }
 
     public void playAll() {
 
-        if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Continue")) {
+        if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Continue") || playAllButton.getText().equals("Restart Scan")) {
             scannerAnimator.start();
             playAllButton.setText("Pause");
             viewModel.setLabelText("Scanning Polygon");
@@ -219,13 +222,6 @@ public class ViewController {
         } else {
             root.getChildren().add(camera);
         }
-    }
-
-    private void updateCamera() {
-        drawPolygon(false);
-
-        root.getChildren().remove(camera);
-        root.getChildren().add(camera);
     }
 
     private void updateLineGroups() {
@@ -321,10 +317,12 @@ public class ViewController {
             xProperty.addListener((ov, oldX, x) -> {
                 coordinates.set(idx, (double) x);
                 PolygonModified.vertices.get(idx / 2).getXProperty().set(x.doubleValue());
+                PolygonModified.vertices.get(idx / 2).setX(x.doubleValue());
             });
             yProperty.addListener((ov, oldY, y) -> {
                 coordinates.set(idx + 1, (double) y);
                 PolygonModified.vertices.get(idx / 2).getYProperty().set(y.doubleValue());
+                PolygonModified.vertices.get(idx / 2).setY(y.doubleValue());
             });
             points.add(new Point(xProperty, yProperty, true));
         }
@@ -343,7 +341,7 @@ public class ViewController {
         redLines.visibleProperty().bindBidirectional(redBox.selectedProperty());
         greenLines.visibleProperty().bindBidirectional(greenBox.selectedProperty());
         yellowLines.visibleProperty().bindBidirectional(yellowBox.selectedProperty());
-        listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
+        listPropertyForVertex.bindContentBidirectional(viewModel.getAllVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
     }
 
@@ -414,17 +412,35 @@ public class ViewController {
 
         if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
             cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
-            camera = Camera.createCamera(cameraRequirements);
-            camera.setOnMouseReleased(mouseEvent1 -> {
+            camera = new Camera(cameraRequirements);
+            camera.setOnMousePressed(mouseEvent3 -> {
+                resetVertices();
+                updatePolygon();
                 isScanStartedOrDone = false;
-                viewModel.updatePolygon();
-                updateCamera();
-                visPoly =(viewModel.getInstantVisPoly());
-                addVisiblePolygonToView();
+                camera.getScene().setCursor(Cursor.MOVE);
             });
 
+            camera.setOnMouseReleased(mouseEvent1 -> {
+                camera.getScene().setCursor(Cursor.HAND);
+                updatePolygon();
+                calculateAll();
+            });
             updatePolygon();
         }
+    }
+
+    private void resetVertices() {
+        List<Vertex> temp = new ArrayList<>();
+        for (int i = 0; i < PolygonModified.vertices.size(); i++) {
+            Vertex vertex = PolygonModified.vertices.get(i);
+            logger.debug("IS For Visual Polygon ? " + vertex.isForVisualPolygon());
+            if (!vertex.isForVisualPolygon()) {
+                vertex.setIsVisible(0);
+                temp.add(vertex);
+            }
+        }
+        PolygonModified.vertices.clear();
+        PolygonModified.vertices.addAll(temp);
     }
 
     private boolean isPolygonReady() {

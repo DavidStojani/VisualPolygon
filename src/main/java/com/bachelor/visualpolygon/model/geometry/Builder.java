@@ -54,6 +54,7 @@ public class Builder extends Initializer {
             init();
         } else {
             polygon = createGeometryPolygon(vertices);
+            logger.error("No camera:  size of vertices " + vertices.size());
         }
     }
 
@@ -128,9 +129,7 @@ public class Builder extends Initializer {
     public void addNewVertices() {
         for (Vertex vertex : tempVisible) {
             LineSegment line = getParallelLine(vertex);
-            if (addNewVertex(vertex, line)) {
-
-            }
+            addNewVertex(vertex, line);
         }
     }
 
@@ -200,6 +199,7 @@ public class Builder extends Initializer {
         if (testPolygon.covers(vertexToNearestIntersection) || testPolygon.covers(vertexToNearestIntersection.reverse())) {
             Vertex v = new Vertex(nearestIntersection);
             v.setIsVisible(2);
+            v.setForVisualPolygon(true);
             vertices.add(v);
             extraVertices.add(v);
             logger.info("First intersection with Polygon " + v + " was added");
@@ -239,6 +239,7 @@ public class Builder extends Initializer {
         }
 
         Coordinate[] array = CoordinateArrays.removeRepeatedPoints(coordinateList.toCoordinateArray());
+
         visPolygonVertices = new CoordinateList(array);
     }
 
@@ -249,8 +250,6 @@ public class Builder extends Initializer {
             if (endpoint.distance(v) < minDistance) {
                 minDistance = endpoint.distance(v);
                 vertex = v;
-            } else {
-                vertices.remove(v);
             }
         }
         if (Objects.nonNull(vertex)) {
@@ -276,7 +275,7 @@ public class Builder extends Initializer {
         if (tempInvisible.isEmpty()) {
             return;
         }
-        int count =0;
+        int count = 0;
         for (int i = 0; i < tempVisible.size(); i++) {
             Vertex visible = tempVisible.get(i);
             for (int j = 0; j < tempInvisible.size(); j++) {
@@ -407,5 +406,15 @@ public class Builder extends Initializer {
             return false;
         }
         return active.contains(vertex);
+    }
+
+    public CoordinateList getInstantVisualPolygon() {
+        setCount(0);
+        extraVertices.clear();
+        while (!isScanComplete()) {
+            createStep(nextVertex);
+        }
+        createVisPolygon();
+        return visPolygonVertices;
     }
 }

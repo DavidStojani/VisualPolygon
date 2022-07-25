@@ -27,6 +27,6 @@ public interface DataModel {
 
     CoordinateList getVisualPolygon();
 
-    CoordinateList getInstantVisualPolygon(List<Double> camera);
+    CoordinateList getInstantVisualPolygon();
 
 }
