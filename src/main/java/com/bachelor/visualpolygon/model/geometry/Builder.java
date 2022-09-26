@@ -49,6 +49,7 @@ public class Builder extends Initializer {
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
         this.vertices = vertices;
+        logger.error("In Total : " + vertices.size() + "Vertices");
         if (!cameraDetails.isEmpty()) {
             camera.setDetails(cameraDetails);
             init();
@@ -78,11 +79,9 @@ public class Builder extends Initializer {
         logger.info("===========NEXT STEP=========");
 
         if (isInsideActive(vertex)) {
-            logger.info("Stopped on  " + vertex + " INSIDE Step");
             createStepFromBETA(vertex);
 
         } else {
-            logger.info("Stopped on  " + vertex + " was OUTSIDE Step");
             createStepFromALPHA(vertex);
         }
         setActive();
@@ -101,7 +100,7 @@ public class Builder extends Initializer {
                 active.add(vertex);
             }
         }
-        logger.info("ACTIVE filled with " + active.size() + " Vertices");
+        logger.info("ACTIVE SIZE: " + active.size());
     }
 
     //for every point in active build a parallel to the Step and check if it intersects with the circle with no interruption
@@ -122,7 +121,6 @@ public class Builder extends Initializer {
                 }
                 addLine(parallelCameraToVertex, Color.RED);
             }
-            logger.info("TempVisible Size: " + tempVisible.size() + "TempInvisible Size: " + tempInvisible.size());
         }
     }
 
@@ -202,7 +200,6 @@ public class Builder extends Initializer {
             v.setForVisualPolygon(true);
             vertices.add(v);
             extraVertices.add(v);
-            logger.info("First intersection with Polygon " + v + " was added");
             addLine(toTest, Color.YELLOW);
         }
 
@@ -292,7 +289,6 @@ public class Builder extends Initializer {
                 }
             }
         }
-        logger.info("Moved from TempInvisible to TempVisible: " + count);
     }
 
     private Vertex findNextVertex() {
@@ -325,6 +321,7 @@ public class Builder extends Initializer {
                 tempALFA = v;
             }
         }
+
 
         if (angleToBETA < angleToALPHA) {
             return tempBETA;

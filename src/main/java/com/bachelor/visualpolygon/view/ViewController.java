@@ -411,7 +411,7 @@ public class ViewController {
         }
 
         if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
-            cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
+            cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 40.0);
             camera = new Camera(cameraRequirements);
             camera.setOnMousePressed(mouseEvent3 -> {
                 resetVertices();
@@ -424,6 +424,12 @@ public class ViewController {
                 camera.getScene().setCursor(Cursor.HAND);
                 updatePolygon();
                 calculateAll();
+            });
+            camera.setOnMouseEntered(mouseEvent2 -> {
+                logger.error("SCROLL STOPED WITH DIAMETER ==== " + camera.getRadius());
+                if (!mouseEvent2.isPrimaryButtonDown()) {
+                    camera.getScene().setCursor(javafx.scene.Cursor.HAND);
+                }
             });
             updatePolygon();
         }
