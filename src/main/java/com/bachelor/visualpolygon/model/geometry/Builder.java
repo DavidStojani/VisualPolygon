@@ -74,13 +74,11 @@ public class Builder extends Initializer {
         if (Objects.isNull(vertex)) {
             vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
         }
-
         clearLines();
         logger.info("===========NEXT STEP=========");
 
         if (isInsideActive(vertex)) {
             createStepFromBETA(vertex);
-
         } else {
             createStepFromALPHA(vertex);
         }
@@ -272,7 +270,6 @@ public class Builder extends Initializer {
         if (tempInvisible.isEmpty()) {
             return;
         }
-        int count = 0;
         for (int i = 0; i < tempVisible.size(); i++) {
             Vertex visible = tempVisible.get(i);
             for (int j = 0; j < tempInvisible.size(); j++) {
@@ -285,7 +282,6 @@ public class Builder extends Initializer {
                     LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
                     tempInvisible.remove(invisible);
-                    count++;
                 }
             }
         }
@@ -306,19 +302,19 @@ public class Builder extends Initializer {
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
 
-        for (Vertex v : active) {
-            double angle = Angle.angleBetween(v, beta.p0, beta.p1);
-            if (angle < angleToBETA && angle > EPSILON) {
-                angleToBETA = angle;
-                tempBETA = v;
-            }
-        }
-
         for (Vertex v : leftToALPHA) {
-            double angle = Angle.angleBetween(v, alpha.p0, alpha.p1);
+            double angle = Angle.angleBetween(alpha.p0,camera.getCenter(),camera.getLeftTangentPoint(v));
             if (angle < angleToALPHA && angle > 0) {
                 angleToALPHA = angle;
                 tempALFA = v;
+            }
+        }
+
+        for (Vertex v : active) {
+            double angle = Angle.angleBetween(beta.p0,camera.getCenter(), camera.getRightTangentPoint(v));
+            if (angle < angleToBETA && angle > EPSILON) {
+                angleToBETA = angle;
+                tempBETA = v;
             }
         }
 
@@ -356,6 +352,7 @@ public class Builder extends Initializer {
         this.stepCoordinates = coordinates;
         setAlpha(coordinates.get(3), coordinates.get(2));
         setBeta(coordinates.get(0), coordinates.get(1));
+        addLine(new LineSegment(coordinates.get(3),coordinates.get(0)),Color.RED);
         increaseCount();
     }
 
@@ -375,6 +372,7 @@ public class Builder extends Initializer {
         this.stepCoordinates = coordinates;
         setAlpha(coordinates.get(0), coordinates.get(1));
         setBeta(coordinates.get(3), coordinates.get(2));
+        addLine(new LineSegment(coordinates.get(3),coordinates.get(0)),Color.RED);
         increaseCount();
 
     }
