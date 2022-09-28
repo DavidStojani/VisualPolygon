@@ -163,7 +163,7 @@ public class ViewController {
             drawPolygon(false);
             root.getChildren().add(camera);
 
-            updateLineGroups();
+            updateColorLineGroups();
             drawStepPolygon(stepPoly);
         }
     }
@@ -186,7 +186,7 @@ public class ViewController {
     public void resetApplication() {
         root.getChildren().clear();
         logView.resetLogg();
-        clearLines();
+        clearColorLines();
         polyline.getPoints().clear();
         if (Objects.nonNull(polygon)) {
             polygon.getPoints().clear();
@@ -222,12 +222,12 @@ public class ViewController {
         }
     }
 
-    private void updateLineGroups() {
+    private void updateColorLineGroups() {
         if (viewModel.getAllLines().isEmpty()) {
             return;
         }
 
-        clearLines();
+        clearColorLines();
 
         for (Line line : viewModel.getAllLines()) {
             if (line.getStroke().equals(Color.GREEN)) {
@@ -242,13 +242,13 @@ public class ViewController {
         }
     }
 
-    private void clearLines() {
+    private void clearColorLines() {
         greenLines.getChildren().clear();
         redLines.getChildren().clear();
         yellowLines.getChildren().clear();
     }
 
-    private void refreshLine() {
+    private void refreshPolyLine() {
         root.getChildren().clear();
         root.getChildren().add(drawPolyline());
         root.getChildren().addAll(createControlPointsFor(polyline.getPoints()));
@@ -376,7 +376,7 @@ public class ViewController {
             if (isPrimaryOnPaneAndEmptyPolygon(mouseEvent)) {
                 polyline.getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
                 PolygonModified.vertices.add(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
-                refreshLine();
+                refreshPolyLine();
             } else if (isPrimaryOnPaneAndFullPolygonAndScanNotDone(mouseEvent)) {
                 polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
                 updatePolygon();
@@ -399,7 +399,7 @@ public class ViewController {
             Point point = (Point) mouseEvent.getTarget();
             polyline.getPoints().removeAll(point.getCenterX(), point.getCenterY());
             PolygonModified.vertices.removeIf(vertex -> vertex.getXCoordinate() == point.getCenterX() && vertex.getYCoordinate() == point.getCenterY());
-            refreshLine();
+            refreshPolyLine();
         }
 
         if (isSecondaryOnPointAndFullPolygon(mouseEvent)) {
