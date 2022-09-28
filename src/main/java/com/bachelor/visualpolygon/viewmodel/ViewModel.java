@@ -47,10 +47,8 @@ public class ViewModel {
     /**
      * Gives the Polygon and the Camera to the Model
      */
-    public void updatePolygon() {
-        logger.error("Camera in ViewModel " + cameraDetails);
+    public void updateModel() {
         model.updateBuilder(allVertices, cameraDetails);
-
         setLabelText("Model Updated");
     }
 

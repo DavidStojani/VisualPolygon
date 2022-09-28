@@ -49,7 +49,7 @@ public class Builder extends Initializer {
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
         this.vertices = vertices;
-        logger.error("In Total : " + vertices.size() + "Vertices");
+        logger.info("In Total : " + vertices.size() + "Vertices");
         if (!cameraDetails.isEmpty()) {
             camera.setDetails(cameraDetails);
             init();
@@ -75,7 +75,7 @@ public class Builder extends Initializer {
             vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
         }
         clearLines();
-        logger.info("===========NEXT STEP=========");
+        logger.debug("===========NEXT STEP=========");
 
         if (isInsideActive(vertex)) {
             createStepFromBETA(vertex);
@@ -98,7 +98,7 @@ public class Builder extends Initializer {
                 active.add(vertex);
             }
         }
-        logger.info("ACTIVE SIZE: " + active.size());
+        logger.debug("ACTIVE SIZE: " + active.size());
     }
 
     //for every point in active build a parallel to the Step and check if it intersects with the circle with no interruption
@@ -176,7 +176,7 @@ public class Builder extends Initializer {
         }
 
         if (nearestIntersection == null) {
-            logger.warn("No Intersection found!!!");
+            logger.debug("No Intersection found!!!");
             return true;
         }
 
@@ -270,19 +270,23 @@ public class Builder extends Initializer {
         if (tempInvisible.isEmpty()) {
             return;
         }
-        for (int i = 0; i < tempVisible.size(); i++) {
-            Vertex visible = tempVisible.get(i);
-            for (int j = 0; j < tempInvisible.size(); j++) {
-                Vertex invisible = tempInvisible.get(j);
+        for (int i = 0; i < tempInvisible.size(); i++) {
+            boolean flagVisible = false;
+            Vertex invisible = tempInvisible.get(i);
+            for (int j = 0; j < tempVisible.size(); j++) {
+                Vertex visible = tempVisible.get(j);
                 LineSegment visibleToInvisible = new LineSegment(visible, invisible);
                 if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
-                    invisible.setIsVisible(1);
                     addLine(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)), Color.GREEN);
-                    tempVisible.add(invisible);
                     LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
-                    tempInvisible.remove(invisible);
+                    flagVisible = true;
                 }
+            }
+            if (flagVisible) {
+                invisible.setIsVisible(1);
+                tempVisible.add(invisible);
+                tempInvisible.remove(invisible);
             }
         }
     }
@@ -406,10 +410,13 @@ public class Builder extends Initializer {
     public CoordinateList getInstantVisualPolygon() {
         setCount(0);
         extraVertices.clear();
+        double startTime  = System.currentTimeMillis();
         while (!isScanComplete()) {
             createStep(nextVertex);
         }
         createVisPolygon();
+        double endTime = System.currentTimeMillis();
+        logger.info("Time Required: " + (endTime - startTime));
         return visPolygonVertices;
     }
 }

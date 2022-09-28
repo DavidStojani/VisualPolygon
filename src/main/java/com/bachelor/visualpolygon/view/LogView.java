@@ -33,7 +33,7 @@ public class LogView extends ListView<LogRecord> {
 
     private final BooleanProperty showTimestamp = new SimpleBooleanProperty(false);
     private final ObjectProperty<Level> filterLevel = new SimpleObjectProperty<>(null);
-    private final BooleanProperty tail = new SimpleBooleanProperty(false);
+    private final BooleanProperty tail = new SimpleBooleanProperty(true);
     private final BooleanProperty paused = new SimpleBooleanProperty(false);
 
 
@@ -151,5 +151,9 @@ public class LogView extends ListView<LogRecord> {
                 }
             }
         });
+    }
+
+    public void resetLogg() {
+        logItems.clear();
     }
 }

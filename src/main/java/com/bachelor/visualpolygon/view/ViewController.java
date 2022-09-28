@@ -123,8 +123,6 @@ public class ViewController {
         makePaneDraggable();
         pane.setOnMouseClicked(mouseHandlerForPane);
         pane.getChildren().add(mainGroup);
-
-
     }
 
     public void calculateAll() {
@@ -183,11 +181,11 @@ public class ViewController {
         polygon = new PolygonModified();
         updatePolygon();
         viewModel.setLabelText("Polygon Uploaded");
-
     }
 
     public void resetApplication() {
         root.getChildren().clear();
+        logView.resetLogg();
         clearLines();
         polyline.getPoints().clear();
         if (Objects.nonNull(polygon)) {
@@ -215,7 +213,7 @@ public class ViewController {
 
     private void updatePolygon() {
         if (!isPolygonReady()) return;
-        viewModel.updatePolygon();
+        viewModel.updateModel();
         drawPolygon(true);
         if (Objects.isNull(camera)) {
             viewModel.setLabelText("Polygon Updated! Click to add Camera");
@@ -420,14 +418,17 @@ public class ViewController {
                 camera.getScene().setCursor(Cursor.MOVE);
             });
 
-            camera.setOnMouseReleased(mouseEvent1 -> {
-                camera.getScene().setCursor(Cursor.HAND);
-                updatePolygon();
-                calculateAll();
+            camera.setOnMouseClicked(click -> {
+                if (click.getClickCount() == 2) {
+                    camera.getScene().setCursor(Cursor.HAND);
+                    updatePolygon();
+                    calculateAll();
+                }
             });
-            camera.setOnMouseEntered(mouseEvent2 -> {
-                logger.error("SCROLL STOPED WITH DIAMETER ==== " + camera.getRadius());
+            camera.setOnMouseExited(mouseEvent2 -> {
                 if (!mouseEvent2.isPrimaryButtonDown()) {
+                    cameraRequirements.set(2,camera.getR().getValue());
+                    viewModel.updateModel();
                     camera.getScene().setCursor(javafx.scene.Cursor.HAND);
                 }
             });

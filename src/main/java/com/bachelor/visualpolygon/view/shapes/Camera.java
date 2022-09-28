@@ -15,8 +15,8 @@ public class Camera extends Circle {
 
     private static final double SCALE_DELTA = 1.1;
 
-    private static Camera camera;
     private static ObservableList<Double> details;
+    DoubleProperty r;
 
     public Camera(ObservableList<Double> requirements) {
         super(requirements.get(0), requirements.get(1), requirements.get(2));
@@ -24,7 +24,7 @@ public class Camera extends Circle {
         details = requirements;
         DoubleProperty x = new SimpleDoubleProperty(requirements.get(0));
         DoubleProperty y = new SimpleDoubleProperty(requirements.get(1));
-        DoubleProperty r = new SimpleDoubleProperty(requirements.get(2));
+        r = new SimpleDoubleProperty(requirements.get(2));
 
         x.bind(centerXProperty());
         y.bind(centerYProperty());
@@ -42,7 +42,6 @@ public class Camera extends Circle {
     }
 
     private void enableDrag() {
-
 
         this.setOnMouseDragged(mouseEvent -> {
             double newX = mouseEvent.getX();
