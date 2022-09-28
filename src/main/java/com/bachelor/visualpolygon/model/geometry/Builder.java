@@ -48,13 +48,14 @@ public class Builder extends Initializer {
      * Takes Polygon and Camera as Shape Objects from View and updates with those the Geometry Objects
      */
     public void updateBuilder(List<Vertex> vertices, List<Double> cameraDetails) {
-
         this.vertices = vertices;
+        logger.info("In Total : " + vertices.size() + "Vertices");
         if (!cameraDetails.isEmpty()) {
             camera.setDetails(cameraDetails);
             init();
         } else {
             polygon = createGeometryPolygon(vertices);
+            logger.error("No camera:  size of vertices " + vertices.size());
         }
     }
 
@@ -73,33 +74,20 @@ public class Builder extends Initializer {
         if (Objects.isNull(vertex)) {
             vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
         }
-
         clearLines();
-
-        logger.debug("createStep() Was called!");
-        logger.info("===========NEXT STEP=========");
-        logger.info("Stopped on  " + vertex);
+        logger.debug("===========NEXT STEP=========");
 
         if (isInsideActive(vertex)) {
-            logger.info("Vertex was INSIDE Step");
             createStepFromBETA(vertex);
-
         } else {
-            logger.info("Vertex was OUTSIDE Step");
             createStepFromALPHA(vertex);
         }
-        logger.info("++++Setting ACTIVE++++");
         setActive();
-        logger.info("++++Setting tempsV und tempsU++++");
         setTemps();
         doubleCheckInvisible();
-        logger.info("++++Add all Projections of tempVisible in Polygon++++");
         addNewVertices();
-        logger.info("++++Finding next Vertex to create the Step++++");
         nextVertex = findNextVertex();
-        logger.info("==========Step CLOSED ========");
     }
-
 
 
     private void setActive() {
@@ -110,7 +98,7 @@ public class Builder extends Initializer {
                 active.add(vertex);
             }
         }
-        logger.info("ACTIVE filled with " + active.size() + " Vertices");
+        logger.debug("ACTIVE SIZE: " + active.size());
     }
 
     //for every point in active build a parallel to the Step and check if it intersects with the circle with no interruption
@@ -120,34 +108,24 @@ public class Builder extends Initializer {
         for (Vertex vertex : active) {
             LineSegment parallelCameraToVertex = new LineSegment(getParallelLine(vertex).p0, vertex);
             if (parallelCameraToVertex.toGeometry(factory).within(polygon)) {
-                logger.info("Parallel Line from " + vertex + " to Camera is INSIDE Polygon");
                 tempVisible.add(vertex);
                 vertex.setIsVisible(1);
                 addLine(parallelCameraToVertex, Color.GREEN);
-                logger.info(vertex + " added in tempVisible");
-
             } else {
-                logger.info("Parallel Line from " + vertex + " to Camera is OUTSIDE Polygon");
 
                 tempInvisible.add(vertex);
                 if (vertex.getIsVisible() != 1) {
                     vertex.setIsVisible(-1);
                 }
                 addLine(parallelCameraToVertex, Color.RED);
-                logger.info(vertex + " added in tempInvisible");
-
             }
         }
     }
 
     public void addNewVertices() {
-        logger.info("Size of tempVisible == " + tempVisible.size());
         for (Vertex vertex : tempVisible) {
             LineSegment line = getParallelLine(vertex);
-            logger.info("Visiting " + vertex + " and CREATING Line  " + line);
-            if (addNewVertex(vertex, line)) {
-                logger.info("Nothing was added!");
-            }
+            addNewVertex(vertex, line);
         }
     }
 
@@ -198,7 +176,7 @@ public class Builder extends Initializer {
         }
 
         if (nearestIntersection == null) {
-            logger.warn("No Intersection found!!!");
+            logger.debug("No Intersection found!!!");
             return true;
         }
 
@@ -217,9 +195,9 @@ public class Builder extends Initializer {
         if (testPolygon.covers(vertexToNearestIntersection) || testPolygon.covers(vertexToNearestIntersection.reverse())) {
             Vertex v = new Vertex(nearestIntersection);
             v.setIsVisible(2);
+            v.setForVisualPolygon(true);
             vertices.add(v);
             extraVertices.add(v);
-            logger.info("First intersection with Polygon " + v + " was added");
             addLine(toTest, Color.YELLOW);
         }
 
@@ -256,6 +234,7 @@ public class Builder extends Initializer {
         }
 
         Coordinate[] array = CoordinateArrays.removeRepeatedPoints(coordinateList.toCoordinateArray());
+
         visPolygonVertices = new CoordinateList(array);
     }
 
@@ -266,8 +245,6 @@ public class Builder extends Initializer {
             if (endpoint.distance(v) < minDistance) {
                 minDistance = endpoint.distance(v);
                 vertex = v;
-            } else {
-                vertices.remove(v);
             }
         }
         if (Objects.nonNull(vertex)) {
@@ -293,19 +270,23 @@ public class Builder extends Initializer {
         if (tempInvisible.isEmpty()) {
             return;
         }
-        for (int i = 0; i < tempVisible.size(); i++) {
-            Vertex visible = tempVisible.get(i);
-            for (int j = 0; j < tempInvisible.size(); j++) {
-                Vertex invisible = tempInvisible.get(j);
+        for (int i = 0; i < tempInvisible.size(); i++) {
+            boolean flagVisible = false;
+            Vertex invisible = tempInvisible.get(i);
+            for (int j = 0; j < tempVisible.size(); j++) {
+                Vertex visible = tempVisible.get(j);
                 LineSegment visibleToInvisible = new LineSegment(visible, invisible);
                 if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
-                    invisible.setIsVisible(1);
                     addLine(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)), Color.GREEN);
-                    tempVisible.add(invisible);
                     LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
                     addNewVertex(invisible, extentOfVisibleToInvisible);
-                    tempInvisible.remove(invisible);
+                    flagVisible = true;
                 }
+            }
+            if (flagVisible) {
+                invisible.setIsVisible(1);
+                tempVisible.add(invisible);
+                tempInvisible.remove(invisible);
             }
         }
     }
@@ -325,21 +306,22 @@ public class Builder extends Initializer {
                 .sorted(Comparator.comparing(Vertex::getTheta).reversed())
                 .collect(Collectors.toList());
 
+        for (Vertex v : leftToALPHA) {
+            double angle = Angle.angleBetween(alpha.p0,camera.getCenter(),camera.getLeftTangentPoint(v));
+            if (angle < angleToALPHA && angle > 0) {
+                angleToALPHA = angle;
+                tempALFA = v;
+            }
+        }
+
         for (Vertex v : active) {
-            double angle = Angle.angleBetween(v, beta.p0, beta.p1);
+            double angle = Angle.angleBetween(beta.p0,camera.getCenter(), camera.getRightTangentPoint(v));
             if (angle < angleToBETA && angle > EPSILON) {
                 angleToBETA = angle;
                 tempBETA = v;
             }
         }
 
-        for (Vertex v : leftToALPHA) {
-            double angle = Angle.angleBetween(v, alpha.p0, alpha.p1);
-            if (angle < angleToALPHA && angle > 0) {
-                angleToALPHA = angle;
-                tempALFA = v;
-            }
-        }
 
         if (angleToBETA < angleToALPHA) {
             return tempBETA;
@@ -374,6 +356,7 @@ public class Builder extends Initializer {
         this.stepCoordinates = coordinates;
         setAlpha(coordinates.get(3), coordinates.get(2));
         setBeta(coordinates.get(0), coordinates.get(1));
+        addLine(new LineSegment(coordinates.get(3),coordinates.get(0)),Color.RED);
         increaseCount();
     }
 
@@ -393,6 +376,7 @@ public class Builder extends Initializer {
         this.stepCoordinates = coordinates;
         setAlpha(coordinates.get(0), coordinates.get(1));
         setBeta(coordinates.get(3), coordinates.get(2));
+        addLine(new LineSegment(coordinates.get(3),coordinates.get(0)),Color.RED);
         increaseCount();
 
     }
@@ -421,5 +405,18 @@ public class Builder extends Initializer {
             return false;
         }
         return active.contains(vertex);
+    }
+
+    public CoordinateList getInstantVisualPolygon() {
+        setCount(0);
+        extraVertices.clear();
+        double startTime  = System.currentTimeMillis();
+        while (!isScanComplete()) {
+            createStep(nextVertex);
+        }
+        createVisPolygon();
+        double endTime = System.currentTimeMillis();
+        logger.info("Time Required: " + (endTime - startTime));
+        return visPolygonVertices;
     }
 }

@@ -15,6 +15,7 @@ public class Vertex extends Coordinate {
     private double theta;
     private transient DoubleProperty xProperty;
     private transient DoubleProperty yProperty;
+    boolean forVisualPolygon;
 
 
     public Vertex(Coordinate c) {
@@ -27,20 +28,17 @@ public class Vertex extends Coordinate {
         super(xCoordinate,yCoordinate);
         xProperty = new SimpleDoubleProperty(xCoordinate);
         yProperty = new SimpleDoubleProperty(yCoordinate);
-        xProperty.addListener((observableValue, number, t1) -> xProperty.set(t1.doubleValue()));
-        yProperty.addListener((observableValue, number, t1) -> yProperty.set(t1.doubleValue()));
     }
-
 
     public double getXCoordinate() {
         return xProperty.doubleValue();
     }
 
-    public boolean equalCoordinate(Coordinate coordinate) {
-        return this.getXCoordinate() == coordinate.getX() && this.getYCoordinate() == coordinate.getY();
-    }
     public double getYCoordinate() {
         return yProperty.doubleValue();
+    }
+    public boolean equalCoordinate(Coordinate coordinate) {
+        return this.getXCoordinate() == coordinate.getX() && this.getYCoordinate() == coordinate.getY();
     }
 
     @Override

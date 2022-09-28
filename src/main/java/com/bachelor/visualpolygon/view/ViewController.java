@@ -16,27 +16,33 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.scene.Cursor;
 import javafx.scene.Group;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.scene.shape.StrokeLineCap;
+import lombok.Getter;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class ViewController {
     @FXML
     public Button playAllButton;
+    public Button visPolyButton;
     @FXML
     BorderPane border;
     @FXML
-    public AnchorPane pane;
+    public Pane pane;
     @FXML
     private Label statusText;
     @FXML
@@ -62,27 +68,32 @@ public class ViewController {
     @FXML
     private CheckBox yellowBox;
 
+    @Getter
+    Group mainGroup = new Group();
+    private final Group root = new Group();
     private final Group redLines = new Group();
     private final Group greenLines = new Group();
     private final Group yellowLines = new Group();
+
+    private final Polyline polyline;
+    private PolygonModified polygon;
+    private Polygon visPoly;
+    private Camera camera;
+    private final ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
+    private final ListProperty<Vertex> listPropertyForVertex;
+    private final ListProperty<Double> listPropertyForCamera;
 
     private ViewModel viewModel;
 
     private static final Logger logger = Logger.getLogger();
     private final LogView logView = new LogView(logger);
 
-    private final Group root = new Group();
     private EventHandler<MouseEvent> mouseHandlerForPane;
 
-    private final ObservableList<Double> cameraRequirements = FXCollections.observableArrayList();
-    private PolygonModified polygon;
-    private Polygon visPoly;
-    private final Polyline polyline;
-    private Camera camera;
-    private final ListProperty<Vertex> listPropertyForVertex;
-    private final ListProperty<Double> listPropertyForCamera;
-    private boolean isScanDone = false;
+    private boolean isScanStartedOrDone = false;
     AnimationTimer scannerAnimator;
+    private static final double SCALE_DELTA = 1.1;
+
 
     public ViewController() {
         logger.setContext("Controller: ");
@@ -108,20 +119,27 @@ public class ViewController {
         initBindings(viewModel);
         initUploadList();
         initLogView();
+        mainGroup.getChildren().addAll(root, redLines, greenLines, yellowLines);
+        makePaneDraggable();
         pane.setOnMouseClicked(mouseHandlerForPane);
-        pane.getChildren().add(root);
-        pane.getChildren().addAll(redLines, greenLines, yellowLines);
+        pane.getChildren().add(mainGroup);
+    }
+
+    public void calculateAll() {
+        visPoly = null;
+        visPoly = viewModel.getInstantVisPoly();
+        addVisiblePolygonToView();
     }
 
     public void playAll() {
 
-        if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Paused")) {
+        if (playAllButton.getText().equals("Play All") || playAllButton.getText().equals("Continue") || playAllButton.getText().equals("Restart Scan")) {
             scannerAnimator.start();
-            playAllButton.setText("Scanning");
+            playAllButton.setText("Pause");
             viewModel.setLabelText("Scanning Polygon");
-        } else if (playAllButton.getText().equals("Scanning")) {
+        } else if (playAllButton.getText().equals("Pause")) {
             scannerAnimator.stop();
-            playAllButton.setText("Paused");
+            playAllButton.setText("Continue");
             viewModel.setLabelText("Scanning Paused");
         }
     }
@@ -132,8 +150,8 @@ public class ViewController {
             viewModel.setLabelText("Camera not yet in Polygon!");
             return;
         }
+        isScanStartedOrDone = true;
         if (viewModel.isScanDone()) {
-            isScanDone = true;
             visPoly = viewModel.getVisPoly();
             addVisiblePolygonToView();
             playAllButton.setText("Restart Scan");
@@ -142,8 +160,10 @@ public class ViewController {
         }
         Polygon stepPoly = viewModel.getStepPolygon();
         if (stepPoly != null) {
-            refreshView();
-            updateLineGroups();
+            drawPolygon(false);
+            root.getChildren().add(camera);
+
+            updateColorLineGroups();
             drawStepPolygon(stepPoly);
         }
     }
@@ -160,44 +180,54 @@ public class ViewController {
         viewModel.uploadFile(file);
         polygon = new PolygonModified();
         updatePolygon();
-        refreshView();
         viewModel.setLabelText("Polygon Uploaded");
     }
 
     public void resetApplication() {
         root.getChildren().clear();
+        logView.resetLogg();
+        clearColorLines();
         polyline.getPoints().clear();
         if (Objects.nonNull(polygon)) {
             polygon.getPoints().clear();
-            polygon.getVertices().clear();
+            polygon.getPoints().clear();
+            PolygonModified.vertices.clear();
         }
         camera = null;
         visPoly = null;
         polygon = null;
+        scannerAnimator.stop();
         listPropertyForVertex.clear();
         cameraRequirements.clear();
         viewModel.reset();
         playAllButton.setText("Play All");
+        resetMainGroup();
+    }
+
+    private void resetMainGroup() {
+        mainGroup.setScaleX(1.0);
+        mainGroup.setScaleY(1.0);
+        mainGroup.setTranslateX(0.0);
+        mainGroup.setTranslateY(0.0);
     }
 
     private void updatePolygon() {
-        logger.info("POLYGON UPDATED");
         if (!isPolygonReady()) return;
+        viewModel.updateModel();
+        drawPolygon(true);
         if (Objects.isNull(camera)) {
             viewModel.setLabelText("Polygon Updated! Click to add Camera");
+        } else {
+            root.getChildren().add(camera);
         }
-        viewModel.updatePolygon();
-        refreshView();
     }
 
-    private void updateLineGroups() {
+    private void updateColorLineGroups() {
         if (viewModel.getAllLines().isEmpty()) {
             return;
         }
 
-        greenLines.getChildren().clear();
-        redLines.getChildren().clear();
-        yellowLines.getChildren().clear();
+        clearColorLines();
 
         for (Line line : viewModel.getAllLines()) {
             if (line.getStroke().equals(Color.GREEN)) {
@@ -212,24 +242,23 @@ public class ViewController {
         }
     }
 
-    private void refreshLine() {
+    private void clearColorLines() {
+        greenLines.getChildren().clear();
+        redLines.getChildren().clear();
+        yellowLines.getChildren().clear();
+    }
+
+    private void refreshPolyLine() {
         root.getChildren().clear();
         root.getChildren().add(drawPolyline());
         root.getChildren().addAll(createControlPointsFor(polyline.getPoints()));
     }
 
-    private void refreshView() {
-        drawPolygon(true);
-        if (Objects.nonNull(camera)) {
-            root.getChildren().add(camera);
-        }
-    }
-
     private void addVisiblePolygonToView() {
         root.getChildren().clear();
         drawPolygon(false);
-        root.getChildren().add(camera);
         drawVisPolygon(visPoly);
+        root.getChildren().add(camera);
         root.getChildren().addAll(visPolyPoints(visPoly.getPoints()));
     }
 
@@ -252,7 +281,10 @@ public class ViewController {
     private void drawPolygon(boolean movable) {
         root.getChildren().clear();
         root.getChildren().add(polygon.draw());
-        root.getChildren().addAll(polygon.createModeratePoints(movable));
+        ObservableList<Point> points = polygon.createModeratePoints(movable);
+        points.forEach(point -> point.setOnMouseClicked(mouseEvent ->
+                viewModel.setLabelText("VERTEX { " + point.getCenterX() + " ; " + point.getCenterY() + " }")));
+        root.getChildren().addAll(points);
     }
 
     private Polyline drawPolyline() {
@@ -283,14 +315,23 @@ public class ViewController {
             xProperty.addListener((ov, oldX, x) -> {
                 coordinates.set(idx, (double) x);
                 PolygonModified.vertices.get(idx / 2).getXProperty().set(x.doubleValue());
+                PolygonModified.vertices.get(idx / 2).setX(x.doubleValue());
             });
             yProperty.addListener((ov, oldY, y) -> {
                 coordinates.set(idx + 1, (double) y);
                 PolygonModified.vertices.get(idx / 2).getYProperty().set(y.doubleValue());
+                PolygonModified.vertices.get(idx / 2).setY(y.doubleValue());
             });
             points.add(new Point(xProperty, yProperty, true));
         }
         return points;
+    }
+
+    void makePaneDraggable() {
+        SceneGestures sceneGestures = new SceneGestures(mainGroup);
+        mainGroup.addEventFilter(MouseEvent.MOUSE_PRESSED, sceneGestures.getOnMousePressedEventHandler());
+        mainGroup.addEventFilter(MouseEvent.MOUSE_DRAGGED, sceneGestures.getOnMouseDraggedEventHandler());
+        mainGroup.setOnScroll(this::handleScroll);
     }
 
     private void initBindings(ViewModel viewModel) {
@@ -298,7 +339,7 @@ public class ViewController {
         redLines.visibleProperty().bindBidirectional(redBox.selectedProperty());
         greenLines.visibleProperty().bindBidirectional(greenBox.selectedProperty());
         yellowLines.visibleProperty().bindBidirectional(yellowBox.selectedProperty());
-        listPropertyForVertex.bindContentBidirectional(viewModel.getVertices());
+        listPropertyForVertex.bindContentBidirectional(viewModel.getAllVertices());
         listPropertyForCamera.bindContentBidirectional(viewModel.getCameraDetails());
     }
 
@@ -335,7 +376,7 @@ public class ViewController {
             if (isPrimaryOnPaneAndEmptyPolygon(mouseEvent)) {
                 polyline.getPoints().addAll(mouseEvent.getX(), mouseEvent.getY());
                 PolygonModified.vertices.add(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
-                refreshLine();
+                refreshPolyLine();
             } else if (isPrimaryOnPaneAndFullPolygonAndScanNotDone(mouseEvent)) {
                 polygon.addVertexAndPoint(new Vertex(mouseEvent.getX(), mouseEvent.getY()));
                 updatePolygon();
@@ -345,8 +386,6 @@ public class ViewController {
                 Point point = (Point) mouseEvent.getTarget();
                 if (point.getCenterX() == polyline.getPoints().get(0) && point.getCenterY() == polyline.getPoints().get(1)) {
                     polygon = new PolygonModified();
-                    polygon.scaleXProperty().bind(pane.scaleXProperty());
-                    point.scaleYProperty().bind(pane.scaleYProperty());
                     updatePolygon();
                 }
             }
@@ -360,7 +399,7 @@ public class ViewController {
             Point point = (Point) mouseEvent.getTarget();
             polyline.getPoints().removeAll(point.getCenterX(), point.getCenterY());
             PolygonModified.vertices.removeIf(vertex -> vertex.getXCoordinate() == point.getCenterX() && vertex.getYCoordinate() == point.getCenterY());
-            refreshLine();
+            refreshPolyLine();
         }
 
         if (isSecondaryOnPointAndFullPolygon(mouseEvent)) {
@@ -370,11 +409,45 @@ public class ViewController {
         }
 
         if (mouseEvent.getTarget() instanceof Polygon && Objects.isNull(camera)) {
-            cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 30.0);
-            camera = Camera.createCamera(cameraRequirements);
-            camera.setOnMouseReleased(mouseEvent1 -> updatePolygon());
+            cameraRequirements.addAll(mouseEvent.getX(), mouseEvent.getY(), 40.0);
+            camera = new Camera(cameraRequirements);
+            camera.setOnMousePressed(mouseEvent3 -> {
+                resetVertices();
+                updatePolygon();
+                isScanStartedOrDone = false;
+                camera.getScene().setCursor(Cursor.MOVE);
+            });
+
+            camera.setOnMouseClicked(click -> {
+                if (click.getClickCount() == 2) {
+                    camera.getScene().setCursor(Cursor.HAND);
+                    updatePolygon();
+                    calculateAll();
+                }
+            });
+            camera.setOnMouseExited(mouseEvent2 -> {
+                if (!mouseEvent2.isPrimaryButtonDown()) {
+                    cameraRequirements.set(2,camera.getR().getValue());
+                    viewModel.updateModel();
+                    camera.getScene().setCursor(javafx.scene.Cursor.HAND);
+                }
+            });
             updatePolygon();
         }
+    }
+
+    private void resetVertices() {
+        List<Vertex> temp = new ArrayList<>();
+        for (int i = 0; i < PolygonModified.vertices.size(); i++) {
+            Vertex vertex = PolygonModified.vertices.get(i);
+            logger.debug("IS For Visual Polygon ? " + vertex.isForVisualPolygon());
+            if (!vertex.isForVisualPolygon()) {
+                vertex.setIsVisible(0);
+                temp.add(vertex);
+            }
+        }
+        PolygonModified.vertices.clear();
+        PolygonModified.vertices.addAll(temp);
     }
 
     private boolean isPolygonReady() {
@@ -390,7 +463,7 @@ public class ViewController {
     }
 
     private boolean isPrimaryOnPaneAndEmptyPolygon(MouseEvent mouseEvent) {
-        return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof AnchorPane);
+        return (isPrimaryAndEmptyPolygon(mouseEvent) && mouseEvent.getTarget() instanceof Pane);
     }
 
     private boolean isPrimaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {
@@ -398,7 +471,7 @@ public class ViewController {
     }
 
     private boolean isPrimaryOnPaneAndFullPolygonAndScanNotDone(MouseEvent mouseEvent) {
-        return (!isScanDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof AnchorPane);
+        return (!isScanStartedOrDone && mouseEvent.getButton().equals(MouseButton.PRIMARY) && mouseEvent.getTarget() instanceof Pane);
     }
 
     private boolean isSecondaryOnPointAndEmptyPolygon(MouseEvent mouseEvent) {
@@ -407,6 +480,23 @@ public class ViewController {
 
     private boolean isSecondaryOnPointAndFullPolygon(MouseEvent mouseEvent) {
         return mouseEvent.getButton().equals(MouseButton.SECONDARY) && Objects.nonNull(polygon) && mouseEvent.getTarget() instanceof Point;
+    }
+
+    private void handleScroll(ScrollEvent scrollEvent) {
+        scrollEvent.consume();
+
+        if (scrollEvent.getDeltaY() == 0) {
+            return;
+        }
+
+        double scaleFactor =
+                (scrollEvent.getDeltaY() > 0)
+                        ? SCALE_DELTA
+                        : 1 / SCALE_DELTA;
+
+        mainGroup.setScaleX(mainGroup.getScaleX() * scaleFactor);
+        mainGroup.setScaleY(mainGroup.getScaleY() * scaleFactor);
+
     }
 }
 

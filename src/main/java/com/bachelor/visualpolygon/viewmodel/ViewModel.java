@@ -1,5 +1,6 @@
 package com.bachelor.visualpolygon.viewmodel;
 
+import com.bachelor.visualpolygon.info.Logger;
 import com.bachelor.visualpolygon.model.DataModel;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.SimpleStringProperty;
@@ -32,11 +33,11 @@ public class ViewModel {
 
     private DataModel model;
     private StringProperty labelText = new SimpleStringProperty("Welcome");
-    private ObservableList<Vertex> vertices = FXCollections.observableArrayList();
+    private ObservableList<Vertex> allVertices = FXCollections.observableArrayList();
     private ObservableList<Double> cameraDetails = FXCollections.observableArrayList();
     private WKTWriter wktWriter = new WKTWriter(3);
     private ObservableList<File> fileObservableList = FXCollections.observableArrayList();
-
+    private final Logger logger = Logger.getLogger();
 
     public ViewModel(DataModel model) {
         this.model = model;
@@ -46,9 +47,8 @@ public class ViewModel {
     /**
      * Gives the Polygon and the Camera to the Model
      */
-    public void updatePolygon() {
-        model.updateBuilder(vertices, cameraDetails);
-
+    public void updateModel() {
+        model.updateBuilder(allVertices, cameraDetails);
         setLabelText("Model Updated");
     }
 
@@ -136,7 +136,7 @@ public class ViewModel {
             Coordinate[] coordinates = p.getCoordinates();
             for (int i = 0; i < coordinates.length - 1; i++) {
                 Coordinate coordinate = coordinates[i];
-                vertices.add(new Vertex(coordinate));
+                allVertices.add(new Vertex(coordinate));
             }
         } catch (IOException | ParseException e) {
             throw new RuntimeException(e);
@@ -151,4 +151,15 @@ public class ViewModel {
         }
         return visPoly;
     }
+
+    public Polygon getInstantVisPoly() {
+        Polygon visPoly = new Polygon();
+        for (Coordinate coordinate : model.getInstantVisualPolygon()) {
+            visPoly.getPoints().add(coordinate.getX());
+            visPoly.getPoints().add(coordinate.getY());
+        }
+        return visPoly;
+    }
+
+
 }

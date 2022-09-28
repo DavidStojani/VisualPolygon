@@ -26,4 +26,7 @@ public interface DataModel {
     void reset();
 
     CoordinateList getVisualPolygon();
+
+    CoordinateList getInstantVisualPolygon();
+
 }

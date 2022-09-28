@@ -32,8 +32,8 @@ public class DataModelManager implements DataModel {
 
     @Override
     public void updateBuilder(List<Vertex> vertices, List<Double> camera) {
-
         builder.updateBuilder(vertices, camera);
+        builder.setCount(0);
     }
 
     @Override
@@ -81,4 +81,10 @@ public class DataModelManager implements DataModel {
     public CoordinateList getVisualPolygon() {
         return builder.getVisPolygonVertices();
     }
+
+    @Override
+    public CoordinateList getInstantVisualPolygon() {
+        return builder.getInstantVisualPolygon();
+    }
+
 }
