@@ -87,12 +87,13 @@ public class Builder extends Initializer {
         doubleCheckInvisible();
         addNewVertices();
         nextVertex = findNextVertex();
+
     }
 
 
     private void setActive() {
         active = new ArrayList<>();
-        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.1);
+        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.0);
         for (Vertex vertex : polarSortedVertices) {
             if (pointLocator.getLocation(vertex) != 2) {
                 active.add(vertex);
@@ -307,7 +308,7 @@ public class Builder extends Initializer {
                 .collect(Collectors.toList());
 
         for (Vertex v : leftToALPHA) {
-            double angle = Angle.angleBetween(alpha.p0,camera.getCenter(),camera.getLeftTangentPoint(v));
+            double angle = Angle.angleBetween(alpha.p0, camera.getCenter(), camera.getLeftTangentPoint(v));
             if (angle < angleToALPHA && angle > 0) {
                 angleToALPHA = angle;
                 tempALFA = v;
@@ -315,7 +316,7 @@ public class Builder extends Initializer {
         }
 
         for (Vertex v : active) {
-            double angle = Angle.angleBetween(beta.p0,camera.getCenter(), camera.getRightTangentPoint(v));
+            double angle = Angle.angleBetween(beta.p0, camera.getCenter(), camera.getRightTangentPoint(v));
             if (angle < angleToBETA && angle > EPSILON) {
                 angleToBETA = angle;
                 tempBETA = v;
@@ -356,7 +357,7 @@ public class Builder extends Initializer {
         this.stepCoordinates = coordinates;
         setAlpha(coordinates.get(3), coordinates.get(2));
         setBeta(coordinates.get(0), coordinates.get(1));
-        addLine(new LineSegment(coordinates.get(3),coordinates.get(0)),Color.RED);
+        addLine(new LineSegment(coordinates.get(3), coordinates.get(0)), Color.RED);
         increaseCount();
     }
 
@@ -376,7 +377,7 @@ public class Builder extends Initializer {
         this.stepCoordinates = coordinates;
         setAlpha(coordinates.get(0), coordinates.get(1));
         setBeta(coordinates.get(3), coordinates.get(2));
-        addLine(new LineSegment(coordinates.get(3),coordinates.get(0)),Color.RED);
+        addLine(new LineSegment(coordinates.get(3), coordinates.get(0)), Color.RED);
         increaseCount();
 
     }
@@ -410,7 +411,7 @@ public class Builder extends Initializer {
     public CoordinateList getInstantVisualPolygon() {
         setCount(0);
         extraVertices.clear();
-        double startTime  = System.currentTimeMillis();
+        double startTime = System.currentTimeMillis();
         while (!isScanComplete()) {
             createStep(nextVertex);
         }
