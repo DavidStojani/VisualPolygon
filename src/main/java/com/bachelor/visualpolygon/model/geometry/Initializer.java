@@ -11,8 +11,8 @@ import org.locationtech.jts.geom.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**General methods to be used from the Builder*/
 @Getter
-
 public abstract class Initializer {
     static final PrecisionModel precision = new PrecisionModel(100);
     static final GeometryFactory factory = new GeometryFactory();

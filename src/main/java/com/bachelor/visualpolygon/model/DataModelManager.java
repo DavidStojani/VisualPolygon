@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Delegates the implementation of the methods defined in the Interface
+ */
 @Getter
 public class DataModelManager implements DataModel {
 
@@ -56,7 +59,7 @@ public class DataModelManager implements DataModel {
         if (builder.getVertices().isEmpty()) {
             return Collections.emptyList();
         }
-        builder.createStep(builder.getNextVertex());
+        builder.createNextStep(builder.getNextVertex());
         return builder.getStepCoordinates();
     }
 

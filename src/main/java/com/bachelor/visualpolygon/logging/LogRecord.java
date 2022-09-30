@@ -1,4 +1,4 @@
-package com.bachelor.visualpolygon.info;
+package com.bachelor.visualpolygon.logging;
 
 import java.util.Date;
 

@@ -1,9 +1,9 @@
 
 package com.bachelor.visualpolygon.view;
 
-import com.bachelor.visualpolygon.info.Level;
-import com.bachelor.visualpolygon.info.LogRecord;
-import com.bachelor.visualpolygon.info.Logger;
+import com.bachelor.visualpolygon.logging.Level;
+import com.bachelor.visualpolygon.logging.LogRecord;
+import com.bachelor.visualpolygon.logging.Logger;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

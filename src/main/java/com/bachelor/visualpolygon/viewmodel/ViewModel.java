@@ -1,6 +1,6 @@
 package com.bachelor.visualpolygon.viewmodel;
 
-import com.bachelor.visualpolygon.info.Logger;
+import com.bachelor.visualpolygon.logging.Logger;
 import com.bachelor.visualpolygon.model.DataModel;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import javafx.beans.property.SimpleStringProperty;
@@ -27,6 +27,8 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Objects;
 
+
+/**Takes the changes from the ViewController and sends it to the Model using its Interface*/
 @Getter
 @Setter
 public class ViewModel {

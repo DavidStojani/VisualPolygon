@@ -1,7 +1,7 @@
 package com.bachelor.visualpolygon.model.geometry;
 
 
-import com.bachelor.visualpolygon.info.Logger;
+import com.bachelor.visualpolygon.logging.Logger;
 import javafx.scene.paint.Color;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -60,7 +60,7 @@ public class Builder extends Initializer {
     }
 
     /**
-     * After every update from View initializes the vertices
+     * After every update from View initializes the vertices and the Geometry
      */
     public void init() {
         logger.setContext("Builder: ");
@@ -70,7 +70,11 @@ public class Builder extends Initializer {
     }
 
 
-    public void createStep(Vertex vertex) {
+    /**
+     * Creates the Step for the next Vertex
+     * @param vertex is where the Stripe will holt again
+     * Checks if the vertex is inside the current Step. If so the next Step will be build using Beta, otherwise using Alpha*/
+    public void createNextStep(Vertex vertex) {
         if (Objects.isNull(vertex)) {
             vertex = polarSortedVertices.stream().max(Comparator.comparing(Vertex::getTheta)).orElseThrow();
         }
@@ -90,10 +94,11 @@ public class Builder extends Initializer {
 
     }
 
-
+    /**
+     * The Vertices inside the Stripe will be preserved in active-List*/
     private void setActive() {
         active = new ArrayList<>();
-        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.0);
+        FuzzyPointLocator pointLocator = new FuzzyPointLocator(stepPolygon, 0.001);
         for (Vertex vertex : polarSortedVertices) {
             if (pointLocator.getLocation(vertex) != 2) {
                 active.add(vertex);
@@ -102,7 +107,10 @@ public class Builder extends Initializer {
         logger.debug("ACTIVE SIZE: " + active.size());
     }
 
+
     //for every point in active build a parallel to the Step and check if it intersects with the circle with no interruption
+    /**
+     * Determines which of the Vertices in active are visible*/
     private void setTemps() {
         tempInvisible = new ArrayList<>();
         tempVisible = new ArrayList<>();
@@ -123,6 +131,32 @@ public class Builder extends Initializer {
         }
     }
 
+    /**Uses the Edges of the Visibility Graph to make sure a Vertex is really invisible*/
+    private void doubleCheckInvisible() {
+        if (tempInvisible.isEmpty()) {
+            return;
+        }
+        for (int i = 0; i < tempInvisible.size(); i++) {
+            boolean flagVisible = false;
+            Vertex invisible = tempInvisible.get(i);
+            for (int j = 0; j < tempVisible.size(); j++) {
+                Vertex visible = tempVisible.get(j);
+                LineSegment visibleToInvisible = new LineSegment(visible, invisible);
+                if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
+                    addLine(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)), Color.GREEN);
+                    LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
+                    addNewVertex(invisible, extentOfVisibleToInvisible);
+                    flagVisible = true;
+                }
+            }
+            if (flagVisible) {
+                invisible.setIsVisible(1);
+                tempVisible.add(invisible);
+                tempInvisible.remove(invisible);
+            }
+        }
+    }
+
     public void addNewVertices() {
         for (Vertex vertex : tempVisible) {
             LineSegment line = getParallelLine(vertex);
@@ -130,23 +164,7 @@ public class Builder extends Initializer {
         }
     }
 
-    private Polygon addIntersectionsToTestPolygon(LineSegment line) throws Exception {
-
-        Geometry pol = polygon.copy();
-        Geometry union = OverlayNGRobust.overlay(pol, line.toGeometry(factory), 2);
-        GeometryCollectionIterator iterator = new GeometryCollectionIterator(union);
-        while (iterator.hasNext()) {
-            Geometry g = (Geometry) iterator.next();
-            if (g.getGeometryType().equals("Polygon")) {
-                for (Coordinate c : g.getCoordinates()) {
-                    precision.makePrecise(c);
-                }
-                return (Polygon) g;
-            }
-        }
-        throw new Exception("POLYGON NOT FOUND");
-    }
-
+    /**Finds the first Intersection of the Segment with the Polygon and saves it*/
     private boolean addNewVertex(Vertex vertex, LineSegment line) {
         Polygon testPolygon;
         try {
@@ -205,93 +223,8 @@ public class Builder extends Initializer {
         return false;
     }
 
-    public void createVisPolygon() {
-        List<Vertex> verticesOnAB;
-        coordinateList.clear();
-
-        for (int i = 0; i < polygon.getCoordinates().length - 1; i++) {
-            Vertex a = (Vertex) polygon.getCoordinates()[i];
-            Vertex b = (Vertex) polygon.getCoordinates()[i + 1];
-            verticesOnAB = findVerticesOnAB(a, b);
-
-            if (a.getIsVisible() == 1 && b.getIsVisible() == 1) {
-                coordinateList.add(a);
-                coordinateList.add(b);
-            }
-
-            if (a.getIsVisible() == 1 && b.getIsVisible() == -1) {
-                coordinateList.add(a);
-                addClosestToEndpoint(verticesOnAB, b);
-            }
-
-            if (a.getIsVisible() == -1 && b.getIsVisible() == 1) {
-                addClosestToEndpoint(verticesOnAB, a);
-                coordinateList.add(b);
-            }
-            if (a.getIsVisible() == -1 && b.getIsVisible() == -1) {
-                addClosestToEndpoint(verticesOnAB, a);
-                addClosestToEndpoint(verticesOnAB, b);
-            }
-        }
-
-        Coordinate[] array = CoordinateArrays.removeRepeatedPoints(coordinateList.toCoordinateArray());
-
-        visPolygonVertices = new CoordinateList(array);
-    }
-
-    private void addClosestToEndpoint(List<Vertex> verticesOnAB, Vertex endpoint) {
-        Vertex vertex = null;
-        double minDistance = 999999;
-        for (Vertex v : verticesOnAB) {
-            if (endpoint.distance(v) < minDistance) {
-                minDistance = endpoint.distance(v);
-                vertex = v;
-            }
-        }
-        if (Objects.nonNull(vertex)) {
-            coordinateList.add(vertex);
-            verticesOnAB.remove(vertex);
-        }
-    }
-
-    private List<Vertex> findVerticesOnAB(Vertex a, Vertex b) {
-
-        List<Vertex> verticesOnAB = new ArrayList<>();
-        LineSegment segmentAB = new LineSegment(a, b);
-        for (Vertex vertex : extraVertices) {
-
-            if (segmentAB.distancePerpendicular(vertex) <= 0.009) {
-                verticesOnAB.add(vertex);
-            }
-        }
-        return verticesOnAB;
-    }
-
-    private void doubleCheckInvisible() {
-        if (tempInvisible.isEmpty()) {
-            return;
-        }
-        for (int i = 0; i < tempInvisible.size(); i++) {
-            boolean flagVisible = false;
-            Vertex invisible = tempInvisible.get(i);
-            for (int j = 0; j < tempVisible.size(); j++) {
-                Vertex visible = tempVisible.get(j);
-                LineSegment visibleToInvisible = new LineSegment(visible, invisible);
-                if (polygon.covers(visibleToInvisible.toGeometry(factory)) && isInCollisionWithCamera(visibleToInvisible)) {
-                    addLine(new LineSegment(invisible, getIntersectionPointWithCamera(visibleToInvisible)), Color.GREEN);
-                    LineSegment extentOfVisibleToInvisible = new LineSegment(visible, getExtentCoordinate(invisible, visible));
-                    addNewVertex(invisible, extentOfVisibleToInvisible);
-                    flagVisible = true;
-                }
-            }
-            if (flagVisible) {
-                invisible.setIsVisible(1);
-                tempVisible.add(invisible);
-                tempInvisible.remove(invisible);
-            }
-        }
-    }
-
+    /**
+     * Determines the next Vertex that the Stripe will hold comparing the angle it takes to rotate and choosing the smalles one*/
     private Vertex findNextVertex() {
         if (active.isEmpty()) {
             throw new RuntimeException("active  IS EMPTY");
@@ -328,6 +261,87 @@ public class Builder extends Initializer {
             return tempBETA;
         }
         return tempALFA;
+    }
+
+
+    /**Iterates the Edges of the Polygon and creates the Visibility-Polygon*/
+    public void createVisPolygon() {
+        List<Vertex> verticesOnAB;
+        coordinateList.clear();
+
+        for (int i = 0; i < polygon.getCoordinates().length - 1; i++) {
+            Vertex a = (Vertex) polygon.getCoordinates()[i];
+            Vertex b = (Vertex) polygon.getCoordinates()[i + 1];
+            verticesOnAB = findVerticesOnAB(a, b);
+
+            if (a.getIsVisible() == 1 && b.getIsVisible() == 1) {
+                coordinateList.add(a);
+                coordinateList.add(b);
+            }
+
+            if (a.getIsVisible() == 1 && b.getIsVisible() == -1) {
+                coordinateList.add(a);
+                addClosestToEndpoint(verticesOnAB, b);
+            }
+
+            if (a.getIsVisible() == -1 && b.getIsVisible() == 1) {
+                addClosestToEndpoint(verticesOnAB, a);
+                coordinateList.add(b);
+            }
+            if (a.getIsVisible() == -1 && b.getIsVisible() == -1) {
+                addClosestToEndpoint(verticesOnAB, a);
+                addClosestToEndpoint(verticesOnAB, b);
+            }
+        }
+
+        Coordinate[] array = CoordinateArrays.removeRepeatedPoints(coordinateList.toCoordinateArray());
+
+        visPolygonVertices = new CoordinateList(array);
+    }
+
+    private Polygon addIntersectionsToTestPolygon(LineSegment line) throws Exception {
+
+        Geometry pol = polygon.copy();
+        Geometry union = OverlayNGRobust.overlay(pol, line.toGeometry(factory), 2);
+        GeometryCollectionIterator iterator = new GeometryCollectionIterator(union);
+        while (iterator.hasNext()) {
+            Geometry g = (Geometry) iterator.next();
+            if (g.getGeometryType().equals("Polygon")) {
+                for (Coordinate c : g.getCoordinates()) {
+                    precision.makePrecise(c);
+                }
+                return (Polygon) g;
+            }
+        }
+        throw new Exception("POLYGON NOT FOUND");
+    }
+
+    private void addClosestToEndpoint(List<Vertex> verticesOnAB, Vertex endpoint) {
+        Vertex vertex = null;
+        double minDistance = 999999;
+        for (Vertex v : verticesOnAB) {
+            if (endpoint.distance(v) < minDistance) {
+                minDistance = endpoint.distance(v);
+                vertex = v;
+            }
+        }
+        if (Objects.nonNull(vertex)) {
+            coordinateList.add(vertex);
+            verticesOnAB.remove(vertex);
+        }
+    }
+
+    private List<Vertex> findVerticesOnAB(Vertex a, Vertex b) {
+
+        List<Vertex> verticesOnAB = new ArrayList<>();
+        LineSegment segmentAB = new LineSegment(a, b);
+        for (Vertex vertex : extraVertices) {
+
+            if (segmentAB.distancePerpendicular(vertex) <= 0.009) {
+                verticesOnAB.add(vertex);
+            }
+        }
+        return verticesOnAB;
     }
 
     private LineSegment getParallelLine(Coordinate point) {
@@ -413,7 +427,7 @@ public class Builder extends Initializer {
         extraVertices.clear();
         double startTime = System.currentTimeMillis();
         while (!isScanComplete()) {
-            createStep(nextVertex);
+            createNextStep(nextVertex);
         }
         createVisPolygon();
         double endTime = System.currentTimeMillis();

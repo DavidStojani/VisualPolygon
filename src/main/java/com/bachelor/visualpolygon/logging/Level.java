@@ -1,3 +1,3 @@
 
-package com.bachelor.visualpolygon.info;
+package com.bachelor.visualpolygon.logging;
 public enum Level { DEBUG, INFO, WARN, ERROR }

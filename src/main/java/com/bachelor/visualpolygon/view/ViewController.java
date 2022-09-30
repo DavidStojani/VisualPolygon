@@ -1,7 +1,7 @@
 package com.bachelor.visualpolygon.view;
 
-import com.bachelor.visualpolygon.info.Level;
-import com.bachelor.visualpolygon.info.Logger;
+import com.bachelor.visualpolygon.logging.Level;
+import com.bachelor.visualpolygon.logging.Logger;
 import com.bachelor.visualpolygon.model.geometry.Vertex;
 import com.bachelor.visualpolygon.view.shapes.Camera;
 import com.bachelor.visualpolygon.view.shapes.Point;
@@ -113,7 +113,7 @@ public class ViewController {
             }
         };
     }
-
+//Main INITIALISATION
     public void init(ViewModel viewModel) {
         this.viewModel = viewModel;
         initBindings(viewModel);
@@ -125,6 +125,7 @@ public class ViewController {
         pane.getChildren().add(mainGroup);
     }
 
+    //BUTTONS
     public void calculateAll() {
         visPoly = null;
         visPoly = viewModel.getInstantVisPoly();
@@ -204,13 +205,8 @@ public class ViewController {
         resetMainGroup();
     }
 
-    private void resetMainGroup() {
-        mainGroup.setScaleX(1.0);
-        mainGroup.setScaleY(1.0);
-        mainGroup.setTranslateX(0.0);
-        mainGroup.setTranslateY(0.0);
-    }
 
+    // CREATE and UPDATE
     private void updatePolygon() {
         if (!isPolygonReady()) return;
         viewModel.updateModel();
@@ -327,13 +323,16 @@ public class ViewController {
         return points;
     }
 
+
+
+    //INITIALISATIONS and RESETS
+
     void makePaneDraggable() {
         SceneGestures sceneGestures = new SceneGestures(mainGroup);
         mainGroup.addEventFilter(MouseEvent.MOUSE_PRESSED, sceneGestures.getOnMousePressedEventHandler());
         mainGroup.addEventFilter(MouseEvent.MOUSE_DRAGGED, sceneGestures.getOnMouseDraggedEventHandler());
         mainGroup.setOnScroll(this::handleScroll);
     }
-
     private void initBindings(ViewModel viewModel) {
         statusText.textProperty().bindBidirectional(viewModel.labelTextProperty());
         redLines.visibleProperty().bindBidirectional(redBox.selectedProperty());
@@ -448,6 +447,13 @@ public class ViewController {
         }
         PolygonModified.vertices.clear();
         PolygonModified.vertices.addAll(temp);
+    }
+
+    private void resetMainGroup() {
+        mainGroup.setScaleX(1.0);
+        mainGroup.setScaleY(1.0);
+        mainGroup.setTranslateX(0.0);
+        mainGroup.setTranslateY(0.0);
     }
 
     private boolean isPolygonReady() {

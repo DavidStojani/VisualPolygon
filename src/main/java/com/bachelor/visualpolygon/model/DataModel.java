@@ -8,7 +8,9 @@ import org.locationtech.jts.geom.Polygon;
 
 import java.util.List;
 
-
+/**
+ * All methods that the ViewModel can use
+ * */
 public interface DataModel {
 
     Polygon getPolygon();
